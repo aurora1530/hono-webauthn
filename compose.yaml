@@ -1,0 +1,39 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    tty: true
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+      - type: volume
+        source: hono_webauthn_app_nodemodules
+        target: /app/node_modules
+    ports:
+      - "${PORT:?port is not set}:${PORT:?port is not set}"
+    environment:
+      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING:-false}
+    env_file:
+      - .env
+    depends_on:
+      - db
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    hostname: db
+    environment:
+      - TZ=Asia/Tokyo
+      - POSTGRES_USER=${POSTGRES_USER:?POSTGRES_USER is not set}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
+      - POSTGRES_DB=${POSTGRES_DB:?POSTGRES_DB is not set}
+    volumes:
+      - type: volume
+        source: hono_webauthn_db_data
+        target: /var/lib/postgresql/data
+
+volumes:
+  hono_webauthn_db_data:
+  hono_webauthn_app_nodemodules:
