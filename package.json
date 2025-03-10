@@ -2,7 +2,7 @@
   "name": "hono-webauthn",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.tsx"
   },
   "dependencies": {
     "@hono/esbuild-transpiler": "^0.1.3",
