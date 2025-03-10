@@ -16,9 +16,20 @@ app.get('/public/*', serveStatic({ root: './' }));
 app.use(secureHeaders());
 app.use(rootRenderer);
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!');
-});
+app
+  .onError((err, c) => {
+    console.error(err);
+    c.status(500);
+    return c.render('エラーが発生しました。Code: 500', {
+      title: '500 Internal Server Error',
+    });
+  })
+  .notFound((c) => {
+    c.status(404);
+    return c.render('ページが見つかりません。Code: 404', {
+      title: '404 Not Found',
+    });
+  });
 
 serve(
   {
