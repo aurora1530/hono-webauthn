@@ -22,5 +22,23 @@ async function handleRegistration() {
   const generateRegistrationOptionsResponse = await fetch('/auth/webauthn/generate', {
     method: 'GET',
   });
-  console.log(await generateRegistrationOptionsResponse.json());
+  const options = PublicKeyCredential.parseCreationOptionsFromJSON(await generateRegistrationOptionsResponse.json());
+  console.log(options);
+
+  const credential = await navigator.credentials.create({ publicKey: options });
+  const credentialResponse = await fetch('/auth/webauthn/verify', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(credential),
+  });
+
+  const credentialJson = await credentialResponse.json();
+  if (!credentialJson.success) {
+    alert(credentialJson.message);
+    return;
+  }
+
+  location.href = '/auth/login';
 }
