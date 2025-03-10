@@ -9,6 +9,11 @@ const authApp = new Hono();
 authApp.route('/webauthn', webauthnApp);
 
 authApp
+  .get('/logout', async (c) => {
+    const session = c.get('session');
+    session.destroy();
+    return c.redirect('/');
+  })
   .get('/register', (c) => {
     return c.render(<AccountRegisterForm />, {
       title: 'アカウント登録',
