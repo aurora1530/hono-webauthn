@@ -12,3 +12,23 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id      String    @id @default(cuid())
+  name    String    @unique
+  Passkey Passkey[]
+}
+
+model Passkey {
+  id             String   @id
+  publicKey      Bytes
+  userID         String
+  user           User     @relation(fields: [userID], references: [id])
+  webauthnUserID String
+  counter        BigInt
+  deviceType     String   @db.VarChar(32)
+  backedUp       Boolean
+  transports     String[] @default([])
+
+  @@index([webauthnUserID], name: "webauthnUserID")
+}
