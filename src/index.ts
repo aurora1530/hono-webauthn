@@ -1,3 +1,4 @@
+import { esbuildTranspiler } from '@hono/esbuild-transpiler/node';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
@@ -9,9 +10,9 @@ const app = new Hono();
 
 app.use(logger());
 app.use(trimTrailingSlash());
-app.use(serveStatic({ root: 'public' }));
+app.get('/public/:scriptName{.+.tsx?}', esbuildTranspiler())
+app.get('/public/*', serveStatic({ root: './' }))
 app.use(secureHeaders());
-
 app.get('/', (c) => {
   return c.text('Hello Hono!');
 });
