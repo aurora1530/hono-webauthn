@@ -10,8 +10,8 @@ const app = new Hono();
 
 app.use(logger());
 app.use(trimTrailingSlash());
-app.get('/public/:scriptName{.+.tsx?}', esbuildTranspiler())
-app.get('/public/*', serveStatic({ root: './' }))
+app.get('/public/:scriptName{.+.tsx?}', esbuildTranspiler());
+app.get('/public/*', serveStatic({ root: './' }));
 app.use(secureHeaders());
 app.get('/', (c) => {
   return c.text('Hello Hono!');
