@@ -2,8 +2,11 @@ import { Hono } from 'hono';
 import AccountRegisterForm from '../../components/auth/AccountRegisterForm.js';
 import { validator } from 'hono/validator';
 import prisma from '../../prisma.js';
+import webauthnApp from './webauthn/index.js';
 
 const authApp = new Hono();
+
+authApp.route('/webauthn', webauthnApp);
 
 authApp
   .get('/register', (c) => {
