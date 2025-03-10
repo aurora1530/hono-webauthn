@@ -1,7 +1,10 @@
 import type {} from 'hono';
+import type { Session } from './session.ts';
 
 declare module 'hono' {
-  interface ContextVariableMap {}
+  interface ContextVariableMap {
+    session: Session;
+  }
 
   interface ContextRenderer {
     (

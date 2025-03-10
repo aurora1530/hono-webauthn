@@ -7,6 +7,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { trimTrailingSlash } from 'hono/trailing-slash';
 import rootRenderer from './rootRenderer.js';
 import routerRootApp from './routes/index.js';
+import { sessionMiddleware } from './session.js';
 
 const app = new Hono();
 
@@ -16,6 +17,7 @@ app.get('/public/:scriptName{.+.tsx?}', esbuildTranspiler());
 app.get('/public/*', serveStatic({ root: './' }));
 app.use(secureHeaders());
 app.use(rootRenderer);
+app.use(sessionMiddleware);
 
 app.route('/', routerRootApp);
 
