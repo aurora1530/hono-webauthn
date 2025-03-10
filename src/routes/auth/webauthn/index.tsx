@@ -12,7 +12,7 @@ import WebAuthnSession from '../../../lib/auth/webauthnSession.js';
 const webauthnApp = new Hono();
 
 webauthnApp
-  .get('/generate', async (c) => {
+  .get('/registration/generate', async (c) => {
     const session = c.get('session');
 
     const userName = session.username;
@@ -53,7 +53,7 @@ webauthnApp
 
     return c.json(options);
   })
-  .post('/verify', async (c) => {
+  .post('/registration/verify', async (c) => {
     const session = c.get('session');
     const userName = session.username;
 

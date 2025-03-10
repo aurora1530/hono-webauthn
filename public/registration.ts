@@ -19,14 +19,14 @@ async function handleRegistration() {
     return;
   }
 
-  const generateRegistrationOptionsResponse = await fetch('/auth/webauthn/generate', {
+  const generateRegistrationOptionsResponse = await fetch('/auth/webauthn/registration/generate', {
     method: 'GET',
   });
   const options = PublicKeyCredential.parseCreationOptionsFromJSON(await generateRegistrationOptionsResponse.json());
   console.log(options);
 
   const credential = await navigator.credentials.create({ publicKey: options });
-  const credentialResponse = await fetch('/auth/webauthn/verify', {
+  const credentialResponse = await fetch('/auth/webauthn/registration/verify', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
