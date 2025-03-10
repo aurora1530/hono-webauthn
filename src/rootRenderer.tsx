@@ -1,4 +1,5 @@
 import { jsxRenderer } from 'hono/jsx-renderer';
+import Header from './components/common/Header.js';
 
 const rootRenderer = jsxRenderer(({ children, title }) => {
   return (
@@ -8,7 +9,10 @@ const rootRenderer = jsxRenderer(({ children, title }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{title}</title>
       </head>
-      <body>{children}</body>
+      <body>
+        <Header />
+        {children}
+      </body>
     </html>
   );
 });
