@@ -53,7 +53,7 @@ const Header: FC = async () => {
       <nav>
         <div>
           <a href="/" className="logo">
-            Simple Memo App
+            Hono WebAuthn Demo
           </a>
         </div>
         <div className="auth-links">
