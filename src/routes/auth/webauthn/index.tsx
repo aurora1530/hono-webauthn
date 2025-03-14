@@ -10,6 +10,7 @@ import {
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/server';
+import { isoUint8Array } from '@simplewebauthn/server/helpers';
 import { origin, rpID, rpName } from '../../../constant.js';
 import WebAuthnSession from '../../../lib/auth/webauthnSession.js';
 import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
@@ -22,6 +23,7 @@ webauthnApp
 
     const userName = session.username;
     if (!userName) {
+      session.destroy();
       return c.json(
         {
           success: false,
@@ -31,7 +33,7 @@ webauthnApp
       );
     }
 
-    // ログイン済みユーザであれば、これは新たなパスキー登録リクエストなので、既存のパスキーを取得する
+    // ログイン済みユーザであれば、これはパスキーを追加するリクエストなので、既存のパスキーを取得する
     const userID = session.isLogin ? session.userID : undefined;
     const savedPasskeys: Passkey[] = userID
       ? await prisma.passkey.findMany({
@@ -41,11 +43,15 @@ webauthnApp
         })
       : [];
 
+    const savedWebAuthnUserId =
+      savedPasskeys.length > 0 ? savedPasskeys[0].webauthnUserID : undefined;
+
     const options: PublicKeyCredentialCreationOptionsJSON =
       await generateRegistrationOptions({
         rpID,
         rpName,
         userName,
+        userID: savedWebAuthnUserId ? isoUint8Array.fromUTF8String(savedWebAuthnUserId) : undefined,
         excludeCredentials: savedPasskeys.map((p) => {
           return {
             id: p.id,
@@ -63,6 +69,7 @@ webauthnApp
     const userName = session.username;
 
     if (!userName) {
+      session.destroy();
       return c.json(
         {
           success: false,
@@ -74,6 +81,7 @@ webauthnApp
 
     const currentOptions = WebAuthnSession.getRegistrationSession(userName);
     if (!currentOptions) {
+      session.destroy();
       return c.json(
         {
           success: false,
@@ -94,6 +102,7 @@ webauthnApp
       });
     } catch (e) {
       console.error(e);
+      session.destroy();
       return c.json(
         {
           success: false,
@@ -106,6 +115,7 @@ webauthnApp
     const { verified, registrationInfo } = verification;
 
     if (!verified || !registrationInfo) {
+      session.destroy();
       return c.json(
         {
           success: false,
@@ -120,6 +130,7 @@ webauthnApp
     if (session.isLogin) {
       userID = session.userID;
     } else {
+      // 存在しないユーザ名であることは既に確認済み
       const user = await prisma.user.create({
         data: {
           name: userName,
@@ -252,7 +263,7 @@ webauthnApp
       },
     });
 
-    if(!user) {
+    if (!user) {
       return c.json(
         {
           success: false,
