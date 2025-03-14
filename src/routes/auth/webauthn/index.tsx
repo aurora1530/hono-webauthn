@@ -2,12 +2,17 @@ import type { Passkey } from '@prisma/client';
 import { Hono } from 'hono';
 import prisma from '../../../prisma.js';
 import {
+  generateAuthenticationOptions,
   generateRegistrationOptions,
+  verifyAuthenticationResponse,
   verifyRegistrationResponse,
+  type AuthenticatorAssertionResponseJSON,
   type PublicKeyCredentialCreationOptionsJSON,
+  type PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/server';
 import { origin, rpID, rpName } from '../../../constant.js';
 import WebAuthnSession from '../../../lib/auth/webauthnSession.js';
+import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
 
 const webauthnApp = new Hono();
 
@@ -137,6 +142,135 @@ webauthnApp
         counter: credential.counter,
       },
     });
+
+    return c.json({
+      success: true,
+    });
+  })
+  .get('/authentication/generate', async (c) => {
+    const session = c.get('session');
+    if (session.isLogin) {
+      return c.json({
+        success: true,
+      });
+    }
+
+    const options: PublicKeyCredentialRequestOptionsJSON =
+      await generateAuthenticationOptions({
+        rpID,
+      });
+
+    await WebAuthnSession.setAuthenticationSession(c, options);
+
+    return c.json(options);
+  })
+  .post('/authentication/verify', async (c) => {
+    const session = c.get('session');
+
+    const { challenge: savedChallenge } = await WebAuthnSession.getAuthenticationSession(
+      c
+    );
+    if (!savedChallenge) {
+      return c.json(
+        {
+          success: false,
+          message: 'セッションが不正です。認証をやり直してください',
+        },
+        401
+      );
+    }
+
+    const body = await c.req.json();
+
+    const savedPasskey = await prisma.passkey.findFirst({
+      where: {
+        id: body.id,
+      },
+    });
+
+    if (!savedPasskey) {
+      return c.json(
+        {
+          success: false,
+          message: '認証に失敗しました。もう一度やり直してください',
+        },
+        400
+      );
+    }
+
+    let verification;
+    try {
+      verification = await verifyAuthenticationResponse({
+        response: body,
+        expectedChallenge: savedChallenge,
+        expectedOrigin: origin,
+        expectedRPID: rpID,
+        credential: {
+          id: savedPasskey.id,
+          publicKey: savedPasskey.publicKey,
+          counter: savedPasskey.counter,
+          transports: savedPasskey.transports.filter(isAuthenticatorTransportFuture),
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      return c.json(
+        {
+          success: false,
+          message: '認証に失敗しました。もう一度やり直してください',
+        },
+        400
+      );
+    }
+
+    const { verified, authenticationInfo } = verification;
+    if (!verified || !authenticationInfo) {
+      return c.json(
+        {
+          success: false,
+          message: '認証に失敗しました。もう一度やり直してください',
+        },
+        400
+      );
+    }
+
+    await prisma.passkey.update({
+      where: {
+        id: savedPasskey.id,
+      },
+      data: {
+        counter: authenticationInfo.newCounter,
+      },
+    });
+
+    // verified済みなので型アサーションしてよい
+    const userID = (body as AuthenticatorAssertionResponseJSON).userHandle as string;
+
+    const user = await prisma.user.findFirst({
+      where: {
+        id: userID,
+      },
+    });
+
+    if(!user) {
+      return c.json(
+        {
+          success: false,
+          message: '認証に失敗しました。もう一度やり直してください',
+        },
+        400
+      );
+    }
+
+    if (!session.isLogin) {
+      // @ts-ignore
+      session.isLogin = true;
+      // @ts-ignore
+      session.userID = userID;
+      session.username = user?.name;
+    }
+
+    await session.save();
 
     return c.json({
       success: true,

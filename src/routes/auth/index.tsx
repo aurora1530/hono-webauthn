@@ -3,6 +3,7 @@ import AccountRegisterForm from '../../components/auth/AccountRegisterForm.js';
 import { validator } from 'hono/validator';
 import prisma from '../../prisma.js';
 import webauthnApp from './webauthn/index.js';
+import LoginForm from '../../components/auth/LoginForm.js';
 
 const authApp = new Hono();
 
@@ -13,6 +14,11 @@ authApp
     const session = c.get('session');
     session.destroy();
     return c.redirect('/');
+  })
+  .get('/login', (c) => {
+    return c.render(<LoginForm />, {
+      title: 'ログイン',
+    });
   })
   .get('/register', (c) => {
     return c.render(<AccountRegisterForm />, {
