@@ -6,7 +6,6 @@ import { getIronSession, type IronSession } from 'iron-session';
 type SessionData =
   | {
       isLogin: false;
-      username?: string;
     }
   | {
       isLogin: true;

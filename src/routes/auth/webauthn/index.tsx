@@ -19,11 +19,11 @@ const webauthnApp = new Hono();
 
 webauthnApp
   .get('/registration/generate', async (c) => {
-    const session = c.get('session');
+    const webauthnInitialRegistrationSession =
+      await WebAuthnSession.getInitialRegistrationSession(c);
 
-    const userName = session.username;
+    const userName = webauthnInitialRegistrationSession.username;
     if (!userName) {
-      session.destroy();
       return c.json(
         {
           success: false,
@@ -33,6 +33,7 @@ webauthnApp
       );
     }
 
+    const session = c.get('session');
     // ログイン済みユーザであれば、これはパスキーを追加するリクエストなので、既存のパスキーを取得する
     const userID = session.isLogin ? session.userID : undefined;
     const savedPasskeys: Passkey[] = userID
@@ -51,7 +52,9 @@ webauthnApp
         rpID,
         rpName,
         userName,
-        userID: savedWebAuthnUserId ? isoUint8Array.fromUTF8String(savedWebAuthnUserId) : undefined,
+        userID: savedWebAuthnUserId
+          ? isoUint8Array.fromUTF8String(savedWebAuthnUserId)
+          : undefined,
         excludeCredentials: savedPasskeys.map((p) => {
           return {
             id: p.id,
@@ -60,27 +63,16 @@ webauthnApp
         }),
       });
 
-    WebAuthnSession.setRegistrationSession(userName, options);
+    await WebAuthnSession.setRegistrationSession(c, userName, options);
 
     return c.json(options);
   })
   .post('/registration/verify', async (c) => {
     const session = c.get('session');
-    const userName = session.username;
+    const webauthnRegistrationSession = await WebAuthnSession.getRegistrationSession(c);
+    const userName = webauthnRegistrationSession.username;
 
     if (!userName) {
-      session.destroy();
-      return c.json(
-        {
-          success: false,
-          message: 'セッションが不正です。登録をやり直してください。',
-        },
-        401
-      );
-    }
-
-    const currentOptions = WebAuthnSession.getRegistrationSession(userName);
-    if (!currentOptions) {
       session.destroy();
       return c.json(
         {
@@ -96,7 +88,7 @@ webauthnApp
     try {
       verification = await verifyRegistrationResponse({
         response: body,
-        expectedChallenge: currentOptions.challenge,
+        expectedChallenge: webauthnRegistrationSession.challenge,
         expectedOrigin: origin,
         expectedRPID: rpID,
       });
@@ -115,7 +107,6 @@ webauthnApp
     const { verified, registrationInfo } = verification;
 
     if (!verified || !registrationInfo) {
-      session.destroy();
       return c.json(
         {
           success: false,
@@ -144,7 +135,7 @@ webauthnApp
     await prisma.passkey.create({
       data: {
         id: credential.id,
-        webauthnUserID: currentOptions.user.id,
+        webauthnUserID: webauthnRegistrationSession.webauthnUserID,
         userID,
         backedUp: credentialBackedUp,
         publicKey: credential.publicKey,
@@ -278,7 +269,8 @@ webauthnApp
       session.isLogin = true;
       // @ts-ignore
       session.userID = userID;
-      session.username = user?.name;
+      // @ts-ignore
+      session.username = user.name;
     }
 
     await session.save();

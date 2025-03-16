@@ -4,6 +4,7 @@ import { validator } from 'hono/validator';
 import prisma from '../../prisma.js';
 import webauthnApp from './webauthn/index.js';
 import LoginForm from '../../components/auth/LoginForm.js';
+import WebAuthnSession from '../../lib/auth/webauthnSession.js';
 
 const authApp = new Hono();
 
@@ -62,9 +63,7 @@ authApp
         );
       }
 
-      const session = c.get('session');
-      session.username = username;
-      await session.save();
+      await WebAuthnSession.setInitialRegistrationSession(c,username)
 
       return c.json({
         success: true,
