@@ -6,7 +6,6 @@ import {
   generateRegistrationOptions,
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
-  type AuthenticatorAssertionResponseJSON,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/server';
@@ -245,12 +244,10 @@ webauthnApp
       },
     });
 
-    // verified済みなので型アサーションしてよい
-    const userID = (body as AuthenticatorAssertionResponseJSON).userHandle as string;
-
-    const user = await prisma.user.findFirst({
+    // 認証したパスキーレコードからユーザ情報を取得
+    const user = await prisma.user.findUnique({
       where: {
-        id: userID,
+        id: savedPasskey.userID,
       },
     });
 
@@ -268,7 +265,7 @@ webauthnApp
       // @ts-ignore
       session.isLogin = true;
       // @ts-ignore
-      session.userID = userID;
+      session.userID = user.id;
       // @ts-ignore
       session.username = user.name;
     }
