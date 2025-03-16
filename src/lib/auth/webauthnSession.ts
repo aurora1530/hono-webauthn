@@ -7,13 +7,13 @@ import { env } from 'hono/adapter';
 import { getIronSession } from 'iron-session';
 
 type WebAuthnInitialRegistrationSessionData = {
-  username: string;
+  username?: string;
 };
 
 type WebAuthnRegistrationSessionData = {
-  username: string;
-  challenge: string;
-  webauthnUserID: string;
+  username?: string;
+  challenge?: string;
+  webauthnUserID?: string;
 };
 
 type WebAuthnAuthenticationSessionData = {

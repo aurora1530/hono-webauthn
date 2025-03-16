@@ -18,10 +18,11 @@ const webauthnApp = new Hono();
 
 webauthnApp
   .get('/registration/generate', async (c) => {
-    const webauthnInitialRegistrationSession =
-      await WebAuthnSession.getInitialRegistrationSession(c);
+    const session = c.get('session');
 
-    const userName = webauthnInitialRegistrationSession.username;
+    const userName = session.isLogin
+      ? session.username
+      : (await WebAuthnSession.getInitialRegistrationSession(c)).username;
     if (!userName) {
       return c.json(
         {
@@ -32,7 +33,6 @@ webauthnApp
       );
     }
 
-    const session = c.get('session');
     // ログイン済みユーザであれば、これはパスキーを追加するリクエストなので、既存のパスキーを取得する
     const userID = session.isLogin ? session.userID : undefined;
     const savedPasskeys: Passkey[] = userID
@@ -69,9 +69,12 @@ webauthnApp
   .post('/registration/verify', async (c) => {
     const session = c.get('session');
     const webauthnRegistrationSession = await WebAuthnSession.getRegistrationSession(c);
-    const userName = webauthnRegistrationSession.username;
 
-    if (!userName) {
+    if (
+      !webauthnRegistrationSession.username ||
+      !webauthnRegistrationSession.challenge ||
+      !webauthnRegistrationSession.webauthnUserID
+    ) {
       session.destroy();
       return c.json(
         {
@@ -123,7 +126,7 @@ webauthnApp
       // 存在しないユーザ名であることは既に確認済み
       const user = await prisma.user.create({
         data: {
-          name: userName,
+          name: webauthnRegistrationSession.username,
         },
       });
       userID = user.id;
