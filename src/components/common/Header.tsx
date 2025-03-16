@@ -60,6 +60,10 @@ const Header: FC = async () => {
           {session.isLogin ? (
             <>
               ログイン中: <strong>{session.username}</strong>
+              <button onclick="handleRegistration(false)">
+              パスキー追加
+              </button>
+              <script src="/public/registration.ts"></script>
               <a
                 href="/auth/logout"
                 onclick={`if (!confirm('ログアウトしますか？')) event.preventDefault();`}

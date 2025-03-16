@@ -1,22 +1,24 @@
-async function handleRegistration() {
-  const usernameEle = document.getElementById('username');
-  if (!usernameEle || !(usernameEle instanceof HTMLInputElement)) {
-    return;
-  }
-  const username = usernameEle.value;
-  const usernameRegisterResponse = await fetch('/auth/register', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      username: username,
-    }),
-  });
-  const json = await usernameRegisterResponse.json();
-  if (!json.success) {
-    alert(json.message);
-    return;
+async function handleRegistration(isNewAccount: boolean = true) {
+  if (isNewAccount) {
+    const usernameEle = document.getElementById('username');
+    if (!usernameEle || !(usernameEle instanceof HTMLInputElement)) {
+      return;
+    }
+    const username = usernameEle.value;
+    const usernameRegisterResponse = await fetch('/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username,
+      }),
+    });
+    const json = await usernameRegisterResponse.json();
+    if (!json.success) {
+      alert(json.message);
+      return;
+    }
   }
 
   const generateRegistrationOptionsResponse = await fetch('/auth/webauthn/registration/generate', {
@@ -40,5 +42,10 @@ async function handleRegistration() {
     return;
   }
 
-  location.href = '/auth/login';
+  if(isNewAccount) {
+    alert('新規登録が完了しました');
+    location.href = '/auth/login';
+  } else {
+    alert('パスキーの追加が完了しました');
+  }
 }
