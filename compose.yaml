@@ -13,6 +13,7 @@ services:
         target: /app/node_modules
     ports:
       - "${PORT:?port is not set}:${PORT:?port is not set}"
+      - "5555:5555"
     environment:
       - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING:-false}
     env_file:
