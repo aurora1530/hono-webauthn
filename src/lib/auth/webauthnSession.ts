@@ -22,10 +22,10 @@ type WebAuthnAuthenticationSessionData = {
 
 class WebAuthnSession {
   private static _getInitialRegistrationSession(c: Context) {
-    const passowrd = env<{ WEBAUTHN_SESSION_SECRET: string }>(c).WEBAUTHN_SESSION_SECRET;
+    const password = env<{ WEBAUTHN_SESSION_SECRET: string }>(c).WEBAUTHN_SESSION_SECRET;
     return getIronSession<WebAuthnInitialRegistrationSessionData>(c.req.raw, c.res, {
       cookieName: 'webauthn-initial-registration-session',
-      password: passowrd,
+      password: password,
       ttl: 60 * 15, // 15 minutes
     });
   }
@@ -49,10 +49,10 @@ class WebAuthnSession {
 
 
   private static _getRegistrationSession(c: Context) {
-    const passowrd = env<{ WEBAUTHN_SESSION_SECRET: string }>(c).WEBAUTHN_SESSION_SECRET;
+    const password = env<{ WEBAUTHN_SESSION_SECRET: string }>(c).WEBAUTHN_SESSION_SECRET;
     return getIronSession<WebAuthnRegistrationSessionData>(c.req.raw, c.res, {
       cookieName: 'webauthn-registration-session',
-      password: passowrd,
+      password: password,
       ttl: 60 * 15, // 15 minutes
     });
   }
@@ -81,13 +81,13 @@ class WebAuthnSession {
   }
 
   private static async _getAuthenticationSession(c: Context) {
-    const passowrd = env<{ WEBAUTHN_SESSION_SECRET: string }>(c).WEBAUTHN_SESSION_SECRET;
+    const password = env<{ WEBAUTHN_SESSION_SECRET: string }>(c).WEBAUTHN_SESSION_SECRET;
     const session = await getIronSession<WebAuthnAuthenticationSessionData>(
       c.req.raw,
       c.res,
       {
         cookieName: 'webauthn-session',
-        password: passowrd,
+        password: password,
         ttl: 60 * 15, // 15 minutes
       }
     );
