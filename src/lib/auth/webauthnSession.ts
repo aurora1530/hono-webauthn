@@ -26,7 +26,7 @@ class WebAuthnSession {
     return getIronSession<WebAuthnInitialRegistrationSessionData>(c.req.raw, c.res, {
       cookieName: 'webauthn-initial-registration-session',
       password: password,
-      ttl: 60 * 15, // 15 minutes
+      ttl: 60 * 5, // 5 minutes
     });
   }
 
@@ -53,7 +53,7 @@ class WebAuthnSession {
     return getIronSession<WebAuthnRegistrationSessionData>(c.req.raw, c.res, {
       cookieName: 'webauthn-registration-session',
       password: password,
-      ttl: 60 * 15, // 15 minutes
+      ttl: 60 * 5, // 5 minutes
     });
   }
 
@@ -88,7 +88,7 @@ class WebAuthnSession {
       {
         cookieName: 'webauthn-session',
         password: password,
-        ttl: 60 * 15, // 15 minutes
+        ttl: 60 * 5, // 5 minutes
       }
     );
     return session;
