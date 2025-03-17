@@ -60,12 +60,12 @@ class WebAuthnSession {
   public static async setRegistrationSession(
     c: Context,
     username: string,
-    data: PublicKeyCredentialCreationOptionsJSON
+    data: Required<WebAuthnRegistrationSessionData>
   ) {
     const session = await this._getRegistrationSession(c);
     session.username = username;
     session.challenge = data.challenge;
-    session.webauthnUserID = data.user.id;
+    session.webauthnUserID = data.webauthnUserID;
     await session.save();
   }
 
@@ -96,7 +96,7 @@ class WebAuthnSession {
 
   public static async setAuthenticationSession(
     c: Context,
-    data: PublicKeyCredentialRequestOptionsJSON
+    data: Required<WebAuthnAuthenticationSessionData>
   ) {
     const session = await this._getAuthenticationSession(c);
     session.challenge = data.challenge;
