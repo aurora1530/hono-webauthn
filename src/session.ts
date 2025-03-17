@@ -13,12 +13,12 @@ type LoginSessionData =
       userID: string;
     };
 
-export type Session = IronSession<LoginSessionData>;
+export type LoginSession = IronSession<LoginSessionData>;
 
 export const loginSessionMiddleware = createMiddleware(async (c, next) => {
   const secret = env<{ SESSION_SECRET: string }>(c).SESSION_SECRET;
   const session = await getIronSession<LoginSessionData>(c.req.raw, c.res, {
-    cookieName: 'session',
+    cookieName: 'ls', // login session
     password: secret,
   });
 
@@ -27,6 +27,6 @@ export const loginSessionMiddleware = createMiddleware(async (c, next) => {
     session.isLogin = false;
   }
 
-  c.set('session', session);
+  c.set('loginSession', session);
   await next();
 });

@@ -18,10 +18,10 @@ const webauthnApp = new Hono();
 
 webauthnApp
   .get('/registration/generate', async (c) => {
-    const session = c.get('session');
+    const loginSession = c.get('loginSession');
 
-    const userName = session.isLogin
-      ? session.username
+    const userName = loginSession.isLogin
+      ? loginSession.username
       : (await WebAuthnSession.getInitialRegistrationSession(c)).username;
     if (!userName) {
       return c.json(
@@ -34,7 +34,7 @@ webauthnApp
     }
 
     // ログイン済みユーザであれば、これはパスキーを追加するリクエストなので、既存のパスキーを取得する
-    const userID = session.isLogin ? session.userID : undefined;
+    const userID = loginSession.isLogin ? loginSession.userID : undefined;
     const savedPasskeys: Passkey[] = userID
       ? await prisma.passkey.findMany({
           where: {
@@ -67,14 +67,14 @@ webauthnApp
     return c.json(options);
   })
   .post('/registration/verify', async (c) => {
-    const session = c.get('session');
+    const loginSession = c.get('loginSession');
     const webauthnRegistrationSession = await WebAuthnSession.getRegistrationSession(c);
 
     if (
       !webauthnRegistrationSession.user ||
       !webauthnRegistrationSession.challenge
     ) {
-      session.destroy();
+      loginSession.destroy();
       return c.json(
         {
           success: false,
@@ -95,7 +95,7 @@ webauthnApp
       });
     } catch (e) {
       console.error(e);
-      session.destroy();
+      loginSession.destroy();
       return c.json(
         {
           success: false,
@@ -119,8 +119,8 @@ webauthnApp
 
     // 新規作成ならユーザを作成し、既存ユーザならセッションからIDを取得
     let userID: string;
-    if (session.isLogin) {
-      userID = session.userID;
+    if (loginSession.isLogin) {
+      userID = loginSession.userID;
     } else {
       // 存在しないユーザ名であることは既に確認済み
       const user = await prisma.user.create({
@@ -151,8 +151,8 @@ webauthnApp
     });
   })
   .get('/authentication/generate', async (c) => {
-    const session = c.get('session');
-    if (session.isLogin) {
+    const loginSession = c.get('loginSession');
+    if (loginSession.isLogin) {
       return c.json({
         success: true,
       });
@@ -168,7 +168,7 @@ webauthnApp
     return c.json(options);
   })
   .post('/authentication/verify', async (c) => {
-    const session = c.get('session');
+    const loginSession = c.get('loginSession');
 
     const { challenge: savedChallenge } = await WebAuthnSession.getAuthenticationSession(
       c
@@ -263,16 +263,16 @@ webauthnApp
       );
     }
 
-    if (!session.isLogin) {
+    if (!loginSession.isLogin) {
       // @ts-ignore
-      session.isLogin = true;
+      loginSession.isLogin = true;
       // @ts-ignore
-      session.userID = user.id;
+      loginSession.userID = user.id;
       // @ts-ignore
-      session.username = user.name;
+      loginSession.username = user.name;
     }
 
-    await session.save();
+    await loginSession.save();
 
     return c.json({
       success: true,

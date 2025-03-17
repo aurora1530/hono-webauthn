@@ -12,8 +12,8 @@ authApp.route('/webauthn', webauthnApp);
 
 authApp
   .get('/logout', async (c) => {
-    const session = c.get('session');
-    session.destroy();
+    const loginSession = c.get('loginSession');
+    loginSession.destroy();
     return c.redirect('/');
   })
   .get('/login', (c) => {

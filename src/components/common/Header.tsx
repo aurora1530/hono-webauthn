@@ -4,7 +4,7 @@ import { useRequestContext } from 'hono/jsx-renderer';
 
 const Header: FC = async () => {
   const c = useRequestContext();
-  const session = c.get('session');
+  const loginSession = c.get('loginSession');
 
   const headerClass = css`
     background-color: #f0f0f0;
@@ -57,9 +57,9 @@ const Header: FC = async () => {
           </a>
         </div>
         <div className="auth-links">
-          {session.isLogin ? (
+          {loginSession.isLogin ? (
             <>
-              ログイン中: <strong>{session.username}</strong>
+              ログイン中: <strong>{loginSession.username}</strong>
               <button onclick="handleRegistration(false)">
               パスキー追加
               </button>

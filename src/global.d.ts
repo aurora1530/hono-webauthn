@@ -1,9 +1,9 @@
 import type {} from 'hono';
-import type { Session } from './session.ts';
+import type { LoginSession } from './session.ts';
 
 declare module 'hono' {
   interface ContextVariableMap {
-    session: Session;
+    loginSession: LoginSession;
   }
 
   interface ContextRenderer {
