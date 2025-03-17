@@ -20,6 +20,7 @@ export const loginSessionMiddleware = createMiddleware(async (c, next) => {
   const session = await getIronSession<LoginSessionData>(c.req.raw, c.res, {
     cookieName: 'ls', // login session
     password: secret,
+    ttl: 60 * 60 * 24 * 7, // 1 week
   });
 
   // Initialize session data
