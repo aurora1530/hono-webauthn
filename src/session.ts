@@ -3,7 +3,7 @@ import { env } from 'hono/adapter';
 import { createMiddleware } from 'hono/factory';
 import { getIronSession, type IronSession } from 'iron-session';
 
-type SessionData =
+type LoginSessionData =
   | {
       isLogin: false;
     }
@@ -13,11 +13,11 @@ type SessionData =
       userID: string;
     };
 
-export type Session = IronSession<SessionData>;
+export type Session = IronSession<LoginSessionData>;
 
-export const sessionMiddleware = createMiddleware(async (c, next) => {
+export const loginSessionMiddleware = createMiddleware(async (c, next) => {
   const secret = env<{ SESSION_SECRET: string }>(c).SESSION_SECRET;
-  const session = await getIronSession<SessionData>(c.req.raw, c.res, {
+  const session = await getIronSession<LoginSessionData>(c.req.raw, c.res, {
     cookieName: 'session',
     password: secret,
   });
