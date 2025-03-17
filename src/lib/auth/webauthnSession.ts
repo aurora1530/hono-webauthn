@@ -1,7 +1,3 @@
-import type {
-  PublicKeyCredentialCreationOptionsJSON,
-  PublicKeyCredentialRequestOptionsJSON,
-} from '@simplewebauthn/server';
 import type { Context } from 'hono';
 import { env } from 'hono/adapter';
 import { getIronSession } from 'iron-session';
