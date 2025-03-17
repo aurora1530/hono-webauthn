@@ -11,9 +11,11 @@ type WebAuthnInitialRegistrationSessionData = {
 };
 
 type WebAuthnRegistrationSessionData = {
-  username?: string;
   challenge?: string;
-  webauthnUserID?: string;
+  user?: {
+    name: string;
+    id: string;
+  };
 };
 
 type WebAuthnAuthenticationSessionData = {
@@ -59,13 +61,11 @@ class WebAuthnSession {
 
   public static async setRegistrationSession(
     c: Context,
-    username: string,
     data: Required<WebAuthnRegistrationSessionData>
   ) {
     const session = await this._getRegistrationSession(c);
-    session.username = username;
     session.challenge = data.challenge;
-    session.webauthnUserID = data.webauthnUserID;
+    session.user = data.user;
     await session.save();
   }
 

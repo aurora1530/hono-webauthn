@@ -62,7 +62,7 @@ webauthnApp
         }),
       });
 
-    await WebAuthnSession.setRegistrationSession(c, userName, options);
+    await WebAuthnSession.setRegistrationSession(c, options);
 
     return c.json(options);
   })
@@ -71,9 +71,8 @@ webauthnApp
     const webauthnRegistrationSession = await WebAuthnSession.getRegistrationSession(c);
 
     if (
-      !webauthnRegistrationSession.username ||
-      !webauthnRegistrationSession.challenge ||
-      !webauthnRegistrationSession.webauthnUserID
+      !webauthnRegistrationSession.user ||
+      !webauthnRegistrationSession.challenge
     ) {
       session.destroy();
       return c.json(
@@ -126,7 +125,7 @@ webauthnApp
       // 存在しないユーザ名であることは既に確認済み
       const user = await prisma.user.create({
         data: {
-          name: webauthnRegistrationSession.username,
+          name: webauthnRegistrationSession.user.name,
         },
       });
       userID = user.id;
@@ -137,7 +136,7 @@ webauthnApp
     await prisma.passkey.create({
       data: {
         id: credential.id,
-        webauthnUserID: webauthnRegistrationSession.webauthnUserID,
+        webauthnUserID: webauthnRegistrationSession.user.id,
         userID,
         backedUp: credentialBackedUp,
         publicKey: credential.publicKey,
