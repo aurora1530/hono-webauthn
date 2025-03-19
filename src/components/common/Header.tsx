@@ -33,13 +33,6 @@ const Header: FC = async () => {
             text-decoration: none;
           }
 
-          /* 右上の認証リンクまたはユーザー情報用スタイル */
-          .auth-links {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-          }
-
           nav a {
             text-decoration: none;
             color: #333;
@@ -55,28 +48,6 @@ const Header: FC = async () => {
           <a href="/" className="logo">
             Hono WebAuthn Demo
           </a>
-        </div>
-        <div className="auth-links">
-          {loginSession.isLogin ? (
-            <>
-              ログイン中: <strong>{loginSession.username}</strong>
-              <button onclick="handleRegistration(false)">
-              パスキー追加
-              </button>
-              <script src="/public/registration.ts"></script>
-              <a
-                href="/auth/logout"
-                onclick={`if (!confirm('ログアウトしますか？')) event.preventDefault();`}
-              >
-                ログアウト
-              </a>
-            </>
-          ) : (
-            <>
-              <a href="/auth/register">新規登録</a>
-              <a href="/auth/login">ログイン</a>
-            </>
-          )}
         </div>
       </nav>
     </header>
