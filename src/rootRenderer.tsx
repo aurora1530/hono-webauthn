@@ -1,9 +1,8 @@
-import { jsxRenderer, useRequestContext } from 'hono/jsx-renderer';
+import { jsxRenderer } from 'hono/jsx-renderer';
 import Header from './components/common/Header.js';
 import { css, cx, Style } from 'hono/css';
 
 const rootRenderer = jsxRenderer(({ children, title }) => {
-  const c = useRequestContext();
   const htmlClass = css`
     margin:0;
     padding:0;
