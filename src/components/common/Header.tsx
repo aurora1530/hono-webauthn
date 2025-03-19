@@ -1,11 +1,7 @@
 import { css, Style } from 'hono/css';
 import type { FC } from 'hono/jsx';
-import { useRequestContext } from 'hono/jsx-renderer';
 
 const Header: FC = async () => {
-  const c = useRequestContext();
-  const loginSession = c.get('loginSession');
-
   const headerClass = css`
     background-color: #f0f0f0;
     padding: 20px;
