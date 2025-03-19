@@ -5,12 +5,14 @@ import prisma from '../../prisma.js';
 import webauthnApp from './webauthn/index.js';
 import LoginForm from '../../components/auth/LoginForm.js';
 import WebAuthnSession from '../../lib/auth/webauthnSession.js';
+import authPageRenderer from './renderer.js';
 
 const authApp = new Hono();
 
 authApp.route('/webauthn', webauthnApp);
 
 authApp
+  .use(authPageRenderer)
   .get('/logout', async (c) => {
     const loginSession = c.get('loginSession');
     loginSession.destroy();
