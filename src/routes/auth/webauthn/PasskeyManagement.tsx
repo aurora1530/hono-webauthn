@@ -17,7 +17,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
             >
               <div>
                 <p class="font-semibold">{aaguidToNameAndIcon(passkey.aaguid) ?? "パスキー"}</p>
-                <p class="text-sm text-gray-600">登録日時: 未実装</p>
+                <p class="text-sm text-gray-600">登録日時: {passkey.createdAt.toLocaleString()}</p>
               </div>
               <button
                 class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
