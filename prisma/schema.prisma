@@ -32,6 +32,7 @@ model Passkey {
   transports     String[] @default([])
   aaguid         String   @db.VarChar(36)
   createdAt      DateTime @default(now())
+  name           String
 
   @@index([webauthnUserID], name: "webauthnUserID")
 }
