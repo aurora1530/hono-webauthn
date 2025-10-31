@@ -1,5 +1,4 @@
 import type { Passkey } from '@prisma/client';
-import { aaguidToNameAndIcon } from '../../../lib/auth/aaguid/parse.js';
 import type { FC } from 'hono/jsx';
 
 const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
@@ -16,7 +15,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
               class="p-4 border rounded-md flex justify-between items-center"
             >
               <div>
-                <p class="font-semibold">{aaguidToNameAndIcon(passkey.aaguid) ?? "パスキー"}</p>
+                <p class="font-semibold">{passkey.name}</p>
                 <p class="text-sm text-gray-600">登録日時: {passkey.createdAt.toLocaleString()}</p>
               </div>
               <button
