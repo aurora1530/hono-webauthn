@@ -131,7 +131,8 @@ webauthnApp
       userID = user.id;
     }
 
-    const { credential, credentialDeviceType, credentialBackedUp } = registrationInfo;
+    const { credential, credentialDeviceType, credentialBackedUp, aaguid } =
+      registrationInfo;
 
     await prisma.passkey.create({
       data: {
@@ -143,6 +144,7 @@ webauthnApp
         transports: credential.transports,
         deviceType: credentialDeviceType,
         counter: credential.counter,
+        aaguid,
       },
     });
 
