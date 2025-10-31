@@ -30,6 +30,7 @@ model Passkey {
   deviceType     String   @db.VarChar(32)
   backedUp       Boolean
   transports     String[] @default([])
+  aaguid         String   @db.VarChar(36)
 
   @@index([webauthnUserID], name: "webauthnUserID")
 }
