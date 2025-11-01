@@ -38,7 +38,6 @@ const createLoginSessionService = async (): Promise<LoginSessionService> => {
       return undefined;
     },
     set: async (sessionID: string, data: UserData) => {
-      console.log('Setting login session data:', sessionID, data);
       await redis.set(KEY(sessionID), JSON.stringify(data), { EX: TTL_SEC });
     },
     destroy: async (sessionID: string) => {
