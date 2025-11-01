@@ -53,6 +53,7 @@ webauthnApp
         rpID,
         rpName,
         userName,
+        userDisplayName: userName,
         userID: savedWebAuthnUserId
           ? isoUint8Array.fromUTF8String(savedWebAuthnUserId)
           : undefined,
