@@ -139,6 +139,8 @@ webauthnApp
 
     const passkeyName = aaguidToNameAndIcon(aaguid)?.name ?? "パスキー";
 
+    const userAgent = c.req.header('User-Agent') || '';
+
     await prisma.passkey.create({
       data: {
         id: credential.id,
@@ -150,7 +152,8 @@ webauthnApp
         deviceType: credentialDeviceType,
         counter: credential.counter,
         aaguid,
-        name: passkeyName
+        name: passkeyName,
+        userAgent,
       },
     });
 
