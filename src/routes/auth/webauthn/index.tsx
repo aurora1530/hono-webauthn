@@ -13,7 +13,6 @@ import { isoUint8Array } from '@simplewebauthn/server/helpers';
 import { origin, rpID, rpName } from '../../../constant.js';
 import WebAuthnSession from '../../../lib/auth/webauthnSession.js';
 import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
-import PasskeyManagement from '../../../components/auth/PasskeyManagemet.js';
 import { aaguidToNameAndIcon } from '../../../lib/auth/aaguid/parse.js';
 import { validator } from 'hono/validator';
 
@@ -285,26 +284,6 @@ webauthnApp
     return c.json({
       success: true,
     });
-  })
-  .get('/passkey-management', async (c) => {
-    const loginSession = c.get('loginSession');
-    if (!loginSession.isLogin) {
-      return c.json(
-        {
-          success: false,
-          message: 'ログインが必要です。',
-        },
-        401
-      );
-    }
-
-    const passkeys = await prisma.passkey.findMany({
-      where: {
-        userID: loginSession.userID,
-      },
-    });
-
-    return c.render(<PasskeyManagement passkeys={passkeys} />, { title: 'パスキー管理' });
   })
   .post(
     '/change-passkey-name',
