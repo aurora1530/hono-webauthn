@@ -379,6 +379,74 @@ webauthnApp
         success: true,
       });
     }
+  )
+  .post(
+    '/delete-passkey',
+    validator('json', (value, c) => {
+      const passkeyId = value['passkeyId'];
+      if (!passkeyId || typeof passkeyId !== 'string') {
+        return c.json(
+          {
+            success: false,
+            message: 'パスキーIDが不正です。',
+          },
+          400
+        );
+      }
+      return { passkeyId };
+    }),
+    async (c) => {
+      const loginSession = c.get('loginSession');
+      if (!loginSession.isLogin) {
+        return c.json(
+          {
+            success: false,
+            message: 'ログインが必要です。',
+          },
+          401
+        );
+      }
+
+      const { passkeyId } = c.req.valid('json');
+
+      const userHasAtLeastTwoPasskeys = await prisma.passkey.count({
+        where: {
+          userID: loginSession.userID,
+        },
+      }) >= 2;
+
+      if (!userHasAtLeastTwoPasskeys) {
+        return c.json(
+          {
+            success: false,
+            message: '削除後に最低でも1つのパスキーを保持する必要があります。',
+          },
+          400
+        );
+      }
+
+      try {
+        const deletedPasskey = await prisma.passkey.delete({
+          where: {
+            id: passkeyId,
+            userID: loginSession.userID,
+          },
+        })
+        return c.json({
+          success: true,
+          message: `パスキー ${deletedPasskey.name} を削除しました。`,
+        });
+      } catch (e) {
+        console.error(e);
+        return c.json(
+          {
+            success: false,
+            message: 'パスキーの削除に失敗しました。',
+          },
+          500
+        );
+      }
+    }
   );
 
 export default webauthnApp;
