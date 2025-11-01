@@ -7,7 +7,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { trimTrailingSlash } from 'hono/trailing-slash';
 import rootRenderer from './rootRenderer.js';
 import routerRootApp from './routes/index.js';
-import { loginSessionMiddleware } from './lib/auth/session.js';
+import { loginSessionMiddleware } from './lib/auth/loginSession.js';
 
 const app = new Hono();
 

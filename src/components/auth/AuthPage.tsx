@@ -2,8 +2,10 @@ import { css, cx } from 'hono/css';
 import type { FC } from 'hono/jsx';
 import { useRequestContext } from 'hono/jsx-renderer';
 
-const AuthPage: FC = () => {
-  const loginSession = useRequestContext().get('loginSession');
+const AuthPage: FC = async () => {
+  const c = useRequestContext();
+  const loginSession = c.get('loginSessionStore');
+  const userData = await loginSession.get(c.get('loginSessionID'));
 
   const titleClass = css`
     font-size: 24px;
@@ -59,9 +61,9 @@ const AuthPage: FC = () => {
     <>
       <h1 class={titleClass}>WebAuthn</h1>
       <div class={authLinksClass}>
-        {loginSession.isLogin ? (
+        {userData ? (
           <>
-            ログイン中: <strong>{loginSession.username}</strong>
+            ログイン中: <strong>{userData.username}</strong>
             <button class={secondary} onclick="handleRegistration(false)">パスキー追加</button>
             <a
               class={primary}
@@ -83,4 +85,3 @@ const AuthPage: FC = () => {
 };
 
 export default AuthPage;
-

@@ -4,8 +4,8 @@ import { useRequestContext } from 'hono/jsx-renderer';
 
 const Header: FC = async () => {
   const c = useRequestContext();
-  const session  = c.get('loginSession');
-  const username = session.isLogin ? session.username : undefined;
+  const loginSessionStore = c.get('loginSessionStore');
+  const username = (await loginSessionStore.get(c.get('loginSessionID')))?.username;
 
   const headerClass = css`
     background-color: #f0f0f0;

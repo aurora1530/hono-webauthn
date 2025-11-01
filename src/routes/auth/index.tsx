@@ -21,8 +21,8 @@ authApp
     })
   })
   .get('/logout', async (c) => {
-    const loginSession = c.get('loginSession');
-    loginSession.destroy();
+    const loginSessionStore = c.get('loginSessionStore');
+    await loginSessionStore.destroy(c.get('loginSessionID'));
     return c.redirect('/');
   })
   .get('/login', (c) => {
@@ -80,14 +80,15 @@ authApp
     }
   )
   .get('/passkey-management', async (c) => {
-    const loginSession = c.get('loginSession');
-    if (!loginSession.isLogin) {
+    const loginSessionStore = c.get('loginSessionStore');
+    const userData = await loginSessionStore.get(c.get('loginSessionID'));
+    if (!userData) {
       return c.redirect('/auth/login');
     }
 
     const passkeys = await prisma.passkey.findMany({
       where: {
-        userID: loginSession.userID,
+        userID: userData.userID,
       },
     });
 
