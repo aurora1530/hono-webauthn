@@ -2,6 +2,7 @@ import type { Context } from 'hono';
 import { env } from 'hono/adapter';
 import { createMiddleware } from 'hono/factory';
 import { getIronSession, type IronSession } from 'iron-session';
+import { cookieOptions } from './cookie-options.js';
 
 type LoginSessionData =
   | {
@@ -21,6 +22,7 @@ export const loginSessionMiddleware = createMiddleware(async (c, next) => {
     cookieName: 'ls', // login session
     password: secret,
     ttl: 60 * 60 * 24 * 7, // 1 week
+    cookieOptions,
   });
 
   // Initialize session data

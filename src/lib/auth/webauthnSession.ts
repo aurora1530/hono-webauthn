@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import { env } from 'hono/adapter';
 import { getIronSession } from 'iron-session';
+import { cookieOptions } from './cookie-options.js';
 
 type WebAuthnInitialRegistrationSessionData = {
   username?: string;
@@ -25,6 +26,7 @@ class WebAuthnSession {
       cookieName: 'webauthn-initial-registration-session',
       password: password,
       ttl: 60 * 5, // 5 minutes
+      cookieOptions,
     });
   }
 
@@ -52,6 +54,7 @@ class WebAuthnSession {
       cookieName: 'webauthn-registration-session',
       password: password,
       ttl: 60 * 5, // 5 minutes
+      cookieOptions,
     });
   }
 
@@ -85,6 +88,7 @@ class WebAuthnSession {
         cookieName: 'webauthn-session',
         password: password,
         ttl: 60 * 5, // 5 minutes
+        cookieOptions,
       }
     );
     return session;
