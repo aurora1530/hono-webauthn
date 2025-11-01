@@ -1,6 +1,6 @@
 import type { Passkey } from '@prisma/client';
 import type { FC } from 'hono/jsx';
-import parseUserAgent from '../../lib/auth/useragent/parse.js';
+import parseUserAgent from '../../lib/auth/useragent.js';
 
 const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
   const canDelete = passkeys.length > 1;
