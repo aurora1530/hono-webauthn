@@ -82,13 +82,7 @@ authApp
   .get('/passkey-management', async (c) => {
     const loginSession = c.get('loginSession');
     if (!loginSession.isLogin) {
-      return c.json(
-        {
-          success: false,
-          message: 'ログインが必要です。',
-        },
-        401
-      );
+      return c.redirect('/auth/login');
     }
 
     const passkeys = await prisma.passkey.findMany({
