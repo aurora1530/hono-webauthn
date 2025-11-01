@@ -73,10 +73,7 @@ webauthnApp
     const loginSession = c.get('loginSession');
     const webauthnRegistrationSession = await WebAuthnSession.getRegistrationSession(c);
 
-    if (
-      !webauthnRegistrationSession.user ||
-      !webauthnRegistrationSession.challenge
-    ) {
+    if (!webauthnRegistrationSession.user || !webauthnRegistrationSession.challenge) {
       loginSession.destroy();
       return c.json(
         {
@@ -137,7 +134,7 @@ webauthnApp
     const { credential, credentialDeviceType, credentialBackedUp, aaguid } =
       registrationInfo;
 
-    const passkeyName = aaguidToNameAndIcon(aaguid)?.name ?? "パスキー";
+    const passkeyName = aaguidToNameAndIcon(aaguid)?.name ?? 'パスキー';
 
     const userAgent = c.req.header('User-Agent') || '';
 
