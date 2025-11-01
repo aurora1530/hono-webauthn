@@ -16,7 +16,10 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
             >
               <div>
                 <p class="font-semibold">{passkey.name}</p>
-                <p class="text-sm text-gray-600">登録日時: {passkey.createdAt.toLocaleString()}</p>
+                <button id="change-passkey-name-btn" onclick={`handleChangePasskeyName("${passkey.id}")`}>変更</button>
+                <p class="text-sm text-gray-600">
+                  登録日時: {passkey.createdAt.toLocaleString()}
+                </p>
               </div>
               <button
                 class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
@@ -31,6 +34,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
           ))}
         </ul>
       )}
+      <script src="/public/changePasskeyName.ts"></script>
     </div>
   );
 };

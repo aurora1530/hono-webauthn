@@ -15,6 +15,7 @@ import WebAuthnSession from '../../../lib/auth/webauthnSession.js';
 import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
 import PasskeyManagement from './PasskeyManagement.js';
 import { aaguidToNameAndIcon } from '../../../lib/auth/aaguid/parse.js';
+import { validator } from 'hono/validator';
 
 const webauthnApp = new Hono();
 
@@ -304,6 +305,80 @@ webauthnApp
     });
 
     return c.render(<PasskeyManagement passkeys={passkeys} />, { title: 'パスキー管理' });
-  });
+  })
+  .post(
+    '/change-passkey-name',
+    validator('json', (value, c) => {
+      const passkeyId = value['passkeyId'];
+      const newName = value['newName'];
+      if (!passkeyId || typeof passkeyId !== 'string') {
+        return c.json(
+          {
+            success: false,
+            message: 'パスキーIDが不正です。',
+          },
+          400
+        );
+      }
+
+      if (!newName || typeof newName !== 'string') {
+        return c.json(
+          {
+            success: false,
+            message: '新しいパスキー名が不正です。',
+          },
+          400
+        );
+      }
+
+      return {
+        passkeyId,
+        newName,
+      };
+    }),
+    async (c) => {
+      const loginSession = c.get('loginSession');
+      if (!loginSession.isLogin) {
+        return c.json(
+          {
+            success: false,
+            message: 'ログインが必要です。',
+          },
+          401
+        );
+      }
+
+      const { passkeyId, newName } = c.req.valid('json');
+
+      const passkey = await prisma.passkey.findUnique({
+        where: {
+          id: passkeyId,
+        },
+      });
+
+      if (!passkey || passkey.userID !== loginSession.userID) {
+        return c.json(
+          {
+            success: false,
+            message: 'パスキーが見つかりません。',
+          },
+          404
+        );
+      }
+
+      await prisma.passkey.update({
+        where: {
+          id: passkeyId,
+        },
+        data: {
+          name: newName,
+        },
+      });
+
+      return c.json({
+        success: true,
+      });
+    }
+  );
 
 export default webauthnApp;
