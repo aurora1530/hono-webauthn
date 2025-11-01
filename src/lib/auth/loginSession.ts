@@ -1,6 +1,6 @@
 import { createMiddleware } from 'hono/factory';
 import { getRedis } from '../redis.js';
-import type { SessionService } from '../session.js';
+import { generateSessionID, type SessionService } from '../session.js';
 import { getCookie, setCookie } from 'hono/cookie';
 import { cookieOptions } from './cookie-options.js';
 
@@ -16,7 +16,7 @@ const createLoginSessionService = async (): Promise<LoginSessionService> => {
   const KEY = (sessionID: string) => `login:${sessionID}`;
   return {
     createSession: async () => {
-      const sessionID = crypto.randomUUID();
+      const sessionID = generateSessionID();
       await redis.set(KEY(sessionID), JSON.stringify({}), { EX: TTL_SEC });
       return sessionID;
     },

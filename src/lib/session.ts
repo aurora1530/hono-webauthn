@@ -7,3 +7,7 @@ export interface SessionService<T extends Record<string, unknown>> {
   set(sessionID: SessionID, data: T): Promise<void>;
   destroy(sessionID: SessionID): Promise<void>;
 }
+
+export const generateSessionID = (): SessionID => {
+  return crypto.randomUUID();
+};
