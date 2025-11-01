@@ -13,7 +13,7 @@ import { isoUint8Array } from '@simplewebauthn/server/helpers';
 import { origin, rpID, rpName } from '../../../constant.js';
 import WebAuthnSession from '../../../lib/auth/webauthnSession.js';
 import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
-import PasskeyManagement from './PasskeyManagement.js';
+import PasskeyManagement from '../../../components/auth/PasskeyManagemet.js';
 import { aaguidToNameAndIcon } from '../../../lib/auth/aaguid/parse.js';
 import { validator } from 'hono/validator';
 
