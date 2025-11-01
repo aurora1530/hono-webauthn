@@ -54,6 +54,7 @@ const Header: FC = async () => {
           {username ? (
             <>
               <span>ようこそ、{username}さん</span> |{' '}
+              <a href="/auth/webauthn/passkey-management">パスキー管理</a> |{' '}
               <a href="/auth/logout">ログアウト</a>
             </>
           ) : (
