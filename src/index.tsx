@@ -13,9 +13,18 @@ const app = new Hono();
 
 app.use(logger());
 app.use(trimTrailingSlash());
+app.use(
+  secureHeaders({
+    xFrameOptions: 'DENY',
+    xXssProtection: '0',
+    xContentTypeOptions: 'nosniff',
+    referrerPolicy: 'no-referrer',
+    crossOriginOpenerPolicy: 'same-origin',
+    crossOriginResourcePolicy: 'same-origin',
+  })
+);
 app.get('/public/:scriptName{.+.tsx?}', esbuildTranspiler());
 app.get('/public/*', serveStatic({ root: './' }));
-app.use(secureHeaders());
 app.use(rootRenderer);
 app.use(loginSessionMiddleware);
 
