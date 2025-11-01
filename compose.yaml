@@ -20,6 +20,7 @@ services:
       - .env
     depends_on:
       - db
+      - redis
   db:
     build:
       context: .
@@ -34,6 +35,10 @@ services:
       - type: volume
         source: hono_webauthn_db_data
         target: /var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
 
 volumes:
   hono_webauthn_db_data:
