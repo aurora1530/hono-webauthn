@@ -47,5 +47,6 @@ async function handleRegistration(isNewAccount: boolean = true) {
     location.href = '/auth/login';
   } else {
     alert('パスキーの追加が完了しました');
+    location.reload();
   }
 }

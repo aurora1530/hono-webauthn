@@ -36,6 +36,8 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
           })}
         </ul>
       )}
+
+      <button onclick="handleRegistration(false)">パスキー追加</button>
       <script src="/public/changePasskeyName.ts"></script>
       <script src="/public/deletePasskey.ts"></script>
     </div>
