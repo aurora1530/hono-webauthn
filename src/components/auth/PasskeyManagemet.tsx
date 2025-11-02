@@ -169,9 +169,9 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
 
                 <div class={rowActionsClass}>
                   <button
-                    id="change-passkey-name-btn"
-                    class={subtleButtonClass}
-                    onclick={`handleChangePasskeyName("${passkey.id}", "${passkey.name}");`}
+                    data-passkey-id={passkey.id}
+                    data-passkey-name={passkey.name}
+                    class={cx(subtleButtonClass, "change-passkey-name-btn")}
                   >
                     変更
                   </button>
