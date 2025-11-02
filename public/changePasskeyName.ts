@@ -1,5 +1,5 @@
-function handleChangePasskeyName(passkeyId: string) {
-  const newName = prompt("新しいパスキー名を入力してください:");
+function handleChangePasskeyName(passkeyId: string, currentName: string) {
+  const newName = prompt("新しいパスキー名を入力してください:", currentName);
   if (newName) {
     fetch('/auth/webauthn/change-passkey-name', {
       method: 'POST',

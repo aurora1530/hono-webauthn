@@ -171,7 +171,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
                   <button
                     id="change-passkey-name-btn"
                     class={subtleButtonClass}
-                    onclick={`handleChangePasskeyName("${passkey.id}")`}
+                    onclick={`handleChangePasskeyName("${passkey.id}", "${passkey.name}");`}
                   >
                     変更
                   </button>
