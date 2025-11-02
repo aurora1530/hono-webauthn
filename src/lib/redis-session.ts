@@ -1,0 +1,43 @@
+import { getRedis } from "./redis.js";
+import { generateSessionID, type SessionStore } from "./session.js";
+
+type RedisSessionStoreOptions<T = Record<string, unknown>> = {
+  prefix: string;
+  ttlSec: number;
+  dataParser: (data: unknown) => T | undefined;
+};
+
+const createRedisSessionStore = async <T extends Record<string, unknown>>(options: RedisSessionStoreOptions<T>): Promise<SessionStore<T>> => {
+  const redis = await getRedis();
+  const KEY = (sessionID: string) => `${options.prefix}:${sessionID}`;
+
+  return {
+    createSession: async () => {
+      const sessionID = generateSessionID();
+      await redis.set(KEY(sessionID), JSON.stringify({}), { EX: options.ttlSec });
+      return sessionID;
+    },
+    refresh: async (sessionID: string) => {
+      const result = await redis.expire(KEY(sessionID), options.ttlSec);
+      return result === 1;
+    },
+    get: async (sessionID: string) => {
+      const raw = await redis.get(KEY(sessionID));
+      if (!raw) return undefined;
+      try {
+        const parsed = JSON.parse(raw);
+        return options.dataParser(parsed);
+      } catch {
+        return undefined;
+      }
+    },
+    set: async (sessionID: string, data: T) => {
+      await redis.set(KEY(sessionID), JSON.stringify(data), { EX: options.ttlSec });
+    },
+    destroy: async (sessionID: string) => {
+      await redis.del(KEY(sessionID));
+    }
+  }
+}
+
+export { createRedisSessionStore };
