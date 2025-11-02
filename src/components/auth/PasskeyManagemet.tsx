@@ -7,13 +7,13 @@ import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
 const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
   const canDelete = passkeys.length > 1;
 
-  const title = css`
+  const titleClass = css`
     font-size: 20px;
     font-weight: 600;
     margin: 12px 0 16px;
   `;
 
-  const list = css`
+  const listClass = css`
     list-style: none;
     padding: 0;
     margin: 0;
@@ -22,7 +22,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     gap: 12px;
   `;
 
-  const item = css`
+  const itemClass = css`
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     padding: 12px 14px;
@@ -32,14 +32,14 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     position: relative;
   `;
 
-  const rowTop = css`
+  const rowTopClass = css`
     display: grid;
     grid-template-columns: 24px 1fr 24px;
     align-items: center;
     column-gap: 8px;
   `;
 
-  const rowActions = css`
+  const rowActionsClass = css`
     display: grid;
     grid-template-columns: 1fr 1fr;
     justify-items: center;
@@ -47,24 +47,24 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     width: 100%;
   `;
 
-  const icon = css`
+  const iconClass = css`
     width: 20px;
     height: 20px;
     object-fit: contain;
   `;
 
-  const name = css`
+  const nameClass = css`
     font-weight: 600;
     text-align: center;
   `;
 
-  const meta = css`
+  const metaClass = css`
     font-size: 12px;
     color: #6b7280;
     margin-top: 4px;
   `;
 
-  const badgeSynced = css`
+  const badgeSyncedClass = css`
     position: absolute;
     top: 8px;
     right: 8px;
@@ -78,7 +78,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     line-height: 1.4;
   `;
 
-  const badgeUnsynced = css`
+  const badgeUnsyncedClass = css`
     position: absolute;
     top: 8px;
     right: 8px;
@@ -92,7 +92,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     line-height: 1.4;
   `;
 
-  const buttonBase = css`
+  const buttonBaseClass = css`
     cursor: pointer;
     border: none;
     border-radius: 6px;
@@ -101,8 +101,8 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     transition: background-color 0.15s ease-in-out, opacity 0.15s;
   `;
 
-  const subtleButton = cx(
-    buttonBase,
+  const subtleButtonClass = cx(
+    buttonBaseClass,
     css`
       background: #f3f4f6;
       color: #111827;
@@ -112,8 +112,8 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     `
   );
 
-  const dangerButton = cx(
-    buttonBase,
+  const dangerButtonClass = cx(
+    buttonBaseClass,
     css`
       background: #ef4444;
       color: #fff;
@@ -128,8 +128,8 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     `
   );
 
-  const addButton = cx(
-    buttonBase,
+  const addButtonClass = cx(
+    buttonBaseClass,
     css`
       background: #2563eb;
       color: #fff;
@@ -142,41 +142,41 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
 
   return (
     <div>
-      <h2 class={title}>パスキー管理</h2>
+      <h2 class={titleClass}>パスキー管理</h2>
       {passkeys.length === 0 ? (
         <p>登録されているパスキーはありません。</p>
       ) : (
-        <ul class={list}>
+        <ul class={listClass}>
           {passkeys.map((passkey) => {
             const { browser, os } = parseUserAgent(passkey.userAgent);
             const iconSrc = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
             return (
-              <li key={passkey.id} class={item}>
+              <li key={passkey.id} class={itemClass}>
                 {passkey.backedUp ? (
-                  <span class={badgeSynced}>Synced</span>
+                  <span class={badgeSyncedClass}>Synced</span>
                 ) : (
-                  <span class={badgeUnsynced}>Unsynced</span>
+                  <span class={badgeUnsyncedClass}>Unsynced</span>
                 )}
-                <div class={rowTop}>
+                <div class={rowTopClass}>
                   {iconSrc ? (
-                    <img decoding="async" class={icon} src={iconSrc} alt="" />
+                    <img decoding="async" class={iconClass} src={iconSrc} alt="" />
                   ) : (
                     <span aria-hidden="true"></span>
                   )}
-                  <p class={name}>{passkey.name}</p>
+                  <p class={nameClass}>{passkey.name}</p>
                   <span aria-hidden="true"></span>
                 </div>
 
-                <div class={rowActions}>
+                <div class={rowActionsClass}>
                   <button
                     id="change-passkey-name-btn"
-                    class={subtleButton}
+                    class={subtleButtonClass}
                     onclick={`handleChangePasskeyName("${passkey.id}")`}
                   >
                     変更
                   </button>
                   <button
-                    class={dangerButton}
+                    class={dangerButtonClass}
                     onclick={`handleDeletePasskey("${passkey.id}");`}
                     disabled={!canDelete}
                   >
@@ -184,7 +184,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
                   </button>
                 </div>
 
-                <p class={meta}>
+                <p class={metaClass}>
                   登録日時: {passkey.createdAt.toLocaleString()} by {browser} on {os}
                 </p>
               </li>
@@ -193,7 +193,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
         </ul>
       )}
 
-      <button class={addButton} onclick="handleRegistration(false)">
+      <button class={addButtonClass} onclick="handleRegistration(false)">
         パスキー追加
       </button>
       <script src="/public/changePasskeyName.ts"></script>
