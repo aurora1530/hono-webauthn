@@ -1,17 +1,17 @@
 import { createMiddleware } from 'hono/factory';
 import { getRedis } from '../redis.js';
-import { generateSessionID, type SessionService } from '../session.js';
+import { generateSessionID, type SessionStore } from '../session.js';
 import { getCookie, setCookie } from 'hono/cookie';
 import { cookieOptions } from './cookie-options.js';
 
 
 type UserData = { userID: string; username: string };
-export type LoginSessionService = SessionService<UserData>;
+export type LoginSessionStore = SessionStore<UserData>;
 export const LOGIN_SESSION_COOKIE_NAME = 'ls';
 
 
 const TTL_SEC = 60 * 60 * 24 * 7; // 1 week
-const createLoginSessionService = async (): Promise<LoginSessionService> => {
+const createLoginSessionStore = async (): Promise<LoginSessionStore> => {
   const redis = await getRedis();
   const KEY = (sessionID: string) => `login:${sessionID}`;
   return {
@@ -46,14 +46,14 @@ const createLoginSessionService = async (): Promise<LoginSessionService> => {
   }
 }
 
-const loginSessionService = await createLoginSessionService();
+const loginSessionStore = await createLoginSessionStore();
 
 export const loginSessionMiddleware = createMiddleware(async (c, next) => {
-  c.set('loginSessionStore', loginSessionService);
+  c.set('loginSessionStore', loginSessionStore);
 
   let sessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
-  if (!sessionID || !await loginSessionService.refresh(sessionID)) {
-    sessionID = await loginSessionService.createSession();
+  if (!sessionID || !await loginSessionStore.refresh(sessionID)) {
+    sessionID = await loginSessionStore.createSession();
     setCookie(c, LOGIN_SESSION_COOKIE_NAME, sessionID, cookieOptions);
   }
 
