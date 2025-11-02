@@ -9,6 +9,7 @@ import AuthPage from '../../components/auth/AuthPage.js';
 import authPageRenderer from './renderer.js';
 import PasskeyManagement from '../../components/auth/PasskeyManagemet.js';
 import { setCookie } from 'hono/cookie';
+import { loginSessionController } from '../../lib/auth/loginSession.js';
 
 const authApp = new Hono();
 
@@ -22,8 +23,7 @@ authApp
     })
   })
   .get('/logout', async (c) => {
-    const loginSessionStore = c.get('loginSessionStore');
-    await loginSessionStore.destroy(c.get('loginSessionID'));
+    await loginSessionController.setLoggedOut(c);
     return c.redirect('/');
   })
   .get('/login', (c) => {
@@ -85,8 +85,7 @@ authApp
     }
   )
   .get('/passkey-management', async (c) => {
-    const loginSessionStore = c.get('loginSessionStore');
-    const userData = await loginSessionStore.get(c.get('loginSessionID'));
+    const userData = await loginSessionController.getUserData(c);
     if (!userData) {
       return c.redirect('/auth/login');
     }

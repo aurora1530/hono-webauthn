@@ -1,11 +1,11 @@
 import { css, cx } from 'hono/css';
 import type { FC } from 'hono/jsx';
 import { useRequestContext } from 'hono/jsx-renderer';
+import { loginSessionController } from '../../lib/auth/loginSession.js';
 
 const AuthPage: FC = async () => {
   const c = useRequestContext();
-  const loginSession = c.get('loginSessionStore');
-  const userData = await loginSession.get(c.get('loginSessionID'));
+  const userData = await loginSessionController.getUserData(c);
 
   const titleClass = css`
     font-size: 24px;

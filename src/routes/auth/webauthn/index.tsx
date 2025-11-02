@@ -16,15 +16,13 @@ import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
 import { aaguidToNameAndIcon } from '../../../lib/auth/aaguid/parse.js';
 import { validator } from 'hono/validator';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
-import { LOGIN_SESSION_COOKIE_NAME } from '../../../lib/auth/loginSession.js';
+import { loginSessionController } from '../../../lib/auth/loginSession.js';
 
 const webauthnApp = new Hono();
 
 webauthnApp
   .get('/registration/generate', async (c) => {
-    const loginSessionStore = c.get('loginSessionStore');
-    const loginSessionID = c.get('loginSessionID');
-    const loginSessionData = await loginSessionStore.get(loginSessionID);
+    const loginSessionData = await loginSessionController.getUserData(c);
     const userData =
       loginSessionData ??
       (await webauthnSessionStores.registrationInit.get(
@@ -78,15 +76,12 @@ webauthnApp
     return c.json(options);
   })
   .post('/registration/verify', async (c) => {
-    const loginSessionStore = c.get('loginSessionStore');
-    const loginSessionID = c.get('loginSessionID');
     const webauthnRegistrationSession = await webauthnSessionStores.registration.get(
       getCookie(c, 'webauthn-registration') || ''
     );
     deleteCookie(c, 'webauthn-registration');
 
     if (!webauthnRegistrationSession?.user || !webauthnRegistrationSession.challenge) {
-      await loginSessionStore.destroy(loginSessionID);
       return c.json(
         {
           success: false,
@@ -107,7 +102,6 @@ webauthnApp
       });
     } catch (e) {
       console.error(e);
-      await loginSessionStore.destroy(loginSessionID);
       return c.json(
         {
           success: false,
@@ -130,7 +124,7 @@ webauthnApp
     }
 
     // 新規作成ならユーザを作成し、既存ユーザならセッションからIDを取得
-    let userID = (await loginSessionStore.get(loginSessionID))?.userID;
+    let userID = (await loginSessionController.getUserData(c))?.userID;
     if (!userID) {
       // 存在しないユーザ名であることは既に確認済み
       const user = await prisma.user.create({
@@ -169,8 +163,7 @@ webauthnApp
     });
   })
   .get('/authentication/generate', async (c) => {
-    const loginSessionStore = c.get('loginSessionStore');
-    if (await loginSessionStore.get(c.get('loginSessionID'))) {
+    if (await loginSessionController.getUserData(c)) {
       return c.json({
         success: true,
       });
@@ -284,15 +277,10 @@ webauthnApp
       );
     }
 
-    const loginSessionStore = c.get('loginSessionStore');
-    const currentSessionID = c.get('loginSessionID');
-    await loginSessionStore.destroy(currentSessionID);
-    const newSessionID = await loginSessionStore.createSession();
-    await loginSessionStore.set(newSessionID, {
+    await loginSessionController.setLoggedIn(c, {
       userID: user.id,
       username: user.name,
     });
-    setCookie(c, LOGIN_SESSION_COOKIE_NAME, newSessionID);
 
     return c.json({
       success: true,
@@ -329,8 +317,7 @@ webauthnApp
       };
     }),
     async (c) => {
-      const loginSessionStore = c.get('loginSessionStore');
-      const userData = await loginSessionStore.get(c.get('loginSessionID'));
+      const userData = await loginSessionController.getUserData(c);
       if (!userData) {
         return c.json(
           {
@@ -389,8 +376,7 @@ webauthnApp
       return { passkeyId };
     }),
     async (c) => {
-      const loginSessionStore = c.get('loginSessionStore');
-      const userData = await loginSessionStore.get(c.get('loginSessionID'));
+      const userData = await loginSessionController.getUserData(c);
       if (!userData) {
         return c.json(
           {

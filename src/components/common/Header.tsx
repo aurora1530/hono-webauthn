@@ -1,11 +1,11 @@
 import { css, Style } from 'hono/css';
 import type { FC } from 'hono/jsx';
 import { useRequestContext } from 'hono/jsx-renderer';
+import { loginSessionController } from '../../lib/auth/loginSession.js';
 
 const Header: FC = async () => {
   const c = useRequestContext();
-  const loginSessionStore = c.get('loginSessionStore');
-  const username = (await loginSessionStore.get(c.get('loginSessionID')))?.username;
+  const username = (await loginSessionController.getUserData(c))?.username;
 
   const headerClass = css`
     background-color: #f0f0f0;
