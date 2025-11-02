@@ -1,5 +1,5 @@
 import { getRedis } from "./redis.js";
-import { generateSessionID, type SessionStore } from "./session.js";
+import { generateSessionID, type SessionStore } from "../session.js";
 
 type RedisSessionStoreOptions<T = Record<string, unknown>> = {
   prefix: string;

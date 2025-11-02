@@ -2,7 +2,7 @@ import { createMiddleware } from 'hono/factory';
 import { type SessionStore } from '../session.js';
 import { getCookie, setCookie } from 'hono/cookie';
 import { cookieOptions } from './cookie-options.js';
-import { createRedisSessionStore } from '../redis-session.js';
+import { createRedisSessionStore } from '../redis/redis-session.js';
 
 
 type UserData = { userID: string; username: string };
