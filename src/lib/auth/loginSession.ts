@@ -4,9 +4,14 @@ import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { cookieOptions } from './cookie-options.js';
 import { createRedisSessionStore } from '../redis/redis-session.js';
 import type { Context } from 'hono';
+import z from 'zod';
 
 
-type UserData = { userID: string; username: string };
+const UserDataSchema = z.object({
+  userID: z.string(),
+  username: z.string()
+})
+type UserData = z.infer<typeof UserDataSchema>;
 type LoginSessionStore = SessionStore<UserData>;
 
 const LOGIN_SESSION_COOKIE_NAME = 'ls';
@@ -16,13 +21,8 @@ const loginSessionStore = await createRedisSessionStore<UserData>({
   prefix: 'login',
   ttlSec: TTL_SEC,
   dataParser: (data: unknown) => {
-    if (data && typeof data === 'object' && 'userID' in data && 'username' in data && typeof data.userID === 'string' && typeof data.username === 'string') {
-      return {
-        userID: data.userID,
-        username: data.username
-      }
-    }
-    return undefined;
+    const parsed = UserDataSchema.safeParse(data);
+    return parsed.success ? parsed.data : undefined;
   }
 });
 

@@ -1,70 +1,54 @@
 import type { Context } from 'hono';
 import { createRedisSessionStore } from '../redis/redis-session.js';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
+import z from 'zod';
 
-type WebAuthnRegistrationGenerateSessionData = {
-  username: string;
-};
+const WebAuthnRegistrationGenerateSessionDataSchema = z.object({
+  username: z.string()
+});
+
+type WebAuthnRegistrationGenerateSessionData = z.infer<typeof WebAuthnRegistrationGenerateSessionDataSchema>;
 
 const webAuthnRegistrationGenerateSessionStore = await createRedisSessionStore<WebAuthnRegistrationGenerateSessionData>({
   prefix: 'webauthn-registration-init',
   ttlSec: 60 * 5, // 5 minutes
   dataParser: (data: unknown) => {
-    if (data && typeof data === 'object' && 'username' in data && typeof data.username === 'string') {
-      return {
-        username: data.username
-      }
-    }
-    return undefined;
+    const parsed = WebAuthnRegistrationGenerateSessionDataSchema.safeParse(data);
+    return parsed.success ? parsed.data : undefined;
   }
 });
 
-type WebAuthnRegistrationVerifySessionData = {
-  challenge: string;
-  user: {
-    id: string;
-    name: string;
-  };
-};
+const WebAuthnRegistrationVerifySessionDataSchema = z.object({
+  challenge: z.string(),
+  user: z.object({
+    id: z.string(),
+    name: z.string()
+  })
+});
+
+type WebAuthnRegistrationVerifySessionData = z.infer<typeof WebAuthnRegistrationVerifySessionDataSchema>;
 
 const webAuthnRegistrationVerifySessionStore = await createRedisSessionStore<WebAuthnRegistrationVerifySessionData>({
   prefix: 'webauthn-registration',
   ttlSec: 60 * 5, // 5 minutes
   dataParser: (data: unknown) => {
-    if (data && typeof data === 'object' && 'challenge' in data && 'user' in data &&
-      typeof data.challenge === 'string' &&
-      typeof data.user === 'object' &&
-      data.user !== null &&
-      'id' in data.user &&
-      'name' in data.user &&
-      typeof data.user.id === 'string' &&
-      typeof data.user.name === 'string') {
-      return {
-        challenge: data.challenge,
-        user: {
-          id: data.user.id,
-          name: data.user.name
-        }
-      }
-    }
-    return undefined;
+    const parsed = WebAuthnRegistrationVerifySessionDataSchema.safeParse(data);
+    return parsed.success ? parsed.data : undefined;
   }
 });
 
-type WebAuthnAuthenticationVerifySessionData = {
-  challenge: string;
-};
+const WebAuthnAuthenticationVerifySessionDataSchema = z.object({
+  challenge: z.string()
+});
+
+type WebAuthnAuthenticationVerifySessionData = z.infer<typeof WebAuthnAuthenticationVerifySessionDataSchema>;
 
 const webAuthnAuthenticationVerifySessionStore = await createRedisSessionStore<WebAuthnAuthenticationVerifySessionData>({
   prefix: 'webauthn-authentication',
   ttlSec: 60 * 5, // 5 minutes
   dataParser: (data: unknown) => {
-    if (data && typeof data === 'object' && 'challenge' in data && typeof data.challenge === 'string') {
-      return {
-        challenge: data.challenge
-      }
-    }
-    return undefined;
+    const parsed = WebAuthnAuthenticationVerifySessionDataSchema.safeParse(data);
+    return parsed.success ? parsed.data : undefined;
   }
 });
 
