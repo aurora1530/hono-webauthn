@@ -4,12 +4,11 @@ import { validator } from 'hono/validator';
 import prisma from '../../prisma.js';
 import webauthnApp from './webauthn/index.js';
 import LoginForm from '../../components/auth/LoginForm.js';
-import { webauthnSessionStores } from '../../lib/auth/webauthnSession.js';
 import AuthPage from '../../components/auth/AuthPage.js';
 import authPageRenderer from './renderer.js';
 import PasskeyManagement from '../../components/auth/PasskeyManagemet.js';
-import { setCookie } from 'hono/cookie';
 import { loginSessionController } from '../../lib/auth/loginSession.js';
+import { webauthnSessionController } from '../../lib/auth/webauthnSession.js';
 
 const authApp = new Hono();
 
@@ -73,11 +72,9 @@ authApp
         );
       }
 
-      const newSessionID = await webauthnSessionStores.registrationInit.createSession();
-      await webauthnSessionStores.registrationInit.set(newSessionID, {
+      await webauthnSessionController.registration.generate.create(c, {
         username: username,
       });
-      setCookie(c, 'webauthn-registration-init', newSessionID);
 
       return c.json({
         success: true,

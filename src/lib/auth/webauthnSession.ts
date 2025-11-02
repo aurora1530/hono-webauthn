@@ -1,10 +1,12 @@
+import type { Context } from 'hono';
 import { createRedisSessionStore } from '../redis/redis-session.js';
+import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 
-type WebAuthnRegistrationInitSessionData = {
+type WebAuthnRegistrationGenerateSessionData = {
   username: string;
 };
 
-const webAuthnRegistrationInitSessionStore = await createRedisSessionStore<WebAuthnRegistrationInitSessionData>({
+const webAuthnRegistrationGenerateSessionStore = await createRedisSessionStore<WebAuthnRegistrationGenerateSessionData>({
   prefix: 'webauthn-registration-init',
   ttlSec: 60 * 5, // 5 minutes
   dataParser: (data: unknown) => {
@@ -17,7 +19,7 @@ const webAuthnRegistrationInitSessionStore = await createRedisSessionStore<WebAu
   }
 });
 
-type WebAuthnRegistrationSessionData = {
+type WebAuthnRegistrationVerifySessionData = {
   challenge: string;
   user: {
     id: string;
@@ -25,7 +27,7 @@ type WebAuthnRegistrationSessionData = {
   };
 };
 
-const webAuthnRegistrationSessionStore = await createRedisSessionStore<WebAuthnRegistrationSessionData>({
+const webAuthnRegistrationVerifySessionStore = await createRedisSessionStore<WebAuthnRegistrationVerifySessionData>({
   prefix: 'webauthn-registration',
   ttlSec: 60 * 5, // 5 minutes
   dataParser: (data: unknown) => {
@@ -49,11 +51,11 @@ const webAuthnRegistrationSessionStore = await createRedisSessionStore<WebAuthnR
   }
 });
 
-type WebAuthnAuthenticationSessionData = {
+type WebAuthnAuthenticationVerifySessionData = {
   challenge: string;
 };
 
-const webAuthnAuthenticationSessionStore = await createRedisSessionStore<WebAuthnAuthenticationSessionData>({
+const webAuthnAuthenticationVerifySessionStore = await createRedisSessionStore<WebAuthnAuthenticationVerifySessionData>({
   prefix: 'webauthn-authentication',
   ttlSec: 60 * 5, // 5 minutes
   dataParser: (data: unknown) => {
@@ -67,14 +69,111 @@ const webAuthnAuthenticationSessionStore = await createRedisSessionStore<WebAuth
 });
 
 interface WebAuthnSessionStores {
-  registrationInit: typeof webAuthnRegistrationInitSessionStore;
-  registration: typeof webAuthnRegistrationSessionStore;
-  authentication: typeof webAuthnAuthenticationSessionStore;
+  registration: {
+    generate: typeof webAuthnRegistrationGenerateSessionStore;
+    verify: typeof webAuthnRegistrationVerifySessionStore;
+  };
+  authentication: {
+    verify: typeof webAuthnAuthenticationVerifySessionStore;
+  }
 }
 
-export const webauthnSessionStores: WebAuthnSessionStores = {
-  registrationInit: webAuthnRegistrationInitSessionStore,
-  registration: webAuthnRegistrationSessionStore,
-  authentication: webAuthnAuthenticationSessionStore
+const webauthnSessionStores: WebAuthnSessionStores = {
+  registration: {
+    generate: webAuthnRegistrationGenerateSessionStore,
+    verify: webAuthnRegistrationVerifySessionStore
+  },
+  authentication: {
+    verify: webAuthnAuthenticationVerifySessionStore
+  }
 };
 
+interface WebAuthnSessionController {
+  registration: {
+    generate: {
+      create(c: Context, data: WebAuthnRegistrationGenerateSessionData): Promise<string>;
+      get(c: Context): Promise<WebAuthnRegistrationGenerateSessionData | undefined>;
+    },
+    verify: {
+      create(c: Context, data: WebAuthnRegistrationVerifySessionData): Promise<string>;
+      get(c: Context): Promise<WebAuthnRegistrationVerifySessionData | undefined>;
+    }
+  },
+  authentication: {
+    verify: {
+      create(c: Context, data: WebAuthnAuthenticationVerifySessionData): Promise<string>;
+      get(c: Context): Promise<WebAuthnAuthenticationVerifySessionData | undefined>;
+    }
+  }
+}
+
+const WEBAUTHN_SESSION_COOKIE_NAMES = {
+  registrationGenerate: 'webauthn-r-g',
+  registrationVerify: 'webauthn-r-v',
+  authenticationVerify: 'webauthn-a-v'
+}
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'Lax' as const,
+  maxAge: 60 * 5 // 5 minutes
+};
+
+const createWebAuthnSessionController = (stores: WebAuthnSessionStores): WebAuthnSessionController => {
+  return {
+    registration: {
+      generate: {
+        create: async (c: Context, data: WebAuthnRegistrationGenerateSessionData) => {
+          const sessionID = await stores.registration.generate.createSession();
+          await stores.registration.generate.set(sessionID, data);
+          setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate, sessionID, COOKIE_OPTIONS);
+          return sessionID;
+        },
+        get: async (c: Context) => {
+          const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate);
+          if (!sessionID) return undefined;
+          const data = await stores.registration.generate.get(sessionID);
+          await stores.registration.generate.destroy(sessionID);
+          deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate, COOKIE_OPTIONS);
+          return data;
+        }
+      },
+      verify: {
+        create: async (c: Context, data: WebAuthnRegistrationVerifySessionData) => {
+          const sessionID = await stores.registration.verify.createSession();
+          await stores.registration.verify.set(sessionID, data);
+          setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify, sessionID, COOKIE_OPTIONS);
+          return sessionID;
+        },
+        get: async (c: Context) => {
+          const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify);
+          if (!sessionID) return undefined;
+          const data = await stores.registration.verify.get(sessionID);
+          await stores.registration.verify.destroy(sessionID);
+          deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify, COOKIE_OPTIONS);
+          return data;
+        }
+      }
+    },
+    authentication: {
+      verify: {
+        create: async (c: Context, data: WebAuthnAuthenticationVerifySessionData) => {
+          const sessionID = await stores.authentication.verify.createSession();
+          await stores.authentication.verify.set(sessionID, data);
+          setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify, sessionID, COOKIE_OPTIONS);
+          return sessionID;
+        },
+        get: async (c: Context) => {
+          const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify);
+          if (!sessionID) return undefined;
+          const data = await stores.authentication.verify.get(sessionID);
+          await stores.authentication.verify.destroy(sessionID);
+          deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify, COOKIE_OPTIONS);
+          return data;
+        }
+      }
+    }
+  }
+}
+
+export const webauthnSessionController = createWebAuthnSessionController(webauthnSessionStores);

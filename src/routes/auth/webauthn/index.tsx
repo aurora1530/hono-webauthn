@@ -11,11 +11,10 @@ import {
 } from '@simplewebauthn/server';
 import { isoUint8Array } from '@simplewebauthn/server/helpers';
 import { origin, rpID, rpName } from '../../../constant.js';
-import { webauthnSessionStores } from '../../../lib/auth/webauthnSession.js';
+import { webauthnSessionController } from '../../../lib/auth/webauthnSession.js';
 import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
 import { aaguidToNameAndIcon } from '../../../lib/auth/aaguid/parse.js';
 import { validator } from 'hono/validator';
-import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { loginSessionController } from '../../../lib/auth/loginSession.js';
 
 const webauthnApp = new Hono();
@@ -23,13 +22,11 @@ const webauthnApp = new Hono();
 webauthnApp
   .get('/registration/generate', async (c) => {
     const loginSessionData = await loginSessionController.getUserData(c);
-    const userData =
-      loginSessionData ??
-      (await webauthnSessionStores.registrationInit.get(
-        getCookie(c, 'webauthn-registration-init') || ''
-      ));
-    deleteCookie(c, 'webauthn-registration-init');
-    if (!userData?.username) {
+    const username =
+      loginSessionData?.username ??
+      (await webauthnSessionController.registration.generate.get(c))?.username;
+
+    if (!username) {
       return c.json(
         {
           success: false,
@@ -56,8 +53,8 @@ webauthnApp
       await generateRegistrationOptions({
         rpID,
         rpName,
-        userName: userData.username,
-        userDisplayName: userData.username,
+        userName: username,
+        userDisplayName: username,
         userID: savedWebAuthnUserId
           ? isoUint8Array.fromUTF8String(savedWebAuthnUserId)
           : undefined,
@@ -69,17 +66,13 @@ webauthnApp
         }),
       });
 
-    const newSessionID = await webauthnSessionStores.registration.createSession();
-    await webauthnSessionStores.registration.set(newSessionID, options);
-    setCookie(c, 'webauthn-registration', newSessionID);
+    await webauthnSessionController.registration.verify.create(c, options);
 
     return c.json(options);
   })
   .post('/registration/verify', async (c) => {
-    const webauthnRegistrationSession = await webauthnSessionStores.registration.get(
-      getCookie(c, 'webauthn-registration') || ''
-    );
-    deleteCookie(c, 'webauthn-registration');
+    const webauthnRegistrationSession =
+      await webauthnSessionController.registration.verify.get(c);
 
     if (!webauthnRegistrationSession?.user || !webauthnRegistrationSession.challenge) {
       return c.json(
@@ -174,19 +167,13 @@ webauthnApp
         rpID,
       });
 
-    const newWebAuthnSessionID =
-      await webauthnSessionStores.authentication.createSession();
-    await webauthnSessionStores.authentication.set(newWebAuthnSessionID, options);
-    setCookie(c, 'webauthn-authentication', newWebAuthnSessionID);
+    await webauthnSessionController.authentication.verify.create(c, options);
 
     return c.json(options);
   })
   .post('/authentication/verify', async (c) => {
     const { challenge: savedChallenge } =
-      (await webauthnSessionStores.authentication.get(
-        getCookie(c, 'webauthn-authentication') || ''
-      )) || {};
-    deleteCookie(c, 'webauthn-authentication');
+      (await webauthnSessionController.authentication.verify.get(c)) || {};
     if (!savedChallenge) {
       return c.json(
         {
