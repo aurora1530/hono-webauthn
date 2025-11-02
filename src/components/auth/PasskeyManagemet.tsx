@@ -2,6 +2,7 @@ import type { Passkey } from '@prisma/client';
 import type { FC } from 'hono/jsx';
 import { css, cx } from 'hono/css';
 import parseUserAgent from '../../lib/auth/useragent.js';
+import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
 
 const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
   const canDelete = passkeys.length > 1;
@@ -26,12 +27,34 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     border-radius: 8px;
     padding: 12px 14px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 8px;
+  `;
+
+  const rowTop = css`
+    display: grid;
+    grid-template-columns: 24px 1fr 24px;
     align-items: center;
+    column-gap: 8px;
+  `;
+
+  const rowActions = css`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-items: center;
+    align-items: center;
+    width: 100%;
+  `;
+
+  const icon = css`
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
   `;
 
   const name = css`
     font-weight: 600;
+    text-align: center;
   `;
 
   const meta = css`
@@ -97,10 +120,20 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
         <ul class={list}>
           {passkeys.map((passkey) => {
             const { browser, os } = parseUserAgent(passkey.userAgent);
+            const icon = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
             return (
               <li key={passkey.id} class={item}>
-                <div>
+                <div class={rowTop}>
+                  {icon ? (
+                    <img decoding="async" class={icon} src={icon} />
+                  ) : (
+                    <span aria-hidden="true"></span>
+                  )}
                   <p class={name}>{passkey.name}</p>
+                  <span aria-hidden="true"></span>
+                </div>
+
+                <div class={rowActions}>
                   <button
                     id="change-passkey-name-btn"
                     class={subtleButton}
@@ -108,24 +141,27 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
                   >
                     変更
                   </button>
-                  <p class={meta}>
-                    登録日時: {passkey.createdAt.toLocaleString()} by {browser} on {os}
-                  </p>
+                  <button
+                    class={dangerButton}
+                    onclick={`handleDeletePasskey("${passkey.id}");`}
+                    disabled={!canDelete}
+                  >
+                    削除
+                  </button>
                 </div>
-                <button
-                  class={dangerButton}
-                  onclick={`handleDeletePasskey("${passkey.id}");`}
-                  disabled={!canDelete}
-                >
-                  削除
-                </button>
+
+                <p class={meta}>
+                  登録日時: {passkey.createdAt.toLocaleString()} by {browser} on {os}
+                </p>
               </li>
             );
           })}
         </ul>
       )}
 
-      <button class={addButton} onclick="handleRegistration(false)">パスキー追加</button>
+      <button class={addButton} onclick="handleRegistration(false)">
+        パスキー追加
+      </button>
       <script src="/public/changePasskeyName.ts"></script>
       <script src="/public/deletePasskey.ts"></script>
     </div>
@@ -133,4 +169,3 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
 };
 
 export default PasskeyManagement;
-
