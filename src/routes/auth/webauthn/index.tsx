@@ -16,6 +16,7 @@ import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
 import { aaguidToNameAndIcon } from '../../../lib/auth/aaguid/parse.js';
 import { validator } from 'hono/validator';
 import { loginSessionController } from '../../../lib/auth/loginSession.js';
+import z from 'zod';
 
 const webauthnApp = new Hono();
 
@@ -276,32 +277,21 @@ webauthnApp
   .post(
     '/change-passkey-name',
     validator('json', (value, c) => {
-      const passkeyId = value['passkeyId'];
-      const newName = value['newName'];
-      if (!passkeyId || typeof passkeyId !== 'string') {
+      const parsed = z.object({
+        passkeyId: z.string(),
+        newName: z.string(),
+      }).safeParse(value);
+      if (!parsed.success) {
         return c.json(
           {
             success: false,
-            message: 'パスキーIDが不正です。',
+            message: 'リクエストが不正です。',
           },
           400
         );
       }
 
-      if (!newName || typeof newName !== 'string') {
-        return c.json(
-          {
-            success: false,
-            message: '新しいパスキー名が不正です。',
-          },
-          400
-        );
-      }
-
-      return {
-        passkeyId,
-        newName,
-      };
+      return parsed.data;
     }),
     async (c) => {
       const userData = await loginSessionController.getUserData(c);
@@ -350,17 +340,18 @@ webauthnApp
   .post(
     '/delete-passkey',
     validator('json', (value, c) => {
-      const passkeyId = value['passkeyId'];
-      if (!passkeyId || typeof passkeyId !== 'string') {
+      const parsed = z.object({ passkeyId: z.string() }).safeParse(value);
+      if (!parsed.success) {
         return c.json(
           {
             success: false,
-            message: 'パスキーIDが不正です。',
+            message: 'リクエストが不正です。',
           },
           400
         );
       }
-      return { passkeyId };
+
+      return parsed.data;
     }),
     async (c) => {
       const userData = await loginSessionController.getUserData(c);

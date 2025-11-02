@@ -9,6 +9,7 @@ import authPageRenderer from './renderer.js';
 import PasskeyManagement from '../../components/auth/PasskeyManagemet.js';
 import { loginSessionController } from '../../lib/auth/loginSession.js';
 import { webauthnSessionController } from '../../lib/auth/webauthnSession.js';
+import z from 'zod';
 
 const authApp = new Hono();
 
@@ -38,8 +39,8 @@ authApp
   .post(
     '/register',
     validator('json', (value, c) => {
-      const username = value['username'];
-      if (!username || typeof username !== 'string') {
+      const parsed = z.object({ username: z.string()}).safeParse(value)
+      if (!parsed.success) {
         return c.json(
           {
             success: false,
@@ -49,9 +50,7 @@ authApp
         );
       }
 
-      return {
-        username: username,
-      };
+      return parsed.data;
     }),
     async (c) => {
       const { username } = c.req.valid('json');
