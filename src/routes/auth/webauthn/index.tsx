@@ -189,7 +189,7 @@ webauthnApp
 
     const savedPasskey = await prisma.passkey.findFirst({
       where: {
-        id: body.id,
+        id: body?.id,
       },
     });
 
