@@ -72,7 +72,7 @@ authApp
         );
       }
 
-      await webauthnSessionController.registration.generate.create(c, {
+      await webauthnSessionController.registration.generate.initialize(c, {
         username: username,
       });
 

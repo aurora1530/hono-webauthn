@@ -24,7 +24,7 @@ webauthnApp
     const loginSessionData = await loginSessionController.getUserData(c);
     const username =
       loginSessionData?.username ??
-      (await webauthnSessionController.registration.generate.get(c))?.username;
+      (await webauthnSessionController.registration.generate.extractSessionData(c))?.username;
 
     if (!username) {
       return c.json(
@@ -66,13 +66,13 @@ webauthnApp
         }),
       });
 
-    await webauthnSessionController.registration.verify.create(c, options);
+    await webauthnSessionController.registration.verify.initialize(c, options);
 
     return c.json(options);
   })
   .post('/registration/verify', async (c) => {
     const webauthnRegistrationSession =
-      await webauthnSessionController.registration.verify.get(c);
+      await webauthnSessionController.registration.verify.extractSessionData(c);
 
     if (!webauthnRegistrationSession?.user || !webauthnRegistrationSession.challenge) {
       return c.json(
@@ -167,13 +167,13 @@ webauthnApp
         rpID,
       });
 
-    await webauthnSessionController.authentication.verify.create(c, options);
+    await webauthnSessionController.authentication.verify.initialize(c, options);
 
     return c.json(options);
   })
   .post('/authentication/verify', async (c) => {
     const { challenge: savedChallenge } =
-      (await webauthnSessionController.authentication.verify.get(c)) || {};
+      (await webauthnSessionController.authentication.verify.extractSessionData(c)) || {};
     if (!savedChallenge) {
       return c.json(
         {

@@ -88,23 +88,19 @@ const webauthnSessionStores: WebAuthnSessionStores = {
   }
 };
 
+interface SessionDataHandler<T extends object> {
+  initialize(c: Context, data: T): Promise<string>;
+  extractSessionData(c: Context): Promise<T | undefined>;
+}
+
 interface WebAuthnSessionController {
   registration: {
-    generate: {
-      create(c: Context, data: WebAuthnRegistrationGenerateSessionData): Promise<string>;
-      get(c: Context): Promise<WebAuthnRegistrationGenerateSessionData | undefined>;
-    },
-    verify: {
-      create(c: Context, data: WebAuthnRegistrationVerifySessionData): Promise<string>;
-      get(c: Context): Promise<WebAuthnRegistrationVerifySessionData | undefined>;
-    }
-  },
+    generate: SessionDataHandler<WebAuthnRegistrationGenerateSessionData>;
+    verify: SessionDataHandler<WebAuthnRegistrationVerifySessionData>;
+  };
   authentication: {
-    verify: {
-      create(c: Context, data: WebAuthnAuthenticationVerifySessionData): Promise<string>;
-      get(c: Context): Promise<WebAuthnAuthenticationVerifySessionData | undefined>;
-    }
-  }
+    verify: SessionDataHandler<WebAuthnAuthenticationVerifySessionData>;
+  };
 }
 
 const WEBAUTHN_SESSION_COOKIE_NAMES = {
@@ -123,13 +119,13 @@ const createWebAuthnSessionController = (stores: WebAuthnSessionStores): WebAuth
   return {
     registration: {
       generate: {
-        create: async (c: Context, data: WebAuthnRegistrationGenerateSessionData) => {
+        initialize: async (c: Context, data: WebAuthnRegistrationGenerateSessionData) => {
           const sessionID = await stores.registration.generate.createSession();
           await stores.registration.generate.set(sessionID, data);
           setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate, sessionID, COOKIE_OPTIONS);
           return sessionID;
         },
-        get: async (c: Context) => {
+        extractSessionData: async (c: Context) => {
           const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate);
           if (!sessionID) return undefined;
           const data = await stores.registration.generate.get(sessionID);
@@ -139,13 +135,13 @@ const createWebAuthnSessionController = (stores: WebAuthnSessionStores): WebAuth
         }
       },
       verify: {
-        create: async (c: Context, data: WebAuthnRegistrationVerifySessionData) => {
+        initialize: async (c: Context, data: WebAuthnRegistrationVerifySessionData) => {
           const sessionID = await stores.registration.verify.createSession();
           await stores.registration.verify.set(sessionID, data);
           setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify, sessionID, COOKIE_OPTIONS);
           return sessionID;
         },
-        get: async (c: Context) => {
+        extractSessionData: async (c: Context) => {
           const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify);
           if (!sessionID) return undefined;
           const data = await stores.registration.verify.get(sessionID);
@@ -157,13 +153,13 @@ const createWebAuthnSessionController = (stores: WebAuthnSessionStores): WebAuth
     },
     authentication: {
       verify: {
-        create: async (c: Context, data: WebAuthnAuthenticationVerifySessionData) => {
+        initialize: async (c: Context, data: WebAuthnAuthenticationVerifySessionData) => {
           const sessionID = await stores.authentication.verify.createSession();
           await stores.authentication.verify.set(sessionID, data);
           setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify, sessionID, COOKIE_OPTIONS);
           return sessionID;
         },
-        get: async (c: Context) => {
+        extractSessionData: async (c: Context) => {
           const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify);
           if (!sessionID) return undefined;
           const data = await stores.authentication.verify.get(sessionID);
