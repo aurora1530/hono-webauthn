@@ -29,6 +29,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    position: relative;
   `;
 
   const rowTop = css`
@@ -61,6 +62,34 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     font-size: 12px;
     color: #6b7280;
     margin-top: 4px;
+  `;
+
+  const badgeSynced = css`
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #ecfdf5; /* green-50 */
+    color: #065f46; /* green-800 */
+    border: 1px solid #a7f3d0; /* green-200 */
+    border-radius: 9999px; /* pill */
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+  `;
+
+  const badgeUnsynced = css`
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #fffbeb; /* amber-50 */
+    color: #92400e; /* amber-800 */
+    border: 1px solid #fde68a; /* amber-300 */
+    border-radius: 9999px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
   `;
 
   const buttonBase = css`
@@ -120,12 +149,17 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
         <ul class={list}>
           {passkeys.map((passkey) => {
             const { browser, os } = parseUserAgent(passkey.userAgent);
-            const icon = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
+            const iconSrc = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
             return (
               <li key={passkey.id} class={item}>
+                {passkey.backedUp ? (
+                  <span class={badgeSynced}>Synced</span>
+                ) : (
+                  <span class={badgeUnsynced}>Unsynced</span>
+                )}
                 <div class={rowTop}>
-                  {icon ? (
-                    <img decoding="async" class={icon} src={icon} />
+                  {iconSrc ? (
+                    <img decoding="async" class={icon} src={iconSrc} alt="" />
                   ) : (
                     <span aria-hidden="true"></span>
                   )}
