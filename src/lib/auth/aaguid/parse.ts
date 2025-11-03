@@ -7,7 +7,7 @@ const aaguidSchema = z.object({
   icon_light: z.url().optional(),
 });
 
-const aaguidJsonSchema = z.record(z.string(), aaguidSchema);
+export const aaguidJsonSchema = z.record(z.string(), aaguidSchema);
 
 type AAGUID = z.infer<typeof aaguidSchema>;
 
