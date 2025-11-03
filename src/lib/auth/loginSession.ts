@@ -60,10 +60,10 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
 export const loginSessionController = createLoginSessionController(loginSessionStore);
 
 export const loginSessionMiddleware = createMiddleware(async (c, next) => {
-  // すでにセッションが存在する場合は有効期限を延長し、無ければ新規作成する
-  let sessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
-  if (!sessionID || !await loginSessionStore.refresh(sessionID)) {
-    sessionID = await loginSessionStore.createSession();
+  // すでにセッションが存在する場合のみ有効期限を延長する（匿名ユーザには作成しない）
+  const sessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
+  if (sessionID) {
+    await loginSessionStore.refresh(sessionID);
     setCookie(c, LOGIN_SESSION_COOKIE_NAME, sessionID, cookieOptions);
   }
 
