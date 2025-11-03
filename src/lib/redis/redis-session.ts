@@ -16,9 +16,9 @@ const createRedisSessionStore = async <T extends Record<string, unknown>>(option
   const KEY = (sessionID: string) => `${options.prefix}:${sessionID}`;
 
   return {
-    createSession: async () => {
+    createSessionWith: async (data: T) => {
       const sessionID = generateSessionID();
-      await redis.set(KEY(sessionID), JSON.stringify({}), { EX: options.ttlSec });
+      await redis.set(KEY(sessionID), JSON.stringify(data), { EX: options.ttlSec });
       return sessionID;
     },
     refresh: async (sessionID: string) => {

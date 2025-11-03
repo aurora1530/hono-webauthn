@@ -43,8 +43,7 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
     setLoggedIn: async (c: Context, userData: UserData) => {
       const currentSessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
       if (currentSessionID) await store.destroy(currentSessionID);
-      const newSessionID = await store.createSession();
-      await store.set(newSessionID, userData);
+      const newSessionID = await store.createSessionWith(userData);
       setCookie(c, LOGIN_SESSION_COOKIE_NAME, newSessionID, cookieOptions);
     },
     setLoggedOut: async (c: Context) => {
