@@ -191,7 +191,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
                     <button
                       class={dangerButtonClass}
                       onclick={`handleDeletePasskey("${passkey.id}");`}
-                      disabled={!canDelete}
+                      disabled={!canDelete || passkey.id === currentPasskeyID}
                     >
                       削除
                     </button>

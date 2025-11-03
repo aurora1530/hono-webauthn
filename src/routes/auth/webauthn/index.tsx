@@ -367,6 +367,17 @@ webauthnApp
 
       const { passkeyId } = c.req.valid('json');
 
+      const targetPasskeyIsCurrentUsed = userData.usedPasskeyID === passkeyId;
+      if (targetPasskeyIsCurrentUsed) {
+        return c.json(
+          {
+            success: false,
+            message: '現在使用中のパスキーは削除できません。',
+          },
+          400
+        );
+      }
+
       const userHasAtLeastTwoPasskeys =
         (await prisma.passkey.count({
           where: {
