@@ -146,51 +146,58 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
       {passkeys.length === 0 ? (
         <p>登録されているパスキーはありません。</p>
       ) : (
-        <ul class={listClass}>
-          {passkeys.map((passkey) => {
-            const { browser, os } = parseUserAgent(passkey.userAgent);
-            const iconSrc = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
-            return (
-              <li key={passkey.id} class={itemClass}>
-                {passkey.backedUp ? (
-                  <span class={badgeSyncedClass}>Synced</span>
-                ) : (
-                  <span class={badgeUnsyncedClass}>Unsynced</span>
-                )}
-                <div class={rowTopClass}>
-                  {iconSrc ? (
-                    <img decoding="async" class={iconClass} src={iconSrc} alt="" />
+       <>
+          {passkeys.every(p =>  !p.backedUp) && (
+            <p style="color: #b45309; background: #fef3c7; padding: 8px 12px; border-radius: 6px; border: 1px solid #fcd34d;">
+              注意: 同期されたパスキーがありません。パスキーを紛失した場合、認証できなくなる可能性があります。
+            </p>
+          )}
+          <ul class={listClass}>
+            {passkeys.map((passkey) => {
+              const { browser, os } = parseUserAgent(passkey.userAgent);
+              const iconSrc = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
+              return (
+                <li key={passkey.id} class={itemClass}>
+                  {passkey.backedUp ? (
+                    <span class={badgeSyncedClass}>Synced</span>
                   ) : (
-                    <span aria-hidden="true"></span>
+                    <span class={badgeUnsyncedClass}>Unsynced</span>
                   )}
-                  <p class={nameClass}>{passkey.name}</p>
-                  <span aria-hidden="true"></span>
-                </div>
+                  <div class={rowTopClass}>
+                    {iconSrc ? (
+                      <img decoding="async" class={iconClass} src={iconSrc} alt="" />
+                    ) : (
+                      <span aria-hidden="true"></span>
+                    )}
+                    <p class={nameClass}>{passkey.name}</p>
+                    <span aria-hidden="true"></span>
+                  </div>
 
-                <div class={rowActionsClass}>
-                  <button
-                    id="change-passkey-name-btn"
-                    class={subtleButtonClass}
-                    onclick={`handleChangePasskeyName("${passkey.id}", "${passkey.name}");`}
-                  >
-                    変更
-                  </button>
-                  <button
-                    class={dangerButtonClass}
-                    onclick={`handleDeletePasskey("${passkey.id}");`}
-                    disabled={!canDelete}
-                  >
-                    削除
-                  </button>
-                </div>
+                  <div class={rowActionsClass}>
+                    <button
+                      id="change-passkey-name-btn"
+                      class={subtleButtonClass}
+                      onclick={`handleChangePasskeyName("${passkey.id}", "${passkey.name}");`}
+                    >
+                      変更
+                    </button>
+                    <button
+                      class={dangerButtonClass}
+                      onclick={`handleDeletePasskey("${passkey.id}");`}
+                      disabled={!canDelete}
+                    >
+                      削除
+                    </button>
+                  </div>
 
-                <p class={metaClass}>
-                  登録日時: {passkey.createdAt.toLocaleString()} by {browser} on {os}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
+                  <p class={metaClass}>
+                    登録日時: {passkey.createdAt.toLocaleString()} by {browser} on {os}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+       </>
       )}
 
       <button class={addButtonClass} onclick="handleRegistration(false)">
