@@ -1,6 +1,6 @@
-import { handleChangePasskeyName } from "./changePasskeyName.ts";
-import { handleDeletePasskey } from "./deletePasskey.ts";
-import { handleRegistration } from "./registration.ts";
+import { handleChangePasskeyName } from "./lib/changePasskeyName.ts";
+import { handleDeletePasskey } from "./lib/deletePasskey.ts";
+import { handleRegistration } from "./lib/registration.ts";
 
 document.getElementById('add-passkey-button')?.addEventListener('click', () => {
   handleRegistration(false);
