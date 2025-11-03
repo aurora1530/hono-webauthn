@@ -47,8 +47,7 @@ webauthnApp
         })
       : [];
 
-    const savedWebAuthnUserId =
-      savedPasskeys.length > 0 ? savedPasskeys[0].webauthnUserID : undefined;
+    const savedWebAuthnUserId = savedPasskeys[0]?.webauthnUserID;
 
     const options: PublicKeyCredentialCreationOptionsJSON =
       await generateRegistrationOptions({
@@ -268,6 +267,7 @@ webauthnApp
     await loginSessionController.setLoggedIn(c, {
       userID: user.id,
       username: user.name,
+      usedPasskeyID: savedPasskey.id,
     });
 
     return c.json({
@@ -366,6 +366,17 @@ webauthnApp
       }
 
       const { passkeyId } = c.req.valid('json');
+
+      const targetPasskeyIsCurrentUsed = userData.usedPasskeyID === passkeyId;
+      if (targetPasskeyIsCurrentUsed) {
+        return c.json(
+          {
+            success: false,
+            message: '現在使用中のパスキーは削除できません。',
+          },
+          400
+        );
+      }
 
       const userHasAtLeastTwoPasskeys =
         (await prisma.passkey.count({

@@ -8,6 +8,7 @@ import { trimTrailingSlash } from 'hono/trailing-slash';
 import rootRenderer from './rootRenderer.js';
 import routerRootApp from './routes/index.js';
 import { loginSessionMiddleware } from './lib/auth/loginSession.js';
+import { csrf } from 'hono/csrf';
 
 const app = new Hono();
 
@@ -23,6 +24,7 @@ app.use(
     crossOriginResourcePolicy: 'same-origin',
   })
 );
+app.use(csrf());
 app.get('/public/:scriptName{.+.tsx?}', esbuildTranspiler());
 app.get('/public/*', serveStatic({ root: './' }));
 app.use(rootRenderer);

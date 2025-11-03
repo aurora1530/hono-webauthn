@@ -4,7 +4,7 @@ import { css, cx } from 'hono/css';
 import parseUserAgent from '../../lib/auth/useragent.js';
 import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
 
-const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
+const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> = ({ passkeys, currentPasskeyID }) => {
   const canDelete = passkeys.length > 1;
 
   const titleClass = css`
@@ -34,17 +34,55 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
 
   const rowTopClass = css`
     display: grid;
-    grid-template-columns: 24px 1fr 24px;
+    grid-template-columns: 1fr auto 1fr; /* left group | name | right group */
     align-items: center;
     column-gap: 8px;
+    margin-top: 8px;
   `;
 
-  const rowActionsClass = css`
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    justify-items: center;
+  const rowLeftClass = css`
+    display: flex;
     align-items: center;
-    width: 100%;
+    justify-content: center;
+    min-height: 20px;
+  `;
+
+  const rowRightClass = css`
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  `;
+
+  const iconButtonBaseClass = css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #f3f4f6; /* gray-100 */
+    color: #111827; /* gray-900 */
+    transition: background-color 0.15s ease-in-out, opacity 0.15s;
+    &:hover { background: #e5e7eb; }
+  `;
+
+  const iconButtonDangerClass = css`
+    background: #fee2e2; /* red-100 */
+    color: #991b1b; /* red-800 */
+    &:hover { background: #fecaca; }
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  `;
+
+  const iconSvgClass = css`
+    width: 18px;
+    height: 18px;
+    display: block;
   `;
 
   const iconClass = css`
@@ -55,6 +93,13 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
 
   const nameClass = css`
     font-weight: 600;
+    text-align: center;
+  `;
+
+  const currentSessionClass = css`
+    font-size: 12px;
+    color: #2563eb; /* blue-600 */
+    margin-top: -4px;
     text-align: center;
   `;
 
@@ -101,33 +146,6 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
     transition: background-color 0.15s ease-in-out, opacity 0.15s;
   `;
 
-  const subtleButtonClass = cx(
-    buttonBaseClass,
-    css`
-      background: #f3f4f6;
-      color: #111827;
-      &:hover {
-        background: #e5e7eb;
-      }
-    `
-  );
-
-  const dangerButtonClass = cx(
-    buttonBaseClass,
-    css`
-      background: #ef4444;
-      color: #fff;
-      &:hover {
-        background: #dc2626;
-      }
-      &:disabled {
-        background: #fca5a5;
-        cursor: not-allowed;
-        opacity: 0.8;
-      }
-    `
-  );
-
   const addButtonClass = cx(
     buttonBaseClass,
     css`
@@ -146,51 +164,75 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
       {passkeys.length === 0 ? (
         <p>登録されているパスキーはありません。</p>
       ) : (
-        <ul class={listClass}>
-          {passkeys.map((passkey) => {
-            const { browser, os } = parseUserAgent(passkey.userAgent);
-            const iconSrc = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
-            return (
-              <li key={passkey.id} class={itemClass}>
-                {passkey.backedUp ? (
-                  <span class={badgeSyncedClass}>Synced</span>
-                ) : (
-                  <span class={badgeUnsyncedClass}>Unsynced</span>
-                )}
-                <div class={rowTopClass}>
-                  {iconSrc ? (
-                    <img decoding="async" class={iconClass} src={iconSrc} alt="" />
+       <>
+          {passkeys.every(p =>  !p.backedUp) && (
+            <p style="color: #b45309; background: #fef3c7; padding: 8px 12px; border-radius: 6px; border: 1px solid #fcd34d;">
+              注意: 同期されたパスキーがありません。パスキーを紛失した場合、認証できなくなる可能性があります。
+            </p>
+          )}
+          <ul class={listClass}>
+            {passkeys.map((passkey) => {
+              const { browser, os } = parseUserAgent(passkey.userAgent);
+              const iconSrc = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
+              return (
+                <li key={passkey.id} class={itemClass}>
+                  {passkey.backedUp ? (
+                    <span class={badgeSyncedClass}>Synced</span>
                   ) : (
-                    <span aria-hidden="true"></span>
+                    <span class={badgeUnsyncedClass}>Unsynced</span>
                   )}
-                  <p class={nameClass}>{passkey.name}</p>
-                  <span aria-hidden="true"></span>
-                </div>
+                  <div class={rowTopClass}>
+                    <div class={rowLeftClass}>
+                      {iconSrc ? (
+                        <img decoding="async" class={iconClass} src={iconSrc} alt="" />
+                      ) : (
+                        <span aria-hidden="true" style="width:20px;height:20px;display:inline-block;"></span>
+                      )}
+                    </div>
+                    <p class={nameClass}>{passkey.name}</p>
+                    <div class={rowRightClass}>
+                      {/* Edit (change name) icon button */}
+                      <button
+                        id="change-passkey-name-btn"
+                        class={cx(iconButtonBaseClass, "change-passkey-name-btn")}
+                        aria-label="パスキー名を変更"
+                        title="パスキー名を変更"
+                        data-passkey-id={passkey.id}
+                        data-passkey-name={passkey.name}
+                      >
+                        {/* Pencil icon */}
+                        <svg class={iconSvgClass} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M15.232 5.232a2.5 2.5 0 0 1 3.536 3.536L9.5 18.036 5 19l.964-4.5 9.268-9.268Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                      {/* Delete icon button */}
+                      <button
+                        class={cx(iconButtonBaseClass, iconButtonDangerClass)}
+                        aria-label="パスキーを削除"
+                        title="パスキーを削除"
+                        onclick={`handleDeletePasskey("${passkey.id}");`}
+                        disabled={!canDelete || passkey.id === currentPasskeyID}
+                      >
+                        {/* Trash icon */}
+                        <svg class={iconSvgClass} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M9 11v6m6-6v6M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1Zm9 3-1 13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
 
-                <div class={rowActionsClass}>
-                  <button
-                    data-passkey-id={passkey.id}
-                    data-passkey-name={passkey.name}
-                    class={cx(subtleButtonClass, "change-passkey-name-btn")}
-                  >
-                    変更
-                  </button>
-                  <button
-                    class={dangerButtonClass}
-                    onclick={`handleDeletePasskey("${passkey.id}");`}
-                    disabled={!canDelete}
-                  >
-                    削除
-                  </button>
-                </div>
+                  {passkey.id === currentPasskeyID && (
+                    <p class={currentSessionClass}>現在のセッションで使用中</p>
+                  )}
 
-                <p class={metaClass}>
-                  登録日時: {passkey.createdAt.toLocaleString()} by {browser} on {os}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
+                  <p class={metaClass}>
+                    登録日時: {passkey.createdAt.toLocaleString()} by {browser} on {os}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+       </>
       )}
 
       <button class={addButtonClass} onclick="handleRegistration(false)">

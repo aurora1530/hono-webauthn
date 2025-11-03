@@ -1,5 +1,5 @@
 import { getRedis } from "./redis.js";
-import { generateSessionID, type SessionStore } from "../session.js";
+import { type SessionID, type SessionStore } from "../session.js";
 
 type RedisSessionStoreOptions<T = Record<string, unknown>> = {
   prefix: string;
@@ -7,14 +7,18 @@ type RedisSessionStoreOptions<T = Record<string, unknown>> = {
   dataParser: (data: unknown) => T | undefined;
 };
 
+const generateSessionID = (): SessionID => {
+  return crypto.randomUUID();
+};
+
 const createRedisSessionStore = async <T extends Record<string, unknown>>(options: RedisSessionStoreOptions<T>): Promise<SessionStore<T>> => {
   const redis = await getRedis();
   const KEY = (sessionID: string) => `${options.prefix}:${sessionID}`;
 
   return {
-    createSession: async () => {
+    createSessionWith: async (data: T) => {
       const sessionID = generateSessionID();
-      await redis.set(KEY(sessionID), JSON.stringify({}), { EX: options.ttlSec });
+      await redis.set(KEY(sessionID), JSON.stringify(data), { EX: options.ttlSec });
       return sessionID;
     },
     refresh: async (sessionID: string) => {
@@ -23,6 +27,16 @@ const createRedisSessionStore = async <T extends Record<string, unknown>>(option
     },
     get: async (sessionID: string) => {
       const raw = await redis.get(KEY(sessionID));
+      if (!raw) return undefined;
+      try {
+        const parsed = JSON.parse(raw);
+        return options.dataParser(parsed);
+      } catch {
+        return undefined;
+      }
+    },
+    getAndDestroy: async (sessionID: string) => {
+      const raw = await redis.getDel(KEY(sessionID))
       if (!raw) return undefined;
       try {
         const parsed = JSON.parse(raw);

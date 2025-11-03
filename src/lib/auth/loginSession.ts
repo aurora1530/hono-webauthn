@@ -9,7 +9,8 @@ import z from 'zod';
 
 const UserDataSchema = z.object({
   userID: z.string(),
-  username: z.string()
+  username: z.string(),
+  usedPasskeyID: z.string(),
 })
 type UserData = z.infer<typeof UserDataSchema>;
 type LoginSessionStore = SessionStore<UserData>;
@@ -42,8 +43,7 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
     setLoggedIn: async (c: Context, userData: UserData) => {
       const currentSessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
       if (currentSessionID) await store.destroy(currentSessionID);
-      const newSessionID = await store.createSession();
-      await store.set(newSessionID, userData);
+      const newSessionID = await store.createSessionWith(userData);
       setCookie(c, LOGIN_SESSION_COOKIE_NAME, newSessionID, cookieOptions);
     },
     setLoggedOut: async (c: Context) => {
@@ -59,10 +59,10 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
 export const loginSessionController = createLoginSessionController(loginSessionStore);
 
 export const loginSessionMiddleware = createMiddleware(async (c, next) => {
-  // すでにセッションが存在する場合は有効期限を延長し、無ければ新規作成する
-  let sessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
-  if (!sessionID || !await loginSessionStore.refresh(sessionID)) {
-    sessionID = await loginSessionStore.createSession();
+  // すでにセッションが存在する場合のみ有効期限を延長する（匿名ユーザには作成しない）
+  const sessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
+  if (sessionID) {
+    await loginSessionStore.refresh(sessionID);
     setCookie(c, LOGIN_SESSION_COOKIE_NAME, sessionID, cookieOptions);
   }
 
