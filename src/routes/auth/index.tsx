@@ -92,7 +92,7 @@ authApp
       },
     });
 
-    return c.render(<PasskeyManagement passkeys={passkeys} />, { title: 'パスキー管理' });
+    return c.render(<PasskeyManagement passkeys={passkeys} currentPasskeyID={userData.usedPasskeyID} />, { title: 'パスキー管理' });
   });
 
 export default authApp;

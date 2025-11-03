@@ -4,7 +4,7 @@ import { css, cx } from 'hono/css';
 import parseUserAgent from '../../lib/auth/useragent.js';
 import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
 
-const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
+const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> = ({ passkeys, currentPasskeyID }) => {
   const canDelete = passkeys.length > 1;
 
   const titleClass = css`
@@ -170,6 +170,13 @@ const PasskeyManagement: FC<{ passkeys: Passkey[] }> = ({ passkeys }) => {
                       <span aria-hidden="true"></span>
                     )}
                     <p class={nameClass}>{passkey.name}</p>
+                    {
+                      passkey.id === currentPasskeyID ? (
+                        <span>☑️</span>
+                      ) : (
+                        <span aria-hidden="true"></span>
+                      )
+                      }
                     <span aria-hidden="true"></span>
                   </div>
 
