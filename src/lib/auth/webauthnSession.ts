@@ -112,8 +112,7 @@ const createWebAuthnSessionController = (stores: WebAuthnSessionStores): WebAuth
         extractSessionData: async (c: Context) => {
           const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate);
           if (!sessionID) return undefined;
-          const data = await stores.registration.generate.get(sessionID);
-          await stores.registration.generate.destroy(sessionID);
+          const data = await stores.registration.generate.getAndDestroy(sessionID);
           deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate, COOKIE_OPTIONS);
           return data;
         }
@@ -128,8 +127,7 @@ const createWebAuthnSessionController = (stores: WebAuthnSessionStores): WebAuth
         extractSessionData: async (c: Context) => {
           const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify);
           if (!sessionID) return undefined;
-          const data = await stores.registration.verify.get(sessionID);
-          await stores.registration.verify.destroy(sessionID);
+          const data = await stores.registration.verify.getAndDestroy(sessionID);
           deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify, COOKIE_OPTIONS);
           return data;
         }
@@ -146,8 +144,7 @@ const createWebAuthnSessionController = (stores: WebAuthnSessionStores): WebAuth
         extractSessionData: async (c: Context) => {
           const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify);
           if (!sessionID) return undefined;
-          const data = await stores.authentication.verify.get(sessionID);
-          await stores.authentication.verify.destroy(sessionID);
+          const data = await stores.authentication.verify.getAndDestroy(sessionID);
           deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify, COOKIE_OPTIONS);
           return data;
         }

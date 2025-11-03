@@ -35,6 +35,16 @@ const createRedisSessionStore = async <T extends Record<string, unknown>>(option
         return undefined;
       }
     },
+    getAndDestroy: async (sessionID: string) => {
+      const raw = await redis.getDel(KEY(sessionID))
+      if (!raw) return undefined;
+      try {
+        const parsed = JSON.parse(raw);
+        return options.dataParser(parsed);
+      } catch {
+        return undefined;
+      }
+    },
     set: async (sessionID: string, data: T) => {
       await redis.set(KEY(sessionID), JSON.stringify(data), { EX: options.ttlSec });
     },
