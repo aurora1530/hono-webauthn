@@ -22,3 +22,5 @@ function handleDeletePasskey(passkeyId: string) {
       });
   }
 }
+
+export { handleDeletePasskey };

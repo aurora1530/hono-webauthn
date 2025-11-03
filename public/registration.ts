@@ -50,3 +50,5 @@ async function handleRegistration(isNewAccount: boolean = true) {
     location.reload();
   }
 }
+
+export { handleRegistration };

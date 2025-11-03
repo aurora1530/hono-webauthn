@@ -11,3 +11,5 @@ function closeModal() {
     modal.close();
   }
 }
+
+export { openModal, closeModal };

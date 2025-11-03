@@ -49,9 +49,9 @@ const AccountRegisterForm: FC = () => {
     <div class={container}>
       <div class={row}>
         <input class={input} type="text" name="username" id="username" placeholder="ユーザー名" />
-        <button class={primaryButton} onclick="handleRegistration()">Register</button>
+        <button class={primaryButton} id="account-register-button">Register</button>
       </div>
-      <script src="/public/registration.ts"></script>
+      <script src="/public/accountRegisterForm.ts" type="module"></script>
     </div>
   );
 };

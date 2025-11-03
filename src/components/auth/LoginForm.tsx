@@ -34,9 +34,9 @@ const LoginForm: FC = () => {
   return (
     <div class={container}>
       <div>
-        <button class={primaryButton} onclick="handleAuthentication()">Login</button>
+        <button class={primaryButton} id="login-button">Login</button>
       </div>
-      <script src="/public/authentication.ts"></script>
+      <script src="/public/loginForm.ts" type="module"></script>
     </div>
   );
 };

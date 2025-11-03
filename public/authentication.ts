@@ -27,3 +27,5 @@ async function handleAuthentication() {
 
   location.href = '/';
 }
+
+export { handleAuthentication };

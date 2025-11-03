@@ -207,10 +207,10 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
                       </button>
                       {/* Delete icon button */}
                       <button
-                        class={cx(iconButtonBaseClass, iconButtonDangerClass)}
+                        class={cx(iconButtonBaseClass, iconButtonDangerClass, "delete-passkey-btn")}
                         aria-label="パスキーを削除"
                         title="パスキーを削除"
-                        onclick={`handleDeletePasskey("${passkey.id}");`}
+                        data-passkey-id={passkey.id}
                         disabled={!canDelete || passkey.id === currentPasskeyID}
                       >
                         {/* Trash icon */}
@@ -235,11 +235,10 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
        </>
       )}
 
-      <button class={addButtonClass} onclick="handleRegistration(false)">
+      <button class={addButtonClass} id="add-passkey-button">
         パスキー追加
       </button>
-      <script src="/public/changePasskeyName.ts"></script>
-      <script src="/public/deletePasskey.ts"></script>
+      <script src="/public/passkeyManagement.ts" type="module"></script>
     </div>
   );
 };

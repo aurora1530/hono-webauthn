@@ -27,7 +27,6 @@ const Modal: FC = async (props) => {
       <dialog class={dialogClass} role="dialog" aria-modal="true" closedby="any">
         {props.children}
       </dialog>
-      <script src="/public/modal.ts"></script>
     </>
   );
 };

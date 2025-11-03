@@ -24,11 +24,4 @@ function handleChangePasskeyName(passkeyId: string, currentName: string) {
   }
 }
 
-const changePasskeyNameBtns = document.getElementsByClassName('change-passkey-name-btn') as HTMLCollectionOf<HTMLButtonElement>;
-Array.from(changePasskeyNameBtns).forEach((btn) => {
-  btn.addEventListener('click', () => {
-    const passkeyId = btn.dataset.passkeyId;
-    const passkeyName = btn.dataset.passkeyName;
-    if (passkeyId && passkeyName) handleChangePasskeyName(passkeyId, passkeyName);
-  });
-});
+export { handleChangePasskeyName };

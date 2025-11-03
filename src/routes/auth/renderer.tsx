@@ -13,8 +13,6 @@ const authPageRenderer = jsxRenderer(({ children, Layout }) => {
   return (
     <Layout>
       <div class={authContainerClass}>{children}</div>
-      <script src="/public/registration.ts"></script>
-      <script src="/public/authentication.ts"></script>
     </Layout>
   );
 });
