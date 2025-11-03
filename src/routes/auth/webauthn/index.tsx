@@ -47,8 +47,7 @@ webauthnApp
         })
       : [];
 
-    const savedWebAuthnUserId =
-      savedPasskeys.length > 0 ? savedPasskeys[0].webauthnUserID : undefined;
+    const savedWebAuthnUserId = savedPasskeys[0]?.webauthnUserID;
 
     const options: PublicKeyCredentialCreationOptionsJSON =
       await generateRegistrationOptions({
