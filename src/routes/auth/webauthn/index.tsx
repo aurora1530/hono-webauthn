@@ -16,6 +16,7 @@ import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
 import { aaguidToNameAndIcon } from '../../../lib/auth/aaguid/parse.js';
 import { validator } from 'hono/validator';
 import { loginSessionController } from '../../../lib/auth/loginSession.js';
+import { reauthSessionController } from '../../../lib/auth/reauthSession.js';
 import z from 'zod';
 
 const webauthnApp = new Hono();
@@ -48,6 +49,23 @@ webauthnApp
       : [];
 
     const savedWebAuthnUserId = savedPasskeys[0]?.webauthnUserID;
+
+    if (loginSessionData) {
+      const reauthenticated = await reauthSessionController.consumeReauthentication(
+        c,
+        loginSessionData.userID
+      );
+
+      if (!reauthenticated) {
+        return c.json(
+          {
+            success: false,
+            message: 'パスキーを追加するには再認証が必要です。',
+          },
+          403
+        );
+      }
+    }
 
     const options: PublicKeyCredentialCreationOptionsJSON =
       await generateRegistrationOptions({
@@ -150,6 +168,151 @@ webauthnApp
         userAgent,
       },
     });
+
+    return c.json({
+      success: true,
+    });
+  })
+  .get('/reauthentication/generate', async (c) => {
+    const userData = await loginSessionController.getUserData(c);
+    if (!userData) {
+      return c.json(
+        {
+          success: false,
+          message: 'ログインが必要です。',
+        },
+        401
+      );
+    }
+
+    const passkeys = await prisma.passkey.findMany({
+      where: {
+        userID: userData.userID,
+      },
+    });
+
+    if (passkeys.length === 0) {
+      return c.json(
+        {
+          success: false,
+          message: '再認証に利用できるパスキーがありません。',
+        },
+        400
+      );
+    }
+
+    const options: PublicKeyCredentialRequestOptionsJSON =
+      await generateAuthenticationOptions({
+        rpID,
+        allowCredentials: passkeys.map((passkey) => ({
+          id: passkey.id,
+          type: 'public-key',
+          transports: passkey.transports.filter(isAuthenticatorTransportFuture),
+        })),
+      });
+
+    await webauthnSessionController.reauthentication.verify.initialize(c, {
+      challenge: options.challenge,
+    });
+
+    return c.json(options);
+  })
+  .post('/reauthentication/verify', async (c) => {
+    const userData = await loginSessionController.getUserData(c);
+    if (!userData) {
+      return c.json(
+        {
+          success: false,
+          message: 'ログインが必要です。',
+        },
+        401
+      );
+    }
+
+    const { challenge: savedChallenge } =
+      (await webauthnSessionController.reauthentication.verify.extractSessionData(c)) || {};
+
+    if (!savedChallenge) {
+      return c.json(
+        {
+          success: false,
+          message: 'セッションが不正です。認証をやり直してください',
+        },
+        401
+      );
+    }
+
+    const body = await c.req.json();
+
+    const passkey = await prisma.passkey.findUnique({
+      where: {
+        id: body?.id,
+      },
+    });
+
+    if (!passkey || passkey.userID !== userData.userID) {
+      return c.json(
+        {
+          success: false,
+          message: '認証に失敗しました。もう一度やり直してください',
+        },
+        400
+      );
+    }
+
+    let verification;
+    try {
+      verification = await verifyAuthenticationResponse({
+        response: body,
+        expectedChallenge: savedChallenge,
+        expectedOrigin: origin,
+        expectedRPID: rpID,
+        credential: {
+          id: passkey.id,
+          publicKey: passkey.publicKey,
+          counter: passkey.counter,
+          transports: passkey.transports.filter(isAuthenticatorTransportFuture),
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      return c.json(
+        {
+          success: false,
+          message: '認証に失敗しました。もう一度やり直してください',
+        },
+        400
+      );
+    }
+
+    const { verified, authenticationInfo } = verification;
+
+    if (!verified || !authenticationInfo) {
+      return c.json(
+        {
+          success: false,
+          message: '認証に失敗しました。もう一度やり直してください',
+        },
+        400
+      );
+    }
+
+    await prisma.passkey.update({
+      where: {
+        id: passkey.id,
+      },
+      data: {
+        counter: authenticationInfo.newCounter,
+      },
+    });
+
+    await loginSessionController.setLoggedIn(c, {
+      userID: userData.userID,
+      username: userData.username,
+      usedPasskeyID: passkey.id,
+    });
+
+    await reauthSessionController.markReauthenticated(c, userData.userID);
 
     return c.json({
       success: true,
