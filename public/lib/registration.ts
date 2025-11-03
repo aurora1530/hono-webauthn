@@ -1,3 +1,5 @@
+import { handleReauthentication } from "./reauthentication.ts";
+
 async function handleRegistration(isNewAccount: boolean = true) {
   if (isNewAccount) {
     const usernameEle = document.getElementById('username');
@@ -17,6 +19,13 @@ async function handleRegistration(isNewAccount: boolean = true) {
     const json = await usernameRegisterResponse.json();
     if (!json.success) {
       alert(json.message);
+      return;
+    }
+  } else {
+    alert('再認証を開始します。');
+    const reauthSuccess = await handleReauthentication();
+    if (!reauthSuccess) {
+      alert('再認証に失敗しました。パスキーの追加は行われませんでした。');
       return;
     }
   }

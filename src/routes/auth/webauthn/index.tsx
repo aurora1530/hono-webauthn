@@ -38,6 +38,20 @@ webauthnApp
       );
     }
 
+    if (loginSessionData) {
+      // ログイン済みであれば、再認証がなされているかのチェック（本来の手順を済ませていれば適切に再認証がされているはずなので、単にエラーを返すだけで良い）
+      const reauthData = await reauthSessionController.extractSessionData(c);
+      if (loginSessionData.userID !== reauthData?.userId) {
+        return c.json(
+          {
+            success: false,
+            message: '再認証が必要です。再度認証を行ってください。',
+          },
+          401
+        );
+      }
+    }
+
     // ログイン済みユーザであれば、これはパスキーを追加するリクエストなので、既存のパスキーを取得する
     const userID = loginSessionData?.userID;
     const savedPasskeys: Passkey[] = userID
