@@ -267,6 +267,7 @@ webauthnApp
     await loginSessionController.setLoggedIn(c, {
       userID: user.id,
       username: user.name,
+      usedPasskeyID: savedPasskey.id,
     });
 
     return c.json({

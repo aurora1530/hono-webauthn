@@ -9,7 +9,8 @@ import z from 'zod';
 
 const UserDataSchema = z.object({
   userID: z.string(),
-  username: z.string()
+  username: z.string(),
+  usedPasskeyID: z.string(),
 })
 type UserData = z.infer<typeof UserDataSchema>;
 type LoginSessionStore = SessionStore<UserData>;
