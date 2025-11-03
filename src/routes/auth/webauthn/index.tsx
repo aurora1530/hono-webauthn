@@ -497,6 +497,17 @@ webauthnApp
         );
       }
 
+      const reauthData = await reauthSessionController.extractSessionData(c);
+      if (userData.userID !== reauthData?.userId) {
+        return c.json(
+          {
+            success: false,
+            message: '再認証が必要です。再度認証を行ってください。',
+          },
+          401
+        );
+      }
+
       const { passkeyId } = c.req.valid('json');
 
       const targetPasskeyIsCurrentUsed = userData.usedPasskeyID === passkeyId;
