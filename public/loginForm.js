@@ -1,35 +1,33 @@
-"use strict";
-(() => {
-  // src/client/lib/authentication.ts
-  async function handleAuthentication() {
-    const generateAuthenticationOptionsResponse = await fetch(
-      "/auth/webauthn/authentication/generate",
-      {
-        method: "GET"
-      }
-    );
-    const options = PublicKeyCredential.parseRequestOptionsFromJSON(
-      await generateAuthenticationOptionsResponse.json()
-    );
-    console.log(options);
-    const credential = await navigator.credentials.get({ publicKey: options });
-    const credentialResponse = await fetch("/auth/webauthn/authentication/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(credential)
-    });
-    const credentialJson = await credentialResponse.json();
-    if (!credentialJson.success) {
-      alert(credentialJson.message);
-      return;
+// src/client/lib/authentication.ts
+async function handleAuthentication() {
+  const generateAuthenticationOptionsResponse = await fetch(
+    "/auth/webauthn/authentication/generate",
+    {
+      method: "GET"
     }
-    location.href = "/";
-  }
-
-  // src/client/loginForm.ts
-  document.getElementById("login-button")?.addEventListener("click", () => {
-    handleAuthentication();
+  );
+  const options = PublicKeyCredential.parseRequestOptionsFromJSON(
+    await generateAuthenticationOptionsResponse.json()
+  );
+  console.log(options);
+  const credential = await navigator.credentials.get({ publicKey: options });
+  const credentialResponse = await fetch("/auth/webauthn/authentication/verify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(credential)
   });
-})();
+  const credentialJson = await credentialResponse.json();
+  if (!credentialJson.success) {
+    alert(credentialJson.message);
+    return;
+  }
+  location.href = "/";
+}
+
+// src/client/loginForm.ts
+document.getElementById("login-button")?.addEventListener("click", () => {
+  handleAuthentication();
+});
+//# sourceMappingURL=loginForm.js.map

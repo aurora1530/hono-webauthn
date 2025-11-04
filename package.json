@@ -2,7 +2,7 @@
   "name": "hono-webauthn",
   "type": "module",
   "scripts": {
-    "build:client": "npx esbuild src/client/*.ts --bundle --outdir=public --outbase=src/client --platform=browser",
+    "build:client": "node scripts/bundler.js",
     "dev": "tsx watch src/index.tsx",
     "update:aaguid": "tsx scripts/updateAAGUID.ts"
   },
