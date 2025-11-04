@@ -28,4 +28,5 @@ lerna-debug.log*
 .DS_Store
 
 # javascript
-public/*.map
+public/*.js
+public/*.js.map
