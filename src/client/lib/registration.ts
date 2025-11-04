@@ -1,4 +1,4 @@
-import { openModal } from "./modal.ts";
+import { closeModal, openModal } from "./modal.ts";
 import { handleReauthentication } from "./reauthentication.ts";
 
 async function handleRegistration(isNewAccount: boolean = true) {
@@ -29,6 +29,7 @@ async function handleRegistration(isNewAccount: boolean = true) {
       openModal('<p>再認証に失敗しました。パスキーの追加は行われませんでした。</p>');
       return;
     }
+    closeModal();
   }
 
   const generateRegistrationOptionsResponse = await fetch('/auth/webauthn/registration/generate', {

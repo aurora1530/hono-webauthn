@@ -1,4 +1,4 @@
-import { openModal } from "./modal.ts";
+import { closeModal, openModal } from "./modal.ts";
 import { handleReauthentication } from "./reauthentication.ts";
 
 async function handleDeletePasskey(passkeyId: string) {
@@ -9,6 +9,7 @@ async function handleDeletePasskey(passkeyId: string) {
       openModal('<p>再認証に失敗しました。パスキーは削除されませんでした。</p>');
       return;
     }
+    closeModal();
 
     fetch('/auth/webauthn/delete-passkey', {
       method: 'POST',
