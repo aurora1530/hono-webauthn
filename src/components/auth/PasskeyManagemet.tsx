@@ -153,13 +153,17 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
       &:hover {
         background: #1d4ed8;
       }
-      margin-top: 12px;
+      margin: 6px;
     `
   );
 
   return (
     <div>
       <h2 class={titleClass}>パスキー管理</h2>
+      <button class={addButtonClass} id="add-passkey-button">
+        パスキー追加
+      </button>
+      <hr />
       {passkeys.length === 0 ? (
         <p>登録されているパスキーはありません。</p>
       ) : (
@@ -234,10 +238,6 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
           </ul>
        </>
       )}
-
-      <button class={addButtonClass} id="add-passkey-button">
-        パスキー追加
-      </button>
       <script src="/public/passkeyManagement.js" type="module"></script>
     </div>
   );
