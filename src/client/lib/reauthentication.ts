@@ -1,4 +1,4 @@
-async function handleReauthentication() {
+async function handleReauthentication(): Promise<boolean> {
   const generateReauthenticationOptionsResponse = await fetch(
     '/auth/webauthn/reauthentication/generate',
     {
@@ -6,26 +6,30 @@ async function handleReauthentication() {
     }
   );
 
-  const options = PublicKeyCredential.parseRequestOptionsFromJSON(
-    await generateReauthenticationOptionsResponse.json()
-  );
-  console.log(options);
+  try {
+    const options = PublicKeyCredential.parseRequestOptionsFromJSON(
+      await generateReauthenticationOptionsResponse.json()
+    );
+    console.log(options);
 
-  const credential = await navigator.credentials.get({ publicKey: options });
-  const credentialResponse = await fetch('/auth/webauthn/reauthentication/verify', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(credential),
-  });
+    const credential = await navigator.credentials.get({ publicKey: options });
+    const credentialResponse = await fetch('/auth/webauthn/reauthentication/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credential),
+    });
 
-  const credentialJson = await credentialResponse.json();
-  if (!credentialJson.success) {
-    alert(credentialJson.message);
+    const credentialJson = await credentialResponse.json();
+    if (!credentialJson.success) {
+      alert(credentialJson.message);
+      return false;
+    }
+  } catch (error) {
+    console.error('Reauthentication error:', error);
     return false;
   }
-
   return true;
 }
 
