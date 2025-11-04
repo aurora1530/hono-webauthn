@@ -33,7 +33,8 @@ model Passkey {
   aaguid         String   @db.VarChar(36)
   createdAt      DateTime @default(now())
   name           String
-  userAgent      String
+  registeredBrowser  String
+  registeredOS       String
 
   @@index([webauthnUserID], name: "webauthnUserID")
 }
