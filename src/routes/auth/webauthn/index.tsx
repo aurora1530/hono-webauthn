@@ -18,6 +18,7 @@ import { validator } from 'hono/validator';
 import { loginSessionController } from '../../../lib/auth/loginSession.js';
 import z from 'zod';
 import { reauthSessionController } from '../../../lib/auth/reauthSession.js';
+import inferClientPlatform from '../../../lib/auth/inferClientPlatform.js';
 
 const webauthnApp = new Hono();
 
@@ -146,12 +147,12 @@ webauthnApp
     const { credential, credentialDeviceType, credentialBackedUp, aaguid } =
       registrationInfo;
 
-    const passkeyName = aaguidToNameAndIcon(aaguid)?.name ?? 'パスキー';
+  const passkeyName = aaguidToNameAndIcon(aaguid)?.name ?? 'パスキー';
 
-    const userAgent = c.req.header('User-Agent') || '';
+  const { os, browser } = inferClientPlatform(c.req.raw.headers);
 
     await prisma.passkey.create({
-      data: {
+      data: ({
         id: credential.id,
         webauthnUserID: webauthnRegistrationSession.user.id,
         userID,
@@ -162,8 +163,9 @@ webauthnApp
         counter: credential.counter,
         aaguid,
         name: passkeyName,
-        userAgent,
-      },
+        registeredBrowser: browser,
+        registeredOS: os,
+      })
     });
 
     return c.json({

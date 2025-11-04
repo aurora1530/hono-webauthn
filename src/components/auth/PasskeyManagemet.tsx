@@ -1,7 +1,6 @@
 import type { Passkey } from '@prisma/client';
 import type { FC } from 'hono/jsx';
 import { css, cx } from 'hono/css';
-import parseUserAgent from '../../lib/auth/useragent.js';
 import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
 
 const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> = ({ passkeys, currentPasskeyID }) => {
@@ -172,7 +171,8 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
           )}
           <ul class={listClass}>
             {passkeys.map((passkey) => {
-              const { browser, os } = parseUserAgent(passkey.userAgent);
+              const browser = passkey.registeredBrowser;
+              const os = passkey.registeredOS;
               const iconSrc = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
               return (
                 <li key={passkey.id} class={itemClass}>
