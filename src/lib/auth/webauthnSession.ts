@@ -3,69 +3,60 @@ import { createRedisSessionStore } from '../redis/redis-session.js';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import z from 'zod';
 
-const WebAuthnRegistrationGenerateSessionDataSchema = z.object({
-  username: z.string()
-});
-
-type WebAuthnRegistrationGenerateSessionData = z.infer<typeof WebAuthnRegistrationGenerateSessionDataSchema>;
-
-const webAuthnRegistrationGenerateSessionStore = await createRedisSessionStore<WebAuthnRegistrationGenerateSessionData>({
-  prefix: 'webauthn-registration-init',
-  ttlSec: 60 * 5, // 5 minutes
-  dataParser: (data: unknown) => {
-    const parsed = WebAuthnRegistrationGenerateSessionDataSchema.safeParse(data);
-    return parsed.success ? parsed.data : undefined;
-  }
-});
+const WebAuthnRegistrationGenerateSessionDataSchema = z.object({ username: z.string() });
+type WebAuthnRegistrationGenerateSessionData = z.infer<
+  typeof WebAuthnRegistrationGenerateSessionDataSchema
+>;
 
 const WebAuthnRegistrationVerifySessionDataSchema = z.object({
   challenge: z.string(),
-  user: z.object({
-    id: z.string(),
-    name: z.string()
-  })
+  user: z.object({ id: z.string(), name: z.string() })
 });
+type WebAuthnRegistrationVerifySessionData = z.infer<
+  typeof WebAuthnRegistrationVerifySessionDataSchema
+>;
 
-type WebAuthnRegistrationVerifySessionData = z.infer<typeof WebAuthnRegistrationVerifySessionDataSchema>;
+const WebAuthnAuthenticationVerifySessionDataSchema = z.object({ challenge: z.string() });
+type WebAuthnAuthenticationVerifySessionData = z.infer<
+  typeof WebAuthnAuthenticationVerifySessionDataSchema
+>;
 
-const webAuthnRegistrationVerifySessionStore = await createRedisSessionStore<WebAuthnRegistrationVerifySessionData>({
-  prefix: 'webauthn-registration',
-  ttlSec: 60 * 5, // 5 minutes
-  dataParser: (data: unknown) => {
-    const parsed = WebAuthnRegistrationVerifySessionDataSchema.safeParse(data);
-    return parsed.success ? parsed.data : undefined;
-  }
-});
+const WebAuthnReauthenticationVerifySessionDataSchema = z.object({ challenge: z.string() });
+type WebAuthnReauthenticationVerifySessionData = z.infer<
+  typeof WebAuthnReauthenticationVerifySessionDataSchema
+>;
 
-const WebAuthnAuthenticationVerifySessionDataSchema = z.object({
-  challenge: z.string()
-});
+const SESSION_TTL_SEC = 60 * 5; // 5 minutes
 
-type WebAuthnAuthenticationVerifySessionData = z.infer<typeof WebAuthnAuthenticationVerifySessionDataSchema>;
+const makeStore = async <T extends Record<string, unknown>>(
+  prefix: string,
+  schema: z.ZodType<T>
+) =>
+  createRedisSessionStore<T>({
+    prefix,
+    ttlSec: SESSION_TTL_SEC,
+    dataParser: (data: unknown) => {
+      const parsed = schema.safeParse(data);
+      return parsed.success ? parsed.data : undefined;
+    }
+  });
 
-const webAuthnAuthenticationVerifySessionStore = await createRedisSessionStore<WebAuthnAuthenticationVerifySessionData>({
-  prefix: 'webauthn-authentication',
-  ttlSec: 60 * 5, // 5 minutes
-  dataParser: (data: unknown) => {
-    const parsed = WebAuthnAuthenticationVerifySessionDataSchema.safeParse(data);
-    return parsed.success ? parsed.data : undefined;
-  }
-});
-
-const WebAuthnReauthenticationVerifySessionDataSchema = z.object({
-  challenge: z.string()
-});
-
-type WebAuthnReauthenticationVerifySessionData = z.infer<typeof WebAuthnReauthenticationVerifySessionDataSchema>;
-
-const webAuthnReauthenticationVerifySessionStore = await createRedisSessionStore<WebAuthnReauthenticationVerifySessionData>({
-  prefix: 'webauthn-reauthentication',
-  ttlSec: 60 * 5, // 5 minutes
-  dataParser: (data: unknown) => {
-    const parsed = WebAuthnReauthenticationVerifySessionDataSchema.safeParse(data);
-    return parsed.success ? parsed.data : undefined;
-  }
-});
+const webAuthnRegistrationGenerateSessionStore = await makeStore(
+  'webauthn-registration-init',
+  WebAuthnRegistrationGenerateSessionDataSchema
+);
+const webAuthnRegistrationVerifySessionStore = await makeStore(
+  'webauthn-registration',
+  WebAuthnRegistrationVerifySessionDataSchema
+);
+const webAuthnAuthenticationVerifySessionStore = await makeStore(
+  'webauthn-authentication',
+  WebAuthnAuthenticationVerifySessionDataSchema
+);
+const webAuthnReauthenticationVerifySessionStore = await makeStore(
+  'webauthn-reauthentication',
+  WebAuthnReauthenticationVerifySessionDataSchema
+);
 
 interface WebAuthnSessionStores {
   registration: {
@@ -121,74 +112,52 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: true,
   sameSite: 'Lax' as const,
-  maxAge: 60 * 5 // 5 minutes
+  maxAge: SESSION_TTL_SEC
 };
 
-const createWebAuthnSessionController = (stores: WebAuthnSessionStores): WebAuthnSessionController => {
-  return {
-    registration: {
-      generate: {
-        initialize: async (c: Context, data: WebAuthnRegistrationGenerateSessionData) => {
-          const sessionID = await stores.registration.generate.createSessionWith(data);
-          setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate, sessionID, COOKIE_OPTIONS);
-          return sessionID;
-        },
-        extractSessionData: async (c: Context) => {
-          const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate);
-          if (!sessionID) return undefined;
-          const data = await stores.registration.generate.getAndDestroy(sessionID);
-          deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate, COOKIE_OPTIONS);
-          return data;
-        }
-      },
-      verify: {
-        initialize: async (c: Context, data: WebAuthnRegistrationVerifySessionData) => {
-          const sessionID = await stores.registration.verify.createSessionWith(data);
-          setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify, sessionID, COOKIE_OPTIONS);
-          return sessionID;
-        },
-        extractSessionData: async (c: Context) => {
-          const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify);
-          if (!sessionID) return undefined;
-          const data = await stores.registration.verify.getAndDestroy(sessionID);
-          deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify, COOKIE_OPTIONS);
-          return data;
-        }
-      }
-    },
-    authentication: {
-      verify: {
-        initialize: async (c: Context, data: WebAuthnAuthenticationVerifySessionData) => {
-          const sessionID = await stores.authentication.verify.createSessionWith(data);
-          setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify, sessionID, COOKIE_OPTIONS);
-          return sessionID;
-        },
-        extractSessionData: async (c: Context) => {
-          const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify);
-          if (!sessionID) return undefined;
-          const data = await stores.authentication.verify.getAndDestroy(sessionID);
-          deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify, COOKIE_OPTIONS);
-          return data;
-        }
-      }
-    },
-    reauthentication: {
-      verify: {
-        initialize: async (c: Context, data: WebAuthnReauthenticationVerifySessionData) => {
-          const sessionID = await stores.reauthentication.verify.createSessionWith(data);
-          setCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.reauthenticationVerify, sessionID, COOKIE_OPTIONS);
-          return sessionID;
-        },
-        extractSessionData: async (c: Context) => {
-          const sessionID = getCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.reauthenticationVerify);
-          if (!sessionID) return undefined;
-          const data = await stores.reauthentication.verify.getAndDestroy(sessionID);
-          deleteCookie(c, WEBAUTHN_SESSION_COOKIE_NAMES.reauthenticationVerify, COOKIE_OPTIONS);
-          return data;
-        }
-      }
-    }
+const createHandler = <T extends object>(
+  store: { createSessionWith: (data: T) => Promise<string>; getAndDestroy: (id: string) => Promise<T | undefined> },
+  cookieName: string
+): SessionDataHandler<T> => ({
+  initialize: async (c: Context, data: T) => {
+    const sessionID = await store.createSessionWith(data);
+    setCookie(c, cookieName, sessionID, COOKIE_OPTIONS);
+    return sessionID;
+  },
+  extractSessionData: async (c: Context) => {
+    const sessionID = getCookie(c, cookieName);
+    if (!sessionID) return undefined;
+    const data = await store.getAndDestroy(sessionID);
+    deleteCookie(c, cookieName, COOKIE_OPTIONS);
+    return data;
   }
-}
+});
+
+const createWebAuthnSessionController = (
+  stores: WebAuthnSessionStores
+): WebAuthnSessionController => ({
+  registration: {
+    generate: createHandler<WebAuthnRegistrationGenerateSessionData>(
+      stores.registration.generate,
+      WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate
+    ),
+    verify: createHandler<WebAuthnRegistrationVerifySessionData>(
+      stores.registration.verify,
+      WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify
+    )
+  },
+  authentication: {
+    verify: createHandler<WebAuthnAuthenticationVerifySessionData>(
+      stores.authentication.verify,
+      WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify
+    )
+  },
+  reauthentication: {
+    verify: createHandler<WebAuthnReauthenticationVerifySessionData>(
+      stores.reauthentication.verify,
+      WEBAUTHN_SESSION_COOKIE_NAMES.reauthenticationVerify
+    )
+  }
+});
 
 export const webauthnSessionController = createWebAuthnSessionController(webauthnSessionStores);
