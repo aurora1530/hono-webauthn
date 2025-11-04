@@ -2,6 +2,7 @@
   "name": "hono-webauthn",
   "type": "module",
   "scripts": {
+    "build:client": "npx esbuild src/client/*.ts --bundle --outdir=public --outbase=src/client --platform=browser",
     "dev": "tsx watch src/index.tsx",
     "update:aaguid": "tsx scripts/updateAAGUID.ts"
   },
@@ -10,13 +11,13 @@
     "@hono/node-server": "^1.19.6",
     "@prisma/client": "^6.4.1",
     "@simplewebauthn/server": "^13.1.1",
-    "esbuild": "^0.25.1",
     "hono": "^4.7.4",
     "redis": "^5.9.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
+    "esbuild": "0.25.12",
     "prisma": "^6.4.1",
     "tsx": "^4.7.1",
     "typescript": "^5.8.2"

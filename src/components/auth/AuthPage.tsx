@@ -80,7 +80,7 @@ const AuthPage: FC = async () => {
           </>
         )}
       </div>
-      <script src="/public/authPage.ts" type="module"></script>
+      <script src="/public/authPage.js" type="module"></script>
     </>
   );
 };

@@ -36,7 +36,7 @@ const LoginForm: FC = () => {
       <div>
         <button class={primaryButton} id="login-button">Login</button>
       </div>
-      <script src="/public/loginForm.ts" type="module"></script>
+      <script src="/public/loginForm.js" type="module"></script>
     </div>
   );
 };

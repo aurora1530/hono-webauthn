@@ -238,7 +238,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
       <button class={addButtonClass} id="add-passkey-button">
         パスキー追加
       </button>
-      <script src="/public/passkeyManagement.ts" type="module"></script>
+      <script src="/public/passkeyManagement.js" type="module"></script>
     </div>
   );
 };
