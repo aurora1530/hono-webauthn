@@ -1,11 +1,12 @@
+import { openModal } from "./modal.ts";
 import { handleReauthentication } from "./reauthentication.ts";
 
 async function handleDeletePasskey(passkeyId: string) {
   if (confirm("本当にこのパスキーを削除しますか？")) {
-    alert('再認証を開始します。');
+    openModal(`<p>再認証を開始します。</p>`);
     const reauthSuccess = await handleReauthentication();
     if (!reauthSuccess) {
-      alert('再認証に失敗しました。パスキーは削除されませんでした。');
+      openModal('<p>再認証に失敗しました。パスキーは削除されませんでした。</p>');
       return;
     }
 
