@@ -1,11 +1,12 @@
 function openModal(innerHTML: string | HTMLElement) {
   const modal = document.getElementById('main-modal') as HTMLDialogElement | null;
-  if (modal) {
-    modal.innerHTML = '';
+  const modalContent = document.getElementById('main-modal-content');
+  if (modal && modalContent) {
+    modalContent.innerHTML = '';
     if (typeof innerHTML === 'string') {
-      modal.innerHTML = innerHTML;
+      modalContent.innerHTML = innerHTML;
     } else {
-      modal.appendChild(innerHTML);
+      modalContent.appendChild(innerHTML);
     }
     modal.showModal();
   }
