@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
-import { aaguidJsonSchema } from '../src/lib/auth/aaguid/parse.js';
+import { aaguidJsonSchema } from '../../src/lib/auth/aaguid/parse.js';
 
 const AAGUID_URL = "https://raw.githubusercontent.com/passkeydeveloper/passkey-authenticator-aaguids/refs/heads/main/aaguid.json"
-const FILE_PATH = new URL('../src/lib/auth/aaguid/aaguid.json', import.meta.url);
+const FILE_PATH = new URL('../../src/lib/auth/aaguid/aaguid.json', import.meta.url);
 
 
 async function updateAAGUIDs() {
