@@ -3,7 +3,7 @@ import Header from './components/common/Header.js';
 import { css, cx, Style } from 'hono/css';
 import Modal from './components/common/Modal.js';
 
-const rootRenderer = jsxRenderer(({ children, title, modalContent }) => {
+const rootRenderer = jsxRenderer(({ children, title }) => {
   const htmlClass = css`
     margin:0;
     padding:0;
@@ -32,7 +32,7 @@ const rootRenderer = jsxRenderer(({ children, title, modalContent }) => {
       </head>
       <body class={bodyClass}>
         <Header />
-        {modalContent && <Modal>{modalContent}</Modal>}
+        <Modal />
         <main class={mainClass}>{children}</main>
       </body>
     </html>

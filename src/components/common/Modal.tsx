@@ -1,7 +1,7 @@
 import type { FC } from 'hono/jsx';
 import { css, Style } from 'hono/css';
 
-const Modal: FC = async (props) => {
+const Modal: FC = async () => {
   const dialogClass = css`
     border: none;
     border-radius: 12px;
@@ -24,8 +24,7 @@ const Modal: FC = async (props) => {
           }
         `}
       </Style>
-      <dialog class={dialogClass} role="dialog" aria-modal="true" closedby="any">
-        {props.children}
+      <dialog id="main-modal" class={dialogClass} role="dialog" aria-modal="true" closedby="any">
       </dialog>
     </>
   );
