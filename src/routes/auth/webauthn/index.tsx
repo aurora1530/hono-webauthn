@@ -163,8 +163,8 @@ webauthnApp
         counter: credential.counter,
         aaguid,
         name: passkeyName,
-        registeredBrowser: browser,
-        registeredOS: os,
+        createdBrowser: browser,
+        createdOS: os,
       })
     });
 

@@ -171,8 +171,8 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
           )}
           <ul class={listClass}>
             {passkeys.map((passkey) => {
-              const browser = passkey.registeredBrowser;
-              const os = passkey.registeredOS;
+              const browser = passkey.createdBrowser;
+              const os = passkey.createdOS;
               const iconSrc = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
               return (
                 <li key={passkey.id} class={itemClass}>
