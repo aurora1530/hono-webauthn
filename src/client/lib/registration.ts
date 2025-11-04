@@ -1,3 +1,4 @@
+import { openModal } from "./modal.ts";
 import { handleReauthentication } from "./reauthentication.ts";
 
 async function handleRegistration(isNewAccount: boolean = true) {
@@ -22,10 +23,10 @@ async function handleRegistration(isNewAccount: boolean = true) {
       return;
     }
   } else {
-    alert('再認証を開始します。');
+    openModal(`<p>再認証を開始します。</p>`);
     const reauthSuccess = await handleReauthentication();
     if (!reauthSuccess) {
-      alert('再認証に失敗しました。パスキーの追加は行われませんでした。');
+      openModal('<p>再認証に失敗しました。パスキーの追加は行われませんでした。</p>');
       return;
     }
   }
