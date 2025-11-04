@@ -19,11 +19,11 @@ const options = {
   absWorkingDir: path.resolve('.'), // クライアント外のimportを防ぐ補助
 };
 
+await build(options);
+console.log('✅ Client build complete');
+
 if (isWatch) {
   const ctx = await context(options);
   await ctx.watch();
   console.log('👀 Watching client bundle...');
-} else {
-  await build(options);
-  console.log('✅ Client build complete');
 }
