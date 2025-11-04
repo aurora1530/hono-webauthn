@@ -1,4 +1,3 @@
-import { esbuildTranspiler } from '@hono/esbuild-transpiler/node';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
@@ -25,7 +24,6 @@ app.use(
   })
 );
 app.use(csrf());
-app.get('/public/:scriptName{.+.tsx?}', esbuildTranspiler());
 app.get('/public/*', serveStatic({ root: './' }));
 app.use(rootRenderer);
 app.use(loginSessionMiddleware);
