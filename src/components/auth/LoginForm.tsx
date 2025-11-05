@@ -34,6 +34,7 @@ const LoginForm: FC = () => {
   return (
     <div class={container}>
       <div>
+        <p>ログインを待っています...</p>
         <button class={primaryButton} id="login-button">Login</button>
       </div>
       <script src="/public/loginForm.js" type="module"></script>
