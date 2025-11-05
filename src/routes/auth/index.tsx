@@ -39,14 +39,18 @@ authApp
   .post(
     '/register',
     validator('json', (value, c) => {
-      const parsed = z
-        .object({ username: z.string().trim().min(1).max(64) })
-        .safeParse(value);
+      const UsernameSchema = z
+        .string()
+        .trim()
+        .min(1)
+        .max(64)
+        .regex(/^[a-zA-Z0-9]+$/, { message: 'ユーザー名は半角英数字のみ使用できます。' });
+      const parsed = z.object({ username: UsernameSchema }).safeParse(value);
       if (!parsed.success) {
         return c.json(
           {
             success: false,
-            message: 'ユーザー名は1〜64文字で入力してください。',
+            message: 'ユーザー名は1〜64文字、半角英数字のみ使用できます。',
           },
           400
         );

@@ -43,7 +43,13 @@ const AccountRegisterForm: FC = () => {
   const errorWrap = css`
     min-height: 16px;
   `;
-  
+  const counterText = css`
+    color: #6b7280;
+    font-size: 12px;
+    min-width: 48px;
+    text-align: right;
+  `;
+
   const primaryButton = cx(
     buttonBase,
     css`
@@ -55,15 +61,31 @@ const AccountRegisterForm: FC = () => {
       &:active {
         opacity: 0.9;
       }
+      &:disabled {
+        background: #a7f3d0;
+        cursor: not-allowed;
+        opacity: 0.8;
+      }
     `
   );
 
   return (
     <div class={container}>
-      <div class={hintText}>ユーザー名は1〜64文字で入力してください。</div>
+      <div id="username-hint" class={hintText}>ユーザー名は1〜64文字、半角英数字のみ。</div>
       <div class={row}>
-        <input class={input} type="text" name="username" id="username" placeholder="ユーザー名" />
-        <button class={primaryButton} id="account-register-button">Register</button>
+        <input
+          class={input}
+          type="text"
+          name="username"
+          id="username"
+          placeholder="ユーザー名"
+          pattern="[a-zA-Z0-9]{1,64}"
+          title="1〜64文字、半角英数字のみ"
+          aria-describedby="username-hint username-error"
+          aria-invalid="false"
+        />
+        <span id="username-count" class={counterText} aria-live="polite">0/64</span>
+        <button class={primaryButton} id="account-register-button" disabled>Register</button>
       </div>
       <div class={errorWrap}>
         <span id="username-error" class={errorText} role="alert" aria-live="polite" />
