@@ -2,7 +2,7 @@ import z from "zod";
 import type { SessionStore } from "../session.js";
 import { createRedisSessionStore } from "../redis/redis-session.js";
 import type { Context } from "hono";
-import { deleteCookie, getCookie, setCookie } from "hono/cookie";
+import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.ts";
 
 const ReauthDataSchema = z.object({
   userId: z.string(),
@@ -36,16 +36,16 @@ const createReauthSessionController = (
   return {
     initialize: async (c: Context, data: ReauthData) => {
       const sessionID = await store.createSessionWith(data);
-      setCookie(c, REAUTH_SESSION_PREFIX, sessionID, {
+      await setCookieHelper(c, REAUTH_SESSION_PREFIX, sessionID, {
         httpOnly: true,
         secure: true,
         sameSite: "Lax",
       });
     },
     extractSessionData: async (c: Context) => {
-      const sessionID = getCookie(c, REAUTH_SESSION_PREFIX);
+      const sessionID = await getCookieHelper(c, REAUTH_SESSION_PREFIX);
       if (!sessionID) return undefined;
-      deleteCookie(c, REAUTH_SESSION_PREFIX, {
+      deleteCookieHelper(c, REAUTH_SESSION_PREFIX, {
         httpOnly: true,
         secure: true,
         sameSite: "Lax",

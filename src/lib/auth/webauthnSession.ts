@@ -1,7 +1,7 @@
 import type { Context } from 'hono';
 import { createRedisSessionStore } from '../redis/redis-session.js';
-import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import z from 'zod';
+import { deleteCookieHelper, getCookieHelper, setCookieHelper } from './cookieHelper.ts';
 
 const WebAuthnRegistrationGenerateSessionDataSchema = z.object({ username: z.string() });
 type WebAuthnRegistrationGenerateSessionData = z.infer<
@@ -121,14 +121,14 @@ const createHandler = <T extends object>(
 ): SessionDataHandler<T> => ({
   initialize: async (c: Context, data: T) => {
     const sessionID = await store.createSessionWith(data);
-    setCookie(c, cookieName, sessionID, COOKIE_OPTIONS);
+    await setCookieHelper(c, cookieName, sessionID, COOKIE_OPTIONS);
     return sessionID;
   },
   extractSessionData: async (c: Context) => {
-    const sessionID = getCookie(c, cookieName);
+    const sessionID = await getCookieHelper(c, cookieName);
     if (!sessionID) return undefined;
     const data = await store.getAndDestroy(sessionID);
-    deleteCookie(c, cookieName, COOKIE_OPTIONS);
+    deleteCookieHelper(c, cookieName, COOKIE_OPTIONS);
     return data;
   }
 });

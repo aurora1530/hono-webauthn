@@ -1,10 +1,10 @@
 import { createMiddleware } from 'hono/factory';
 import { type SessionStore } from '../session.js';
-import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { cookieOptions } from './cookie-options.js';
 import { createRedisSessionStore } from '../redis/redis-session.js';
 import type { Context } from 'hono';
 import z from 'zod';
+import { deleteCookieHelper, getCookieHelper, setCookieHelper } from './cookieHelper.ts';
 
 
 const UserDataSchema = z.object({
@@ -36,21 +36,21 @@ interface LoginSessionController {
 const createLoginSessionController = (store: LoginSessionStore): LoginSessionController => {
   return {
     getUserData: async (c: Context) => {
-      const sessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
+      const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
       if (!sessionID) return undefined;
       return store.get(sessionID);
     },
     setLoggedIn: async (c: Context, userData: UserData) => {
-      const currentSessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
+      const currentSessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
       if (currentSessionID) await store.destroy(currentSessionID);
       const newSessionID = await store.createSessionWith(userData);
-      setCookie(c, LOGIN_SESSION_COOKIE_NAME, newSessionID, cookieOptions);
+      await setCookieHelper(c, LOGIN_SESSION_COOKIE_NAME, newSessionID, cookieOptions);
     },
     setLoggedOut: async (c: Context) => {
-      const sessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
+      const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
       if (sessionID) {
         await store.destroy(sessionID);
-        deleteCookie(c, LOGIN_SESSION_COOKIE_NAME, cookieOptions);
+        deleteCookieHelper(c, LOGIN_SESSION_COOKIE_NAME, cookieOptions);
       }
     }
   }
@@ -60,10 +60,10 @@ export const loginSessionController = createLoginSessionController(loginSessionS
 
 export const loginSessionMiddleware = createMiddleware(async (c, next) => {
   // すでにセッションが存在する場合のみ有効期限を延長する（匿名ユーザには作成しない）
-  const sessionID = getCookie(c, LOGIN_SESSION_COOKIE_NAME);
+  const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
   if (sessionID) {
     await loginSessionStore.refresh(sessionID);
-    setCookie(c, LOGIN_SESSION_COOKIE_NAME, sessionID, cookieOptions);
+    await setCookieHelper(c, LOGIN_SESSION_COOKIE_NAME, sessionID, cookieOptions);
   }
 
   await next();
