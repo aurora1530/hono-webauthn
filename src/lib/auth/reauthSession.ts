@@ -36,20 +36,12 @@ const createReauthSessionController = (
   return {
     initialize: async (c: Context, data: ReauthData) => {
       const sessionID = await store.createSessionWith(data);
-      await setCookieHelper(c, REAUTH_SESSION_PREFIX, sessionID, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "Lax",
-      });
+      await setCookieHelper(c, REAUTH_SESSION_PREFIX, sessionID, { maxAge: REAUTH_SESSION_TTL_SEC });
     },
     extractSessionData: async (c: Context) => {
       const sessionID = await getCookieHelper(c, REAUTH_SESSION_PREFIX);
       if (!sessionID) return undefined;
-      deleteCookieHelper(c, REAUTH_SESSION_PREFIX, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "Lax",
-      });
+      deleteCookieHelper(c, REAUTH_SESSION_PREFIX);
       return await store.getAndDestroy(sessionID);
     }
   };

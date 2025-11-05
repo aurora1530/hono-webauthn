@@ -1,6 +1,5 @@
 import { createMiddleware } from 'hono/factory';
 import { type SessionStore } from '../session.js';
-import { cookieOptions } from './cookie-options.js';
 import { createRedisSessionStore } from '../redis/redis-session.js';
 import type { Context } from 'hono';
 import z from 'zod';
@@ -44,13 +43,13 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
       const currentSessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
       if (currentSessionID) await store.destroy(currentSessionID);
       const newSessionID = await store.createSessionWith(userData);
-      await setCookieHelper(c, LOGIN_SESSION_COOKIE_NAME, newSessionID, cookieOptions);
+      await setCookieHelper(c, LOGIN_SESSION_COOKIE_NAME, newSessionID, { maxAge: TTL_SEC });
     },
     setLoggedOut: async (c: Context) => {
       const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
       if (sessionID) {
         await store.destroy(sessionID);
-        deleteCookieHelper(c, LOGIN_SESSION_COOKIE_NAME, cookieOptions);
+        deleteCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
       }
     }
   }
@@ -63,7 +62,7 @@ export const loginSessionMiddleware = createMiddleware(async (c, next) => {
   const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
   if (sessionID) {
     await loginSessionStore.refresh(sessionID);
-    await setCookieHelper(c, LOGIN_SESSION_COOKIE_NAME, sessionID, cookieOptions);
+    await setCookieHelper(c, LOGIN_SESSION_COOKIE_NAME, sessionID, { maxAge: TTL_SEC });
   }
 
   await next();

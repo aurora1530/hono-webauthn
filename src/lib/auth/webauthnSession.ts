@@ -109,12 +109,6 @@ const WEBAUTHN_SESSION_COOKIE_NAMES = {
   authenticationVerify: 'webauthn-a-v',
   reauthenticationVerify: 'webauthn-ra-v'
 }
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'Lax' as const,
-  maxAge: SESSION_TTL_SEC
-};
 
 const createHandler = <T extends object>(
   store: { createSessionWith: (data: T) => Promise<string>; getAndDestroy: (id: string) => Promise<T | undefined> },
@@ -122,14 +116,14 @@ const createHandler = <T extends object>(
 ): SessionDataHandler<T> => ({
   initialize: async (c: Context, data: T) => {
     const sessionID = await store.createSessionWith(data);
-    await setCookieHelper(c, cookieName, sessionID, COOKIE_OPTIONS);
+    await setCookieHelper(c, cookieName, sessionID, { maxAge: SESSION_TTL_SEC });
     return sessionID;
   },
   extractSessionData: async (c: Context) => {
     const sessionID = await getCookieHelper(c, cookieName);
     if (!sessionID) return undefined;
     const data = await store.getAndDestroy(sessionID);
-    deleteCookieHelper(c, cookieName, COOKIE_OPTIONS);
+    deleteCookieHelper(c, cookieName);
     return data;
   }
 });
