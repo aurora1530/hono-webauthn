@@ -2,6 +2,7 @@ import type { Context } from 'hono';
 import { createRedisSessionStore } from '../redis/redis-session.js';
 import z from 'zod';
 import { deleteCookieHelper, getCookieHelper, setCookieHelper } from './cookieHelper.ts';
+import type { JsonObject } from '../json.ts';
 
 const WebAuthnRegistrationGenerateSessionDataSchema = z.object({ username: z.string() });
 type WebAuthnRegistrationGenerateSessionData = z.infer<
@@ -28,7 +29,7 @@ type WebAuthnReauthenticationVerifySessionData = z.infer<
 
 const SESSION_TTL_SEC = 60 * 5; // 5 minutes
 
-const makeStore = async <T extends Record<string, unknown>>(
+const makeStore = async <T extends JsonObject>(
   prefix: string,
   schema: z.ZodType<T>
 ) =>

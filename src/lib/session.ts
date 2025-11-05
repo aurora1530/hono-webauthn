@@ -1,6 +1,8 @@
+import type { JsonObject } from './json.ts';
+
 export type SessionID = string;
 
-export interface SessionStore<T extends Record<string, unknown>> {
+export interface SessionStore<T extends JsonObject> {
   createSessionWith(data: T): Promise<SessionID>;
   refresh(sessionID: SessionID): Promise<boolean>;
   get(sessionID: SessionID): Promise<T | undefined>;

@@ -1,17 +1,19 @@
 import { getRedis } from "./redis.js";
 import { type SessionID, type SessionStore } from "../session.js";
+import type { JsonObject } from "../json.ts";
 
-type RedisSessionStoreOptions<T = Record<string, unknown>> = {
-  prefix: string;
-  ttlSec: number;
-  dataParser: (data: unknown) => T | undefined;
-};
+type RedisSessionStoreOptions<T
+  extends JsonObject = JsonObject> = {
+    prefix: string;
+    ttlSec: number;
+    dataParser: (data: unknown) => T | undefined;
+  };
 
 const generateSessionID = (): SessionID => {
   return crypto.randomUUID();
 };
 
-const createRedisSessionStore = async <T extends Record<string, unknown>>(options: RedisSessionStoreOptions<T>): Promise<SessionStore<T>> => {
+const createRedisSessionStore = async <T extends JsonObject>(options: RedisSessionStoreOptions<T>): Promise<SessionStore<T>> => {
   const redis = await getRedis();
   const KEY = (sessionID: string) => `${options.prefix}:${sessionID}`;
 
