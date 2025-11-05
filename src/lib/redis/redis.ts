@@ -10,8 +10,10 @@ export async function getRedis(): Promise<RedisClientType> {
   client = createClient({
     url,
     socket: {
-      // Exponential backoff up to 30s
-      reconnectStrategy: (retries) => Math.min(1000 * Math.pow(2, retries), 30_000)
+      reconnectStrategy: (retries) => {
+        // 初回は即時、以降は指数だが上限5秒
+        return retries === 0 ? 0 : Math.min(500 * Math.pow(2, retries), 5_000);
+      }
     }
   });
   client.on('error', (err) => {
