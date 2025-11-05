@@ -7,7 +7,15 @@ async function handleRegistration(isNewAccount: boolean = true) {
     if (!usernameEle || !(usernameEle instanceof HTMLInputElement)) {
       return;
     }
-    const username = usernameEle.value;
+    const errorEle = document.getElementById('username-error');
+    const username = usernameEle.value.trim();
+    if (username.length < 1 || username.length > 64) {
+      if (errorEle) errorEle.textContent = 'ユーザー名は1〜64文字で入力してください。';
+      usernameEle.focus();
+      return;
+    } else {
+      if (errorEle) errorEle.textContent = '';
+    }
     const usernameRegisterResponse = await fetch('/auth/register', {
       method: 'POST',
       headers: {
@@ -19,7 +27,8 @@ async function handleRegistration(isNewAccount: boolean = true) {
     });
     const json = await usernameRegisterResponse.json();
     if (!json.success) {
-      alert(json.message);
+      if (errorEle) errorEle.textContent = json.message ?? '登録に失敗しました。';
+      else alert(json.message);
       return;
     }
   } else {

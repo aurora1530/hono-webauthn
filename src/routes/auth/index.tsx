@@ -39,12 +39,14 @@ authApp
   .post(
     '/register',
     validator('json', (value, c) => {
-      const parsed = z.object({ username: z.string()}).safeParse(value)
+      const parsed = z
+        .object({ username: z.string().trim().min(1).max(64) })
+        .safeParse(value);
       if (!parsed.success) {
         return c.json(
           {
             success: false,
-            message: 'ユーザー名が不正です。',
+            message: 'ユーザー名は1〜64文字で入力してください。',
           },
           400
         );
