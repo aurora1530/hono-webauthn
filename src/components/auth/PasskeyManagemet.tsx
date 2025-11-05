@@ -6,6 +6,17 @@ import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
 const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> = ({ passkeys, currentPasskeyID }) => {
   const canDelete = passkeys.length > 1;
 
+  const containerClass = css`
+    width: 100%;
+    max-width: 80%;
+    margin: 0 auto;
+    @media (max-width: 640px) {
+      max-width: 100%;
+      width: auto;
+      margin: 0 8px;
+    }
+  `;
+
   const titleClass = css`
     font-size: 20px;
     font-weight: 600;
@@ -19,6 +30,8 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
     display: flex;
     flex-direction: column;
     gap: 12px;
+    align-items: center;
+    width: 100%;
   `;
 
   const itemClass = css`
@@ -29,6 +42,12 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
     flex-direction: column;
     gap: 8px;
     position: relative;
+    box-sizing: border-box;
+
+    width: 30em;
+    @media (max-width: 640px) {
+      width: 100%;
+    }
   `;
 
   const rowTopClass = css`
@@ -158,7 +177,7 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
   );
 
   return (
-    <div>
+    <div class={containerClass}>
       <h2 class={titleClass}>パスキー管理</h2>
       <button class={addButtonClass} id="add-passkey-button">
         パスキー追加
