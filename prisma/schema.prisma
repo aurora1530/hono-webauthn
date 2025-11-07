@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
@@ -21,20 +21,30 @@ model User {
 }
 
 model Passkey {
-  id             String   @id
-  publicKey      Bytes
-  userID         String
-  user           User     @relation(fields: [userID], references: [id])
-  webauthnUserID String
-  counter        Int
-  deviceType     String   @db.VarChar(32)
-  backedUp       Boolean
-  transports     String[] @default([])
-  aaguid         String   @db.VarChar(36)
-  createdAt      DateTime @default(now())
-  name           String
-  createdBrowser     String
-  createdOS          String
+  id               String           @id
+  publicKey        Bytes
+  userID           String
+  user             User             @relation(fields: [userID], references: [id])
+  webauthnUserID   String
+  counter          Int
+  deviceType       String           @db.VarChar(32)
+  backedUp         Boolean
+  transports       String[]         @default([])
+  aaguid           String           @db.VarChar(36)
+  createdAt        DateTime         @default(now())
+  name             String
+  createdBrowser   String
+  createdOS        String
+  passkeyHistories PasskeyHistory[]
 
   @@index([webauthnUserID], name: "webauthnUserID")
+}
+
+model PasskeyHistory {
+  id        String  @id @default(cuid())
+  passkeyID String
+  passkey   Passkey @relation(fields: [passkeyID], references: [id])
+  usedBrowser String
+  usedOS      String
+  usedAt     DateTime @default(now())
 }
