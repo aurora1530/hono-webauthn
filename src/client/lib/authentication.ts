@@ -1,27 +1,27 @@
+import { webauthnClient } from "./rpc/webauthnClient.ts";
+
 async function handleAuthentication() {
-  const generateAuthenticationOptionsResponse = await fetch(
-    '/auth/webauthn/authentication/generate',
-    {
-      method: 'GET',
-    }
-  );
+  const generateAuthenticationOptionsResponse = await webauthnClient.authentication.generate.$get();
+  if (!generateAuthenticationOptionsResponse.ok) {
+    alert(`パスキーによる認証の開始に失敗しました。`);
+    return;
+  }
+
   const options = PublicKeyCredential.parseRequestOptionsFromJSON(
     await generateAuthenticationOptionsResponse.json()
   );
   console.log(options);
 
   const credential = await navigator.credentials.get({ publicKey: options });
-  const credentialResponse = await fetch('/auth/webauthn/authentication/verify', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(credential),
-  });
+  const credentialResponse = await webauthnClient.authentication.verify.$post({
+    json: {
+      body: credential
+    }
+  })
 
-  const credentialJson = await credentialResponse.json();
-  if (!credentialJson.success) {
-    alert(credentialJson.message);
+  if (!credentialResponse.ok) {
+    const error = (await credentialResponse.json()).error
+    alert(error);
     return;
   }
 

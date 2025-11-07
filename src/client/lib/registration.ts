@@ -1,5 +1,7 @@
+import { authClient } from "./rpc/authClient.ts";
 import { closeModal, openModal } from "./modal.ts";
 import { handleReauthentication } from "./reauthentication.ts";
+import { webauthnClient } from "./rpc/webauthnClient.ts";
 
 function validateUsernameAndUpdateUI(): boolean {
   const usernameEle = document.getElementById('username');
@@ -55,19 +57,14 @@ async function handleRegistration(isNewAccount: boolean = true) {
     const username = usernameEle.value.trim();
     if (!validateUsernameAndUpdateUI()) return;
     if (errorEle) errorEle.textContent = '';
-    const usernameRegisterResponse = await fetch('/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        username: username,
-      }),
-    });
-    const json = await usernameRegisterResponse.json();
-    if (!json.success) {
-      if (errorEle) errorEle.textContent = json.message ?? 'ユーザー名は1〜64文字、半角英数字のみ使用できます。';
-      else alert(json.message);
+    const usernameRegisterResponse = await authClient.register.$post({
+      json: { username }
+    })
+
+    if (!usernameRegisterResponse.ok) {
+      const error = (await usernameRegisterResponse.json()).error
+      if (errorEle) errorEle.textContent = error;
+      else alert(error);
       return;
     }
   } else {
@@ -80,28 +77,28 @@ async function handleRegistration(isNewAccount: boolean = true) {
     closeModal();
   }
 
-  const generateRegistrationOptionsResponse = await fetch('/auth/webauthn/registration/generate', {
-    method: 'GET',
-  });
+  const generateRegistrationOptionsResponse = await webauthnClient.registration.generate.$get();
+  if (!generateRegistrationOptionsResponse.ok) {
+    const error = (await generateRegistrationOptionsResponse.json()).error
+    return alert(`パスキーの登録に失敗しました。エラー: ${error}`);
+  }
   const options = PublicKeyCredential.parseCreationOptionsFromJSON(await generateRegistrationOptionsResponse.json());
   console.log(options);
 
   const credential = await navigator.credentials.create({ publicKey: options });
-  const credentialResponse = await fetch('/auth/webauthn/registration/verify', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(credential),
+  const credentialResponse = await webauthnClient.registration.verify.$post({
+    'json': {
+      body: credential
+    }
   });
 
-  const credentialJson = await credentialResponse.json();
-  if (!credentialJson.success) {
-    alert(credentialJson.message);
+  if (!credentialResponse.ok) {
+    const error = (await credentialResponse.json()).error
+    alert(error);
     return;
   }
 
-  if(isNewAccount) {
+  if (isNewAccount) {
     alert('新規登録が完了しました');
     location.href = '/auth/login';
   } else {
