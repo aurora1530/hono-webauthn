@@ -10,6 +10,7 @@ import PasskeyManagement from '../../components/auth/PasskeyManagemet.js';
 import { loginSessionController } from '../../lib/auth/loginSession.js';
 import { webauthnSessionController } from '../../lib/auth/webauthnSession.js';
 import z from 'zod';
+import { findHistories } from './webauthn/history.ts';
 
 const authApp = new Hono();
 
@@ -94,7 +95,18 @@ const authAppRoutes = authApp
       },
     });
 
-    return c.render(<PasskeyManagement passkeys={passkeys} currentPasskeyID={userData.usedPasskeyID} />, { title: 'パスキー管理' });
+    const histories = await findHistories(passkeys.map((pk) => pk.id));
+    const passkeyData = passkeys.map((pk) => {
+      return { passkey: pk, lastUsed: histories[pk.id]?.[0] };
+    });
+
+    return c.render(
+      <PasskeyManagement
+        passkeyData={passkeyData}
+        currentPasskeyID={userData.usedPasskeyID}
+      />,
+      { title: 'パスキー管理' }
+    );
   });
 
 export default authApp;

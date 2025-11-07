@@ -1,10 +1,15 @@
-import type { Passkey } from '@prisma/client';
+import type { Passkey, PasskeyHistory } from '@prisma/client';
 import type { FC } from 'hono/jsx';
 import { css, cx } from 'hono/css';
 import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
 
-const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> = ({ passkeys, currentPasskeyID }) => {
-  const canDelete = passkeys.length > 1;
+type PasskeyData = {
+  passkey: Passkey;
+  lastUsed: PasskeyHistory | undefined;
+}
+
+const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: string }> = ({ passkeyData, currentPasskeyID }) => {
+  const canDelete = passkeyData.length > 1;
 
   const containerClass = css`
     width: 100%;
@@ -183,23 +188,23 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
         パスキー追加
       </button>
       <hr />
-      {passkeys.length === 0 ? (
+      {passkeyData.length === 0 ? (
         <p>登録されているパスキーはありません。</p>
       ) : (
        <>
-          {passkeys.every(p =>  !p.backedUp) && (
+          {passkeyData.every(pData =>  !pData.passkey.backedUp) && (
             <p style="color: #b45309; background: #fef3c7; padding: 8px 12px; border-radius: 6px; border: 1px solid #fcd34d;">
               注意: 同期されたパスキーがありません。パスキーを紛失した場合、認証できなくなる可能性があります。
             </p>
           )}
           <ul class={listClass}>
-            {passkeys.map((passkey) => {
-              const browser = passkey.createdBrowser;
-              const os = passkey.createdOS;
-              const iconSrc = aaguidToNameAndIcon(passkey.aaguid)?.icon_light;
+            {passkeyData.map((pData) => {
+              const browser = pData.passkey.createdBrowser;
+              const os = pData.passkey.createdOS;
+              const iconSrc = aaguidToNameAndIcon(pData.passkey.aaguid)?.icon_light;
               return (
-                <li key={passkey.id} class={itemClass}>
-                  {passkey.backedUp ? (
+                <li key={pData.passkey.id} class={itemClass}>
+                  {pData.passkey.backedUp ? (
                     <span class={badgeSyncedClass}>Synced</span>
                   ) : (
                     <span class={badgeUnsyncedClass}>Unsynced</span>
@@ -209,48 +214,87 @@ const PasskeyManagement: FC<{ passkeys: Passkey[], currentPasskeyID: string }> =
                       {iconSrc ? (
                         <img decoding="async" class={iconClass} src={iconSrc} alt="" />
                       ) : (
-                        <span aria-hidden="true" style="width:20px;height:20px;display:inline-block;"></span>
+                        <span
+                          aria-hidden="true"
+                          style="width:20px;height:20px;display:inline-block;"
+                        ></span>
                       )}
                     </div>
-                    <p class={nameClass}>{passkey.name}</p>
+                    <p class={nameClass}>{pData.passkey.name}</p>
                     <div class={rowRightClass}>
                       {/* Edit (change name) icon button */}
                       <button
                         id="change-passkey-name-btn"
-                        class={cx(iconButtonBaseClass, "change-passkey-name-btn")}
+                        class={cx(iconButtonBaseClass, 'change-passkey-name-btn')}
                         aria-label="パスキー名を変更"
                         title="パスキー名を変更"
-                        data-passkey-id={passkey.id}
-                        data-passkey-name={passkey.name}
+                        data-passkey-id={pData.passkey.id}
+                        data-passkey-name={pData.passkey.name}
                       >
                         {/* Pencil icon */}
-                        <svg class={iconSvgClass} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M15.232 5.232a2.5 2.5 0 0 1 3.536 3.536L9.5 18.036 5 19l.964-4.5 9.268-9.268Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <svg
+                          class={iconSvgClass}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M15.232 5.232a2.5 2.5 0 0 1 3.536 3.536L9.5 18.036 5 19l.964-4.5 9.268-9.268Z"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
                         </svg>
                       </button>
                       {/* Delete icon button */}
                       <button
-                        class={cx(iconButtonBaseClass, iconButtonDangerClass, "delete-passkey-btn")}
+                        class={cx(
+                          iconButtonBaseClass,
+                          iconButtonDangerClass,
+                          'delete-passkey-btn'
+                        )}
                         aria-label="パスキーを削除"
                         title="パスキーを削除"
-                        data-passkey-id={passkey.id}
-                        disabled={!canDelete || passkey.id === currentPasskeyID}
+                        data-passkey-id={pData.passkey.id}
+                        disabled={!canDelete || pData.passkey.id === currentPasskeyID}
                       >
                         {/* Trash icon */}
-                        <svg class={iconSvgClass} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 11v6m6-6v6M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1Zm9 3-1 13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <svg
+                          class={iconSvgClass}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M9 11v6m6-6v6M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1Zm9 3-1 13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 7"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
                         </svg>
                       </button>
                     </div>
                   </div>
 
-                  {passkey.id === currentPasskeyID && (
+                  {pData.passkey.id === currentPasskeyID && (
                     <p class={currentSessionClass}>現在のセッションで使用中</p>
                   )}
 
-                  <p class={metaClass}>
-                    登録日時: {passkey.createdAt.toLocaleString()} by {browser} on {os}
-                  </p>
+                  <div class={metaClass}>
+                    <p>
+                      登録日時: {pData.passkey.createdAt.toLocaleString()} by {browser} on{' '}
+                      {os}
+                    </p>
+                    <p>
+                      最終使用日時:{' '}
+                      {pData.lastUsed
+                        ? pData.lastUsed.usedAt.toLocaleString() +
+                          ` by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS}`
+                        : '未使用'}
+                    </p>
+                  </div>
                 </li>
               );
             })}

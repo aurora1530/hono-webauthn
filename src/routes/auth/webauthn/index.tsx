@@ -19,6 +19,7 @@ import { loginSessionController } from '../../../lib/auth/loginSession.js';
 import z from 'zod';
 import { reauthSessionController } from '../../../lib/auth/reauthSession.js';
 import inferClientPlatform from '../../../lib/auth/inferClientPlatform.js';
+import { addHistory } from './history.ts';
 
 const webauthnApp = new Hono();
 
@@ -291,6 +292,11 @@ const webAuthnRoutes = webauthnApp
       );
     }
 
+    await addHistory({
+      passkeyId: savedPasskey.id,
+      ...inferClientPlatform(c.req.raw.headers),
+    });
+
     await loginSessionController.setLoggedIn(c, {
       userID: user.id,
       username: user.name,
@@ -433,6 +439,11 @@ const webAuthnRoutes = webauthnApp
       data: {
         counter: authenticationInfo.newCounter,
       },
+    });
+
+    await addHistory({
+      passkeyId: savedPasskey.id,
+      ...inferClientPlatform(c.req.raw.headers),
     });
 
     await reauthSessionController.initialize(c, {
