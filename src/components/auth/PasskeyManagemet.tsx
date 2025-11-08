@@ -190,12 +190,12 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
     <div class={containerClass}>
       <h2 class={titleClass}>パスキー管理</h2>
       <button class={addButtonClass} id="add-passkey-button" disabled={passkeyData.length >= MAX_PASSKEYS_PER_USER}>
-        パスキー追加
+        パスキー作成
       </button>
       <hr />
       <p>パスキーの数: {passkeyData.length} / {MAX_PASSKEYS_PER_USER}</p>
       {passkeyData.length === 0 ? (
-        <p>登録されているパスキーはありません。</p>
+        <p>作成されているパスキーはありません。</p>
       ) : (
        <>
           {passkeyData.every(pData =>  !pData.passkey.backedUp) && (
@@ -290,7 +290,7 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
 
                   <div class={metaClass}>
                     <p>
-                      登録日時: {pData.passkey.createdAt.toLocaleString()} by {browser} on{' '}
+                      作成日時: {pData.passkey.createdAt.toLocaleString()} by {browser} on{' '}
                       {os}
                     </p>
                     <p>

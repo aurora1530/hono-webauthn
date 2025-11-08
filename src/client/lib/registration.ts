@@ -71,7 +71,7 @@ async function handleRegistration(isNewAccount: boolean = true) {
     openModal(`<p>再認証を開始します。</p>`);
     const reauthSuccess = await handleReauthentication();
     if (!reauthSuccess) {
-      openModal('<p>再認証に失敗しました。パスキーの追加は行われませんでした。</p>');
+      openModal('<p>再認証に失敗しました。パスキーの作成は行われませんでした。</p>');
       return;
     }
     closeModal();
@@ -80,7 +80,7 @@ async function handleRegistration(isNewAccount: boolean = true) {
   const generateRegistrationOptionsResponse = await webauthnClient.registration.generate.$get();
   if (!generateRegistrationOptionsResponse.ok) {
     const error = (await generateRegistrationOptionsResponse.json()).error
-    return alert(`パスキーの登録に失敗しました。エラー: ${error}`);
+    return alert(`パスキーの作成に失敗しました。エラー: ${error}`);
   }
   const options = PublicKeyCredential.parseCreationOptionsFromJSON(await generateRegistrationOptionsResponse.json());
   console.log(options);
@@ -102,7 +102,7 @@ async function handleRegistration(isNewAccount: boolean = true) {
     alert('新規登録が完了しました');
     location.href = '/auth/login';
   } else {
-    alert('パスキーの追加が完了しました');
+    alert('パスキーの作成が完了しました');
     location.reload();
   }
 }

@@ -64,7 +64,7 @@ const AuthPage: FC = async () => {
         {userData ? (
           <>
             ログイン中: <strong>{userData.username}</strong>
-            <button class={secondary} id="add-passkey-button">パスキー追加</button>
+            <button class={secondary} id="add-passkey-button">パスキー作成</button>
             <a
               class={primary}
               href="/auth/logout"

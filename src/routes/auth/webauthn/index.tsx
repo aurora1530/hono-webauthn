@@ -53,7 +53,7 @@ const webAuthnRoutes = webauthnApp
       }
     }
 
-    // ログイン済みユーザであれば、これはパスキーを追加するリクエストなので、既存のパスキーを取得する
+    // ログイン済みユーザであれば、これはパスキーを作成するリクエストなので、既存のパスキーを取得する
     const userID = loginSessionData?.userID;
     const savedPasskeys: Passkey[] = userID
       ? await prisma.passkey.findMany({
@@ -66,7 +66,7 @@ const webAuthnRoutes = webauthnApp
     if (savedPasskeys.length >= MAX_PASSKEYS_PER_USER) {
       return c.json(
         {
-          error: `パスキーは最大${MAX_PASSKEYS_PER_USER}つまで登録可能です。`,
+          error: `パスキーは最大${MAX_PASSKEYS_PER_USER}つまで作成可能です。`,
         },
         400
       );
@@ -117,7 +117,7 @@ const webAuthnRoutes = webauthnApp
       if (!webauthnRegistrationSession?.user || !webauthnRegistrationSession.challenge) {
         return c.json(
           {
-            error: 'セッションが不正です。登録をやり直してください。',
+            error: 'セッションが不正です。作成をやり直してください。',
           },
           401
         );
@@ -136,7 +136,7 @@ const webAuthnRoutes = webauthnApp
         console.error(e);
         return c.json(
           {
-            error: '登録に失敗しました。もう一度やり直してください。',
+            error: '作成に失敗しました。もう一度やり直してください。',
           },
           400
         );
@@ -147,7 +147,7 @@ const webAuthnRoutes = webauthnApp
       if (!verified || !registrationInfo) {
         return c.json(
           {
-            error: '登録に失敗しました。もう一度やり直してください。',
+            error: '作成に失敗しました。もう一度やり直してください。',
           },
           400
         );
