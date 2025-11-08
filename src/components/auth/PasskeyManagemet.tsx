@@ -264,6 +264,13 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
                         aria-label="パスキーを削除"
                         title="パスキーを削除"
                         data-passkey-id={pData.passkey.id}
+                        // 同期されているパスキーがこのパスキーのみかどうかを表すフラグ。
+                        data-only-synced-passkey={
+                          isSynced(pData.passkey) &&
+                          passkeyData.filter((pd) => isSynced(pd.passkey)).length === 1
+                            ? 'true'
+                            : 'false'
+                        }
                         disabled={!canDelete || pData.passkey.id === currentPasskeyID}
                       >
                         {/* Trash icon */}

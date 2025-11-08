@@ -19,6 +19,7 @@ const deletePasskeyBtns = document.getElementsByClassName('delete-passkey-btn') 
 Array.from(deletePasskeyBtns).forEach((btn) => {
   btn.addEventListener('click', () => {
     const passkeyId = btn.dataset.passkeyId;
-    if (passkeyId) handleDeletePasskey(passkeyId);
+    const onlySyncedPasskey = btn.dataset.onlySyncedPasskey === 'true';
+    if (passkeyId) handleDeletePasskey(passkeyId, onlySyncedPasskey);
   });
 });
