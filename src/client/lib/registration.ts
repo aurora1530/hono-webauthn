@@ -2,6 +2,7 @@ import { authClient } from "./rpc/authClient.ts";
 import { closeModal, openModal } from "./modal.ts";
 import { handleReauthentication } from "./reauthentication.ts";
 import { webauthnClient } from "./rpc/webauthnClient.ts";
+import { escapeHTML } from "./escapeHTML.ts";
 
 function validateUsernameAndUpdateUI(): boolean {
   const usernameEle = document.getElementById('username');
@@ -80,7 +81,8 @@ async function handleRegistration(isNewAccount: boolean = true) {
   const generateRegistrationOptionsResponse = await webauthnClient.registration.generate.$get();
   if (!generateRegistrationOptionsResponse.ok) {
     const error = (await generateRegistrationOptionsResponse.json()).error
-    return alert(`パスキーの作成に失敗しました。エラー: ${error}`);
+    openModal(`<p>パスキーの作成に失敗しました。</p><p>エラー: ${escapeHTML(error)}</p>`);
+    return;
   }
   const options = PublicKeyCredential.parseCreationOptionsFromJSON(await generateRegistrationOptionsResponse.json());
   console.log(options);
@@ -94,16 +96,18 @@ async function handleRegistration(isNewAccount: boolean = true) {
 
   if (!credentialResponse.ok) {
     const error = (await credentialResponse.json()).error
-    alert(error);
+    openModal(`<p>パスキーの作成に失敗しました。</p><p>エラー: ${escapeHTML(error)}</p>`);
     return;
   }
 
   if (isNewAccount) {
-    alert('新規登録が完了しました');
-    location.href = '/auth/login';
+    openModal(`<p>新規登録が完了しました。</p>`, () => {
+      location.href = '/auth/login';
+    });
   } else {
-    alert('パスキーの作成が完了しました');
-    location.reload();
+    openModal(`<p>パスキーの作成が完了しました。</p>`, () => {
+      location.reload();
+    });
   }
 }
 
