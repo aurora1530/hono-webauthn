@@ -179,13 +179,17 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
         background: #1d4ed8;
       }
       margin: 6px;
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     `
   );
 
   return (
     <div class={containerClass}>
       <h2 class={titleClass}>パスキー管理</h2>
-      <button class={addButtonClass} id="add-passkey-button">
+      <button class={addButtonClass} id="add-passkey-button" disabled={passkeyData.length >= MAX_PASSKEYS_PER_USER}>
         パスキー追加
       </button>
       <hr />
