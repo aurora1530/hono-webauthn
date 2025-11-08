@@ -3,6 +3,7 @@ import type { FC } from 'hono/jsx';
 import { css, cx } from 'hono/css';
 import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
 import { MAX_PASSKEYS_PER_USER } from '../../routes/auth/webauthn/constant.ts';
+import { isSynced } from '../../routes/auth/webauthn/sync.ts';
 
 type PasskeyData = {
   passkey: Passkey;
@@ -198,7 +199,7 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
         <p>作成されているパスキーはありません。</p>
       ) : (
        <>
-          {passkeyData.every(pData =>  !pData.passkey.backedUp) && (
+          {passkeyData.every(pData =>  !isSynced(pData.passkey)) && (
             <p style="color: #b45309; background: #fef3c7; padding: 8px 12px; border-radius: 6px; border: 1px solid #fcd34d;">
               注意: 同期されたパスキーがありません。パスキーを紛失した場合、認証できなくなる可能性があります。
             </p>
@@ -209,8 +210,8 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
               const os = pData.passkey.createdOS;
               const iconSrc = aaguidToNameAndIcon(pData.passkey.aaguid)?.icon_light;
               return (
-                <li key={pData.passkey.id} class={itemClass}>
-                  {pData.passkey.backedUp ? (
+                  <li key={pData.passkey.id} class={itemClass}>
+                    {isSynced(pData.passkey) ? (
                     <span class={badgeSyncedClass}>Synced</span>
                   ) : (
                     <span class={badgeUnsyncedClass}>Unsynced</span>
