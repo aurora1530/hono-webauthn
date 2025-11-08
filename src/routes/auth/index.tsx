@@ -27,7 +27,12 @@ const authAppRoutes = authApp
     await loginSessionController.setLoggedOut(c);
     return c.redirect('/');
   })
-  .get('/login', (c) => {
+  .get('/login', async (c) => {
+    const userData = await loginSessionController.getUserData(c);
+    if (userData) {
+      return c.redirect('/');
+    }
+
     return c.render(<LoginForm />, {
       title: 'ログイン',
     });
