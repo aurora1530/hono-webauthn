@@ -8,6 +8,7 @@ import rootRenderer from './rootRenderer.js';
 import routerRootApp from './routes/index.js';
 import { loginSessionMiddleware } from './lib/auth/loginSession.js';
 import { csrf } from 'hono/csrf';
+import { typedEnv } from './env.ts';
 
 const app = new Hono();
 
@@ -48,7 +49,7 @@ app
 serve(
   {
     fetch: app.fetch,
-    port: 3000,
+    port: typedEnv.PORT,
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
