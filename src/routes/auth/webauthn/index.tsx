@@ -468,10 +468,18 @@ const webAuthnRoutes = webauthnApp
       const parsed = z
         .object({
           passkeyId: z.string(),
-          newName: z.string(),
+          newName: z.string().trim().min(1).max(50),
         })
         .safeParse(value);
       if (!parsed.success) {
+        if(parsed.error.issues.some(i=>i.code === 'too_small' || i.code === 'too_big')){
+          return c.json(
+            {
+              error: 'パスキー名は1文字以上50文字以下である必要があります。',
+            },
+            400
+          );
+        }
         return c.json(
           {
             error: 'リクエストが不正です。',
