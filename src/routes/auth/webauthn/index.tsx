@@ -20,6 +20,7 @@ import z from 'zod';
 import { reauthSessionController } from '../../../lib/auth/reauthSession.js';
 import inferClientPlatform from '../../../lib/auth/inferClientPlatform.js';
 import { addHistory } from './history.ts';
+import { MAX_PASSKEYS_PER_USER } from './constant.ts';
 
 const webauthnApp = new Hono();
 
@@ -61,6 +62,15 @@ const webAuthnRoutes = webauthnApp
           },
         })
       : [];
+
+    if (savedPasskeys.length >= MAX_PASSKEYS_PER_USER) {
+      return c.json(
+        {
+          error: `パスキーは最大${MAX_PASSKEYS_PER_USER}つまで登録可能です。`,
+        },
+        400
+      );
+    }
 
     const savedWebAuthnUserId = savedPasskeys[0]?.webauthnUserID;
 

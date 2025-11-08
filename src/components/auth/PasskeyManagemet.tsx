@@ -2,6 +2,7 @@ import type { Passkey, PasskeyHistory } from '@prisma/client';
 import type { FC } from 'hono/jsx';
 import { css, cx } from 'hono/css';
 import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
+import { MAX_PASSKEYS_PER_USER } from '../../routes/auth/webauthn/constant.ts';
 
 type PasskeyData = {
   passkey: Passkey;
@@ -188,6 +189,7 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
         パスキー追加
       </button>
       <hr />
+      <p>パスキーの数: {passkeyData.length} / {MAX_PASSKEYS_PER_USER}</p>
       {passkeyData.length === 0 ? (
         <p>登録されているパスキーはありません。</p>
       ) : (
