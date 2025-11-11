@@ -595,6 +595,11 @@ const webAuthnRoutes = webauthnApp
       }
 
       try {
+        await prisma.passkeyHistory.deleteMany({
+          where: {
+            passkeyID: passkeyId,
+          },
+        });
         const deletedPasskey = await prisma.passkey.delete({
           where: {
             id: passkeyId,
