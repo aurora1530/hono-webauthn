@@ -19,7 +19,7 @@ import { loginSessionController } from '../../../lib/auth/loginSession.js';
 import z from 'zod';
 import { reauthSessionController } from '../../../lib/auth/reauthSession.js';
 import inferClientPlatform from '../../../lib/auth/inferClientPlatform.js';
-import { addHistory } from './history.ts';
+import { addHistory } from '../../../lib/auth/history.ts';
 import { MAX_PASSKEYS_PER_USER } from './constant.ts';
 
 const webauthnApp = new Hono();

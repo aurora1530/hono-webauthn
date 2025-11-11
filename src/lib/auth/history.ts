@@ -1,4 +1,4 @@
-import prisma from "../../../prisma.ts";
+import prisma from "../../prisma.ts";
 import type { Passkey, PasskeyHistory } from "@prisma/client";
 
 type HistoryParams = {

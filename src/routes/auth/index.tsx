@@ -10,7 +10,7 @@ import PasskeyManagement from '../../components/auth/PasskeyManagemet.js';
 import { loginSessionController } from '../../lib/auth/loginSession.js';
 import { webauthnSessionController } from '../../lib/auth/webauthnSession.js';
 import z from 'zod';
-import { findHistories } from './webauthn/history.ts';
+import { findHistories } from '../../lib/auth/history.js';
 
 const authApp = new Hono();
 
