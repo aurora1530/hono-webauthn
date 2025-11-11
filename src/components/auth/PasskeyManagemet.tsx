@@ -3,7 +3,7 @@ import type { FC } from 'hono/jsx';
 import { css, cx } from 'hono/css';
 import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
 import { MAX_PASSKEYS_PER_USER } from '../../routes/auth/webauthn/constant.ts';
-import { isSynced } from '../../routes/auth/webauthn/sync.ts';
+import { isSynced } from '../../lib/auth/sync.ts';
 
 type PasskeyData = {
   passkey: Passkey;
