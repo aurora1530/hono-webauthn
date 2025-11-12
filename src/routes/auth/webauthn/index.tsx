@@ -89,6 +89,10 @@ const webAuthnRoutes = webauthnApp
             type: 'public-key',
           };
         }),
+        authenticatorSelection: {
+          residentKey: 'required',
+          requireResidentKey: true,
+        }
       });
 
     await webauthnSessionController.registration.verify.initialize(c, options);
