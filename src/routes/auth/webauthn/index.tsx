@@ -10,7 +10,6 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/server';
 import { isoUint8Array } from '@simplewebauthn/server/helpers';
-import { origin, rpID, rpName } from '../../../constant.js';
 import { webauthnSessionController } from '../../../lib/auth/webauthnSession.js';
 import { isAuthenticatorTransportFuture } from '../../../lib/auth/transport.js';
 import { aaguidToNameAndIcon } from '../../../lib/auth/aaguid/parse.js';
@@ -20,7 +19,7 @@ import z from 'zod';
 import { reauthSessionController } from '../../../lib/auth/reauthSession.js';
 import inferClientPlatform from '../../../lib/auth/inferClientPlatform.js';
 import { addHistory } from '../../../lib/auth/history.ts';
-import { MAX_PASSKEYS_PER_USER } from './constant.ts';
+import { MAX_PASSKEYS_PER_USER, origin, rpID, rpName } from './constant.ts';
 
 const webauthnApp = new Hono();
 
