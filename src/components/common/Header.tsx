@@ -53,7 +53,7 @@ const Header: FC = async () => {
         <div>
           {username ? (
             <>
-              <span>ようこそ、{username}さん</span> |{' '}
+              <a href="/profile">ようこそ、{username}さん</a> |{' '}
               <a href="/auth/passkey-management">パスキー管理</a> |{' '}
                 <a href="/auth/logout" onclick="return confirm('ログアウトしますか？')">ログアウト</a>
             </>
