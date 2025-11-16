@@ -27,6 +27,14 @@ async function handleDeletePasskey(passkeyId: string, onlySyncedPasskey: boolean
 
     const json = await res.json();
     alert(`${json.passkeyName} を削除しました。`);
+
+    if (PublicKeyCredential.signalUnknownCredential){
+      await PublicKeyCredential.signalUnknownCredential({
+        rpId: json.rpId,
+        credentialId: json.passkeyId,
+      });
+    }
+
     location.reload();
   }
 }

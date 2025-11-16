@@ -615,6 +615,8 @@ const webAuthnRoutes = webauthnApp
           },
         });
         return c.json({
+          rpId: rpID,
+          passkeyId: deletedPasskey.id,
           passkeyName: deletedPasskey.name,
         }, 200);
       } catch (e) {
