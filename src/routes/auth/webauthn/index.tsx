@@ -286,6 +286,7 @@ const webAuthnRoutes = webauthnApp
       },
       data: {
         counter: authenticationInfo.newCounter,
+        backedUp: authenticationInfo.credentialBackedUp,
       },
     });
 
@@ -451,6 +452,7 @@ const webAuthnRoutes = webauthnApp
       },
       data: {
         counter: authenticationInfo.newCounter,
+        backedUp: authenticationInfo.credentialBackedUp,
       },
     });
 
