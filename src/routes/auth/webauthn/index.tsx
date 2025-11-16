@@ -19,12 +19,9 @@ import z from 'zod';
 import { reauthSessionController } from '../../../lib/auth/reauthSession.js';
 import inferClientPlatform from '../../../lib/auth/inferClientPlatform.js';
 import { addHistory } from '../../../lib/auth/history.ts';
-import { MAX_PASSKEYS_PER_USER, rpID, rpName } from './constant.ts';
-import { typedEnv } from '../../../env.ts';
+import { MAX_PASSKEYS_PER_USER, origin, rpID, rpName } from './constant.ts';
 
 const webauthnApp = new Hono();
-
-const ORIGIN = typedEnv.NODE_ENV === 'production' ? '' : `http://${rpID}:3000`;
 
 const webAuthnRoutes = webauthnApp
   .get('/registration/generate', async (c) => {
@@ -135,7 +132,7 @@ const webAuthnRoutes = webauthnApp
         verification = await verifyRegistrationResponse({
           response: body,
           expectedChallenge: webauthnRegistrationSession.challenge,
-          expectedOrigin: ORIGIN,
+          expectedOrigin: origin,
           expectedRPID: rpID,
         });
       } catch (e) {
@@ -254,7 +251,7 @@ const webAuthnRoutes = webauthnApp
       verification = await verifyAuthenticationResponse({
         response: body,
         expectedChallenge: savedChallenge,
-        expectedOrigin: ORIGIN,
+        expectedOrigin: origin,
         expectedRPID: rpID,
         credential: {
           id: savedPasskey.id,
@@ -420,7 +417,7 @@ const webAuthnRoutes = webauthnApp
       verification = await verifyAuthenticationResponse({
         response: body,
         expectedChallenge: savedChallenge,
-        expectedOrigin: ORIGIN,
+        expectedOrigin: origin,
         expectedRPID: rpID,
         credential: {
           id: savedPasskey.id,
