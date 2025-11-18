@@ -18,8 +18,8 @@ import { loginSessionController } from '../../../lib/auth/loginSession.js';
 import z from 'zod';
 import { reauthSessionController } from '../../../lib/auth/reauthSession.js';
 import inferClientPlatform from '../../../lib/auth/inferClientPlatform.js';
-import { addHistory } from '../../../lib/auth/history.ts';
 import { MAX_PASSKEYS_PER_USER, origin, rpID, rpName } from './constant.ts';
+import handlePostAuthentication from '../../../lib/auth/postAuthentication.ts';
 
 const webauthnApp = new Hono();
 
@@ -280,16 +280,6 @@ const webAuthnRoutes = webauthnApp
       );
     }
 
-    await prisma.passkey.update({
-      where: {
-        id: savedPasskey.id,
-      },
-      data: {
-        counter: authenticationInfo.newCounter,
-        backedUp: authenticationInfo.credentialBackedUp,
-      },
-    });
-
     // 認証したパスキーレコードからユーザ情報を取得
     const user = await prisma.user.findUnique({
       where: {
@@ -306,10 +296,12 @@ const webAuthnRoutes = webauthnApp
       );
     }
 
-    await addHistory({
-      passkeyId: savedPasskey.id,
-      ...inferClientPlatform(c.req.raw.headers),
-    });
+    handlePostAuthentication({
+      savedPasskeyID: savedPasskey.id,
+      newCounter: authenticationInfo.newCounter,
+      backedUp: authenticationInfo.credentialBackedUp,
+      headers: c.req.raw.headers,
+    })
 
     await loginSessionController.setLoggedIn(c, {
       userID: user.id,
@@ -446,20 +438,12 @@ const webAuthnRoutes = webauthnApp
       );
     }
 
-    await prisma.passkey.update({
-      where: {
-        id: savedPasskey.id,
-      },
-      data: {
-        counter: authenticationInfo.newCounter,
-        backedUp: authenticationInfo.credentialBackedUp,
-      },
-    });
-
-    await addHistory({
-      passkeyId: savedPasskey.id,
-      ...inferClientPlatform(c.req.raw.headers),
-    });
+    handlePostAuthentication({
+      savedPasskeyID: savedPasskey.id,
+      newCounter: authenticationInfo.newCounter,
+      backedUp: authenticationInfo.credentialBackedUp,
+      headers: c.req.raw.headers,
+    })
 
     await reauthSessionController.initialize(c, {
       userId: loginSessionData.userID,
