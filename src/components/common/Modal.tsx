@@ -12,8 +12,8 @@ const Modal: FC = async () => {
     max-height: 85vh;
     overflow: auto;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    background: #ffffff;
-    color: #111827; /* gray-900 */
+    background: var(--header-bg);
+    color: var(--text-color);
   `;
 
   const closeBtnClass = css`
@@ -28,18 +28,18 @@ const Modal: FC = async () => {
     border: none;
     border-radius: 8px;
     background: transparent;
-    color: #6b7280; /* gray-500 */
+    color: #64748b;
     cursor: pointer;
     font-size: 18px;
     line-height: 1;
     transition: background 0.15s, color 0.15s;
 
     &:hover {
-      background: #f3f4f6; /* gray-100 */
-      color: #111827;
+      background: #f1f5f9;
+      color: var(--text-color);
     }
     &:focus {
-      outline: 2px solid #3b82f6; /* blue-500 */
+      outline: 2px solid var(--primary-color);
       outline-offset: 2px;
     }
   `;

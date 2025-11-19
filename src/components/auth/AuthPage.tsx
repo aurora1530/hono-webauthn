@@ -8,8 +8,10 @@ const AuthPage: FC = async () => {
   const userData = await loginSessionController.getUserData(c);
 
   const titleClass = css`
-    font-size: 24px;
+    font-size: 28px;
+    font-weight: 700;
     margin: 16px 0 20px;
+    color: var(--text-color);
   `;
 
   const authLinksClass = css`
@@ -32,10 +34,10 @@ const AuthPage: FC = async () => {
   const primary = cx(
     pillBase,
     css`
-      background: #2563eb;
+      background: var(--primary-color);
       color: #fff;
       &:hover {
-        background: #1d4ed8;
+        background: var(--primary-hover);
       }
       &:active {
         opacity: 0.9;
@@ -47,7 +49,7 @@ const AuthPage: FC = async () => {
     pillBase,
     css`
       background: #e5e7eb;
-      color: #111827;
+      color: var(--text-color);
       &:hover {
         background: #d1d5db;
       }
@@ -63,7 +65,7 @@ const AuthPage: FC = async () => {
       <div class={authLinksClass}>
         {userData ? (
           <>
-            ログイン中: <strong>{userData.username}</strong>
+            <span style="color:#64748b">ログイン中:</span> <strong>{userData.username}</strong>
             <button class={secondary} id="add-passkey-button">パスキー作成</button>
             <a
               class={primary}

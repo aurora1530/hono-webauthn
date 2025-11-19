@@ -42,7 +42,7 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
   `;
 
   const itemClass = css`
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 12px 14px;
     display: flex;
@@ -88,10 +88,10 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    background: #f3f4f6; /* gray-100 */
-    color: #111827; /* gray-900 */
+    background: #f1f5f9;
+    color: var(--text-color);
     transition: background-color 0.15s ease-in-out, opacity 0.15s;
-    &:hover { background: #e5e7eb; }
+    &:hover { background: #e2e8f0; }
   `;
 
   const iconButtonDangerClass = css`
@@ -123,14 +123,14 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
 
   const currentSessionClass = css`
     font-size: 12px;
-    color: #2563eb; /* blue-600 */
+    color: var(--primary-color);
     margin-top: -4px;
     text-align: center;
   `;
 
   const metaClass = css`
     font-size: 12px;
-    color: #6b7280;
+    color: #64748b;
     margin-top: 4px;
   `;
 
@@ -174,10 +174,10 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
   const addButtonClass = cx(
     buttonBaseClass,
     css`
-      background: #2563eb;
+      background: var(--primary-color);
       color: #fff;
       &:hover {
-        background: #1d4ed8;
+        background: var(--primary-hover);
       }
       margin: 6px;
       &:disabled {

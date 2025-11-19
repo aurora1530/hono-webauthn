@@ -20,10 +20,10 @@ const LoginForm: FC = () => {
   const primaryButton = cx(
     buttonBase,
     css`
-      background: #2563eb;
+      background: var(--primary-color);
       color: #fff;
       &:hover {
-        background: #1d4ed8;
+        background: var(--primary-hover);
       }
       &:active {
         opacity: 0.9;
@@ -34,8 +34,8 @@ const LoginForm: FC = () => {
   return (
     <div class={container}>
       <div>
-        <p>ログインを待っています...</p>
-        <button class={primaryButton} id="login-button">Login</button>
+        <p style="color:#64748b">パスキー認証を開始してください。</p>
+        <button class={primaryButton} id="login-button">ログイン</button>
       </div>
       <script src="/public/loginForm.js" type="module"></script>
     </div>
