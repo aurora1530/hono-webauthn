@@ -1,7 +1,7 @@
 import type { Passkey, PasskeyHistory } from '@prisma/client';
 import type { FC } from 'hono/jsx';
 import { css, cx } from 'hono/css';
-import { aaguidToNameAndIcon } from '../../lib/auth/aaguid/parse.js';
+import { aaguidToNameAndIcon, getIconsByName } from '../../lib/auth/aaguid/parse.js';
 import { MAX_PASSKEYS_PER_USER } from '../../routes/auth/webauthn/constant.ts';
 import { isSynced } from '../../lib/auth/sync.ts';
 
@@ -208,7 +208,9 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
             {passkeyData.map((pData) => {
               const browser = pData.passkey.createdBrowser;
               const os = pData.passkey.createdOS;
-              const iconSrc = aaguidToNameAndIcon(pData.passkey.aaguid)?.icon_light;
+              const iconSrc =
+                aaguidToNameAndIcon(pData.passkey.aaguid)?.icon_light ??
+                getIconsByName(pData.passkey.name).icon_light;
               return (
                   <li key={pData.passkey.id} class={itemClass}>
                     {isSynced(pData.passkey) ? (

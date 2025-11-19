@@ -21,3 +21,11 @@ const aaguidData: PasskeyMetadataJson = await (async () => {
 export const aaguidToNameAndIcon = (aaguid: string): PasskeyMetadata | undefined => {
   return aaguidData[aaguid];
 }
+
+/**
+ * パスキー名と完全一致（大文字小文字を区別しない）するメタデータを返す
+ */
+export const getIconsByName = (name: string): { icon_dark?: string; icon_light?: string } => {
+  const entry = Object.values(aaguidData).find((meta) => meta.name === name || meta.name === name.toLowerCase());
+  return entry ?? {};
+}
