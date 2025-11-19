@@ -19,6 +19,13 @@ const Profile: FC = async () => {
     <div>
       <h1>プロフィールページ</h1>
       <p>ようこそ、{userData.username}さん</p>
+      <div>
+        <label>
+          <input type="checkbox" checked={!!userData.debugMode} id="change-debug-mode-btn"/>
+          デバッグモード
+        </label>
+      </div>
+      <script src='/public/profile.js' type="module"></script>
     </div>
   );
 };

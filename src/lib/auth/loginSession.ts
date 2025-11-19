@@ -10,6 +10,7 @@ const UserDataSchema = z.object({
   userID: z.string(),
   username: z.string(),
   usedPasskeyID: z.string(),
+  debugMode: z.boolean().optional(),
 })
 type UserData = z.infer<typeof UserDataSchema>;
 type LoginSessionStore = SessionStore<UserData>;
@@ -30,6 +31,7 @@ interface LoginSessionController {
   getUserData(c: Context): Promise<UserData | undefined>;
   setLoggedIn(c: Context, userData: UserData): Promise<void>;
   setLoggedOut(c: Context): Promise<void>;
+  changeDebugMode(c: Context, debugMode: boolean): Promise<void>;
 }
 
 const createLoginSessionController = (store: LoginSessionStore): LoginSessionController => {
@@ -51,6 +53,14 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
         await store.destroy(sessionID);
         deleteCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
       }
+    },
+    changeDebugMode: async (c: Context, debugMode: boolean) => {
+      const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
+      if (!sessionID) return;
+      const userData = await store.get(sessionID);
+      if (!userData) return;
+      userData.debugMode = debugMode;
+      await store.set(sessionID, userData);
     }
   }
 }

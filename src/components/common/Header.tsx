@@ -5,7 +5,7 @@ import { loginSessionController } from '../../lib/auth/loginSession.js';
 
 const Header: FC = async () => {
   const c = useRequestContext();
-  const username = (await loginSessionController.getUserData(c))?.username;
+  const userdata = (await loginSessionController.getUserData(c));
 
   const headerClass = css`
     background-color: var(--header-bg);
@@ -64,6 +64,15 @@ const Header: FC = async () => {
     }
   `;
 
+  const debugModeClass = css`
+    font-size: 0.85rem;
+    color: #f59e0b;
+    border: 1px solid #fbbf24;
+    background-color: #fffbeb;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+  `;
+
   return (
     <header class={headerClass}>
       <nav class={navClass}>
@@ -73,9 +82,10 @@ const Header: FC = async () => {
           </a>
         </div>
         <div class={linkGroupClass}>
-          {username ? (
+          {userdata ? (
             <>
-              <span style="color: #64748b; font-size: 0.9rem;">{username}</span>
+              { userdata.debugMode &&  <span class={debugModeClass}>デバッグモード</span> }
+              <span style="color: #64748b; font-size: 0.9rem;">{userdata.username}</span>
               <a href="/profile" class={linkClass}>プロフィール</a>
               <a href="/auth/passkey-management" class={linkClass}>パスキー管理</a>
               <a href="/auth/logout" class={cx(linkClass, logoutBtnClass)} onclick="return confirm('ログアウトしますか？')">ログアウト</a>
