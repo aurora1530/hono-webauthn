@@ -109,6 +109,7 @@ const authAppRoutes = authApp
       <PasskeyManagement
         passkeyData={passkeyData}
         currentPasskeyID={userData.usedPasskeyID}
+        debugMode={userData.debugMode}
       />,
       { title: 'パスキー管理' }
     );

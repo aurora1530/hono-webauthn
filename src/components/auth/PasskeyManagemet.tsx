@@ -10,7 +10,11 @@ type PasskeyData = {
   lastUsed: PasskeyHistory | undefined;
 }
 
-const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: string }> = ({ passkeyData, currentPasskeyID }) => {
+const PasskeyManagement: FC<{
+  passkeyData: PasskeyData[];
+  currentPasskeyID: string;
+  debugMode?: boolean;
+}> = ({ passkeyData, currentPasskeyID, debugMode = false }) => {
   const canDelete = passkeyData.length > 1;
 
   const containerClass = css`
@@ -187,6 +191,12 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
     `
   );
 
+  const aaguidClass = css`
+    font-size: 12px;
+    color: #94a3b8;
+    word-break: break-all;
+  `;
+
   return (
     <div class={containerClass}>
       <h2 class={titleClass}>パスキー管理</h2>
@@ -297,6 +307,8 @@ const PasskeyManagement: FC<{ passkeyData: PasskeyData[], currentPasskeyID: stri
                   {pData.passkey.id === currentPasskeyID && (
                     <p class={currentSessionClass}>現在のセッションで使用中</p>
                   )}
+
+                  {debugMode && (<span class={aaguidClass}>AAGUID: {pData.passkey.aaguid}</span>)}
 
                   <div class={metaClass}>
                     <p>
