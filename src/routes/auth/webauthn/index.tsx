@@ -612,7 +612,7 @@ const webAuthnRoutes = webauthnApp
     }
   )
   .post(
-    '/passkey-history',
+    '/passkey-histories',
     validator('json', (value, c) => {
       const parsed = z
         .object({

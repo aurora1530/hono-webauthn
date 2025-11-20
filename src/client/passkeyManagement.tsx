@@ -33,7 +33,7 @@ const viewPasskeyHistoryBtns = document.getElementsByClassName(
 
 async function openPasskeyHistoryModal(passkeyId: string, page = 1) {
   const HISTORY_PAGE_LIMIT = 10;
-  const res = await webauthnClient['passkey-history'].$post({
+  const res = await webauthnClient['passkey-histories'].$post({
     json: { passkeyId, limit: HISTORY_PAGE_LIMIT, page },
   });
 
