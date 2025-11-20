@@ -1,16 +1,12 @@
-import { profileClient } from "./lib/rpc/profileClient";
+import { changeDebugMode } from "./lib/changeDebugMode";
 
 document.getElementById('change-debug-mode-btn')?.addEventListener('change', async (e) => {
   const target = e.target as HTMLInputElement;
   const debugMode = target.checked;
-  const res = await profileClient["change-debug-mode"].$post({
-    json: {
-      debugMode
-    }
-  });
+  const result = await changeDebugMode(debugMode);
 
-  if (!res.ok) {
-    alert('デバッグモードの変更に失敗しました。');
+  if (!result.success) {
+    alert(`Error changing debug mode: ${result.error}`);
     target.checked = !debugMode;
   }
 
