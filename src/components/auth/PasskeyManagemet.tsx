@@ -114,12 +114,6 @@ const PasskeyManagement: FC<{
     &:hover { background: #bfdbfe; }
   `;
 
-  const iconSvgClass = css`
-    width: 18px;
-    height: 18px;
-    display: block;
-  `;
-
   const iconClass = css`
     width: 20px;
     height: 20px;
@@ -257,21 +251,7 @@ const PasskeyManagement: FC<{
                             title="パスキー利用履歴を見る"
                             data-passkey-id={pData.passkey.id}
                           >
-                            {/* History icon */}
-                            <svg
-                              class={iconSvgClass}
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M12 8v4l3 3m5-1.5a9 9 0 1 1-4.5-7.73M12 3v3m0 0H9m3 0h3"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              />
-                            </svg>
+                            <span class="material-symbols-outlined">history</span>
                           </button>
                         )
                       }
@@ -283,27 +263,7 @@ const PasskeyManagement: FC<{
                         title="このパスキーで認証テスト"
                         data-passkey-id={pData.passkey.id}
                       >
-                        {/* Beaker icon */}
-                        <svg
-                          class={iconSvgClass}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M9.75 3 9 4.5v5.379a5.995 5.995 0 0 0-1.56 1.233 6.002 6.002 0 0 0 4.35 10.388h.42a6.002 6.002 0 0 0 4.35-10.388 5.995 5.995 0 0 0-1.56-1.233V4.5L14.25 3m-4.5 0h4.5"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                          <path
-                            d="M9 13.5h6"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                          />
-                        </svg>
+                        <span class="material-symbols-outlined">experiment</span>
                       </button>
 
                       {/* Edit (change name) icon button */}
@@ -315,21 +275,7 @@ const PasskeyManagement: FC<{
                         data-passkey-id={pData.passkey.id}
                         data-passkey-name={pData.passkey.name}
                       >
-                        {/* Pencil icon */}
-                        <svg
-                          class={iconSvgClass}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M15.232 5.232a2.5 2.5 0 0 1 3.536 3.536L9.5 18.036 5 19l.964-4.5 9.268-9.268Z"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
+                        <span class="material-symbols-outlined">edit</span>
                       </button>
                       {/* Delete icon button */}
                       <button
@@ -350,21 +296,7 @@ const PasskeyManagement: FC<{
                         }
                         disabled={!canDelete || pData.passkey.id === currentPasskeyID}
                       >
-                        {/* Trash icon */}
-                        <svg
-                          class={iconSvgClass}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M9 11v6m6-6v6M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1Zm9 3-1 13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 7"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
+                        <span class="material-symbols-outlined">delete</span>
                       </button>
                     </div>
                   </div>
