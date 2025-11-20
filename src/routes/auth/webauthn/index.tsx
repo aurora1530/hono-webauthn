@@ -607,9 +607,100 @@ const webAuthnRoutes = webauthnApp
             error: 'パスキーの削除に失敗しました。',
           },
           500
-
         );
       }
+    }
+  )
+  .post(
+    '/passkey-history',
+    validator('json', (value, c) => {
+      const parsed = z
+        .object({
+          passkeyId: z.string(),
+          limit: z.number().min(1).max(100).default(10),
+          page: z.number().min(1).default(1),
+        })
+        .safeParse(value);
+      if (!parsed.success) {
+        return c.json(
+          {
+            error: 'リクエストが不正です。',
+          },
+          400
+        );
+      }
+      return parsed.data;
+    }),
+    async (c) => {
+      const userData = await loginSessionController.getUserData(c);
+      if (!userData) {
+        return c.json(
+          {
+            error: 'ログインが必要です。',
+          },
+          401
+        );
+      }
+
+      if (!userData.debugMode) {
+        return c.json(
+          {
+            error: '利用履歴の取得はデバッグモードでのみ可能です。',
+          },
+          403
+        );
+      }
+
+      const { passkeyId, limit, page } = c.req.valid('json');
+
+      const passkey = await prisma.passkey.findUnique({
+        where: {
+          id: passkeyId,
+          userID: userData.userID,
+        },
+      });
+
+      if (!passkey) {
+        return c.json(
+          {
+            error: 'パスキーが見つかりません。',
+          },
+          404
+        );
+      }
+
+      const histories = await prisma.passkeyHistory.findMany({
+        where: {
+          passkeyID: passkeyId,
+        },
+        orderBy: {
+          usedAt: 'desc',
+        },
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+
+      const total = await prisma.passkeyHistory.count({
+        where: {
+          passkeyID: passkeyId,
+        },
+      });
+
+      return c.json(
+        {
+          histories: histories.map((h) => ({
+            passkeyID: h.passkeyID,
+            usedAt: h.usedAt,
+            usedBrowser: h.usedBrowser,
+            usedOS: h.usedOS,
+          })),
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+        200
+      );
     }
   );
 

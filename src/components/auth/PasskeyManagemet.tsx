@@ -241,6 +241,35 @@ const PasskeyManagement: FC<{
                     </div>
                     <p class={nameClass}>{pData.passkey.name}</p>
                     <div class={rowRightClass}>
+                      {
+                        /* history icon button */
+                        debugMode && (
+                          <button
+                            id="view-passkey-history-btn"
+                            class={cx(iconButtonBaseClass, 'view-passkey-history-btn')}
+                            aria-label="パスキー利用履歴を見る"
+                            title="パスキー利用履歴を見る"
+                            data-passkey-id={pData.passkey.id}
+                          >
+                            {/* History icon */}
+                            <svg
+                              class={iconSvgClass}
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M12 8v4l3 3m5-1.5a9 9 0 1 1-4.5-7.73M12 3v3m0 0H9m3 0h3"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                            </svg>
+                          </button>
+                        )
+                      }
+
                       {/* Edit (change name) icon button */}
                       <button
                         id="change-passkey-name-btn"

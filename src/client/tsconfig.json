@@ -4,7 +4,7 @@
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
+    "jsxImportSource": "hono/jsx/dom",
     "rootDir": ".",
     "strict": true,
     "moduleResolution": "node",
@@ -16,5 +16,5 @@
     "allowImportingTsExtensions": true,
   },
   "compileOnSave": false,
-  "include": ["./**/*"]
+  "include": ["./**/*.ts", "./**/*.tsx"],
 }
