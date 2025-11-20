@@ -17,6 +17,7 @@ const Modal: FC = async () => {
   `;
 
   const closeBtnClass = css`
+    z-index: 10;
     position: absolute;
     top: 8px;
     right: 8px;
