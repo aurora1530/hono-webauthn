@@ -30,25 +30,49 @@ Array.from(deletePasskeyBtns).forEach((btn) => {
 const viewPasskeyHistoryBtns = document.getElementsByClassName(
   'view-passkey-history-btn'
 ) as HTMLCollectionOf<HTMLButtonElement>;
+
+async function openPasskeyHistoryModal(passkeyId: string, page = 1) {
+  const HISTORY_PAGE_LIMIT = 10;
+  const res = await webauthnClient['passkey-history'].$post({
+    json: { passkeyId, limit: HISTORY_PAGE_LIMIT, page },
+  });
+
+  if (!res.ok) {
+    alert(
+      `Error fetching passkey history: ${(await res.json()).error || 'Unknown error'}`
+    );
+    return;
+  }
+
+  const data = await res.json();
+
+  const histories = data.histories.map((h) => ({
+    ...h,
+    usedAt: new Date(h.usedAt),
+  }));
+
+  const handleChangePage = (nextPage: number) => {
+    if (nextPage < 1 || nextPage === data.page || nextPage > data.totalPages) return;
+    openPasskeyHistoryModal(passkeyId, nextPage);
+  };
+
+  openModalWithJSX(
+    <PasskeyHistories
+      histories={histories}
+      page={data.page}
+      totalPages={data.totalPages}
+      total={data.total}
+      limit={data.limit}
+      onChangePage={handleChangePage}
+    />
+  );
+}
+
 Array.from(viewPasskeyHistoryBtns).forEach((btn) => {
   btn.addEventListener('click', async () => {
     const passkeyId = btn.dataset.passkeyId;
     if (passkeyId) {
-      const res = await webauthnClient['passkey-history'].$post({
-        json: { passkeyId, limit: 10, page: 1 },
-      });
-      if (!res.ok) {
-        alert(
-          `Error fetching passkey history: ${(await res.json()).error || 'Unknown error'}`
-        );
-        return;
-      }
-      const data = await res.json();
-      const histories = data.histories.map((h: any) => ({
-        ...h,
-        usedAt: new Date(h.usedAt),
-      }));
-      openModalWithJSX(<PasskeyHistories histories={histories} />);
+      await openPasskeyHistoryModal(passkeyId, 1);
     }
   });
 });
