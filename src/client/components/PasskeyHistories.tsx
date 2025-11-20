@@ -1,16 +1,76 @@
 import { css } from 'hono/css';
-import { PasskeyHistory } from '@prisma/client';
+import type { PasskeyHistory } from '@prisma/client';
+import { webauthnClient } from '../lib/rpc/webauthnClient.js';
 
 type PasskeyHistoryProps = {
-  histories: (Omit<PasskeyHistory, 'id'> & { usedAt: Date })[];
+  passkeyId: string;
+  histories: (PasskeyHistory & { usedAt: Date })[];
   page: number;
   totalPages: number;
   total: number;
   limit: number;
   onChangePage: (nextPage: number) => void;
+  /** モーダルを再オープンする関数 */
+  reload?: () => void;
 };
 
-const PasskeyHistories = ({ histories, page, totalPages, total, limit, onChangePage }: PasskeyHistoryProps) => {
+const PasskeyHistories = ({
+  passkeyId,
+  histories,
+  page,
+  totalPages,
+  total,
+  limit,
+  onChangePage,
+  reload,
+}: PasskeyHistoryProps) => {
+  const deleteHistory = async (historyID: string) => {
+    if(!confirm('本当にこの利用履歴を削除しますか？')) {
+      return;
+    }
+    const res = await webauthnClient['passkey-histories']['delete'].$post({
+      json: {
+        passkeyId,
+        historyIds: [historyID],
+        deleteAll: false,
+      },
+    });
+    if (!res.ok) {
+      alert(`Error: Failed to delete history.${(await res.json()).error ?? ''}`);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.deletedCount > 0) {
+      // 親側でモーダルを開き直し（最新取得）か、単に再オープン関数で更新
+      reload?.();
+    } else {
+      alert('Error: No histories were deleted.');
+    }
+  };
+
+  const deleteAllHistories = async () => {
+    if(!confirm('本当に全ての利用履歴を削除しますか？')) {
+      return;
+    }
+    const res = await webauthnClient['passkey-histories']['delete'].$post({
+      json: {
+        passkeyId,
+        deleteAll: true,
+      },
+    });
+    if (!res.ok) {
+      alert(`Error: Failed to delete histories.${(await res.json()).error ?? ''}`);
+      return;
+    }
+    const data = await res.json();
+    if (data.deletedCount > 0) {
+      reload?.();
+    } else {
+      alert('削除対象がありませんでした。');
+    }
+  };
+
   const wrapClass = css`
     position: relative;
     width: 100%;
@@ -47,11 +107,11 @@ const PasskeyHistories = ({ histories, page, totalPages, total, limit, onChangeP
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 10px 12px;
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    column-gap: 12px;
+    display: flex;
+    gap: 12px;
     align-items: center;
     background: var(--header-bg);
+    flex-wrap: wrap;
   `;
 
   const timeClass = css`
@@ -71,6 +131,59 @@ const PasskeyHistories = ({ histories, page, totalPages, total, limit, onChangeP
   const emptyClass = css`
     color: #64748b;
     text-align: center;
+  `;
+
+  const actionBarClass = css`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  `;
+
+  const buttonBase = css`
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    background: #f1f5f9;
+    color: #0f172a;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+    &:hover { background: #e2e8f0; }
+    &:active { background: #cbd5e1; }
+  `;
+
+  const deleteBtnClass = css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #fee2e2; /* red-100 */
+    color: #991b1b; /* red-800 */
+    transition: background-color 0.15s ease-in-out, opacity 0.15s;
+    &:hover { background: #fecaca; }
+    &:active { background: #fca5a5; }
+  `;
+
+  const iconSvgClass = css`
+    width: 18px;
+    height: 18px;
+    display: block;
+  `;
+
+  const deleteAllBtnClass = css`
+    ${buttonBase};
+    background: #f87171;
+    color: #fff;
+    border-color: #ef4444;
+    &:hover { background: #ef4444; }
+    &:active { background: #dc2626; }
   `;
 
   const navButtonBase = css`
@@ -122,15 +235,26 @@ const PasskeyHistories = ({ histories, page, totalPages, total, limit, onChangeP
 
   return (
     <div class={wrapClass}>
-      <h3 class={titleClass}>利用履歴（{total}件）</h3>
-      <p class={pagerInfoClass}>{page} / {totalPages} ページ（{limit}件ずつ）</p>
+      <div class={actionBarClass}>
+        <div>
+          <h3 class={titleClass}>利用履歴（{total}件）</h3>
+          <p class={pagerInfoClass}>
+            {page} / {totalPages} ページ（{limit}件ずつ）
+          </p>
+        </div>
+        {total > 0 && (
+          <button class={deleteAllBtnClass} onClick={deleteAllHistories}>
+            全削除
+          </button>
+        )}
+      </div>
 
       {histories.length === 0 ? (
         <p class={emptyClass}>利用履歴はまだありません。</p>
       ) : (
         <ul class={listClass}>
           {histories.map((h) => (
-            <li key={`${h.passkeyID}-${h.usedAt.toISOString()}`} class={itemClass}>
+            <li key={`${h.id}-${h.usedAt.toISOString()}`} class={itemClass}>
               <span class={timeClass}>{h.usedAt.toLocaleString()}</span>
               <span class={badgeClass} title={h.usedBrowser}>
                 🧭 {h.usedBrowser}
@@ -138,6 +262,28 @@ const PasskeyHistories = ({ histories, page, totalPages, total, limit, onChangeP
               <span class={badgeClass} title={h.usedOS}>
                 💻 {h.usedOS}
               </span>
+              <button
+                class={deleteBtnClass}
+                aria-label="履歴を削除"
+                title="履歴を削除"
+                data-history-id={h.id}
+                onClick={() => deleteHistory(h.id)}
+              >
+                <svg
+                  class={iconSvgClass}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9 11v6m6-6v6M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1Zm9 3-1 13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 7"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
             </li>
           ))}
         </ul>

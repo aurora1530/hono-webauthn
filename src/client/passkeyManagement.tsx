@@ -58,12 +58,14 @@ async function openPasskeyHistoryModal(passkeyId: string, page = 1) {
 
   openModalWithJSX(
     <PasskeyHistories
+      passkeyId={passkeyId}
       histories={histories}
       page={data.page}
       totalPages={data.totalPages}
       total={data.total}
       limit={data.limit}
       onChangePage={handleChangePage}
+      reload={() => openPasskeyHistoryModal(passkeyId, data.page)}
     />
   );
 }

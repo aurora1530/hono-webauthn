@@ -688,12 +688,7 @@ const webAuthnRoutes = webauthnApp
 
       return c.json(
         {
-          histories: histories.map((h) => ({
-            passkeyID: h.passkeyID,
-            usedAt: h.usedAt,
-            usedBrowser: h.usedBrowser,
-            usedOS: h.usedOS,
-          })),
+          histories,
           total,
           page,
           limit,
@@ -701,6 +696,108 @@ const webAuthnRoutes = webauthnApp
         },
         200
       );
+    }
+  )
+  .post(
+    '/passkey-histories/delete',
+    validator('json', (value, c) => {
+      const parsed = z.union([
+        z.object({
+          passkeyId: z.string(),
+          historyIds: z.array(z.string()).min(1),
+          deleteAll: z.literal(false).default(false),
+        }),
+        z.object({
+          passkeyId: z.string(),
+          deleteAll: z.literal(true),
+          historyIds: z.never().optional(),
+        }),
+      ]);
+
+      const result = parsed.safeParse(value);
+      if (!result.success) {
+        console.error(result.error);
+        return c.json(
+          {
+            error: 'リクエストが不正です。',
+          },
+          400
+        );
+      }
+      return result.data;
+    }),
+    async (c) => {
+      const userData = await loginSessionController.getUserData(c);
+      if (!userData) {
+        return c.json(
+          {
+            error: 'ログインが必要です。',
+          },
+          401
+        );
+      }
+
+      if (!userData.debugMode) {
+        return c.json(
+          {
+            error: '利用履歴の削除はデバッグモードでのみ可能です。',
+          },
+          403
+        );
+      }
+
+      const requestData = c.req.valid('json');
+
+      const targetPasskeyExists = await prisma.passkey.findUnique({
+        where: {
+          id: requestData.passkeyId,
+          userID: userData.userID,
+        },
+      });
+
+      if (!targetPasskeyExists) {
+        return c.json(
+          {
+            error: 'パスキーが見つかりません。',
+          },
+          404
+        );
+      }
+
+
+      let deletedPasskeyCount = 0;
+      try {
+        if (requestData.deleteAll) {
+          const deleted = await prisma.passkeyHistory.deleteMany({
+            where: {
+              passkeyID: requestData.passkeyId,
+            },
+          });
+          deletedPasskeyCount = deleted.count;
+        } else {
+          const deleted = await prisma.passkeyHistory.deleteMany({
+            where: {
+              passkeyID: requestData.passkeyId,
+              id: {
+                in: requestData.historyIds,
+              },
+            },
+          });
+          deletedPasskeyCount = deleted.count;
+        }
+
+        return c.json({
+          deletedCount: deletedPasskeyCount,
+        }, 200);
+      } catch (e) {
+        console.error(e);
+        return c.json(
+          {
+            error: '利用履歴の削除に失敗しました。',
+          },
+          500
+        );
+      }
     }
   );
 
