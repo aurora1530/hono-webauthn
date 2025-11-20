@@ -108,6 +108,12 @@ const PasskeyManagement: FC<{
     }
   `;
 
+  const iconButtonTestClass = css`
+    background: #dbeafe; /* blue-100 */
+    color: #1e3a8a; /* blue-800 */
+    &:hover { background: #bfdbfe; }
+  `;
+
   const iconSvgClass = css`
     width: 18px;
     height: 18px;
@@ -269,6 +275,36 @@ const PasskeyManagement: FC<{
                           </button>
                         )
                       }
+
+                      {/* Test authentication icon button */}
+                      <button
+                        class={cx(iconButtonBaseClass, iconButtonTestClass, 'test-passkey-btn')}
+                        aria-label="このパスキーで認証テスト"
+                        title="このパスキーで認証テスト"
+                        data-passkey-id={pData.passkey.id}
+                      >
+                        {/* Beaker icon */}
+                        <svg
+                          class={iconSvgClass}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M9.75 3 9 4.5v5.379a5.995 5.995 0 0 0-1.56 1.233 6.002 6.002 0 0 0 4.35 10.388h.42a6.002 6.002 0 0 0 4.35-10.388 5.995 5.995 0 0 0-1.56-1.233V4.5L14.25 3m-4.5 0h4.5"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M9 13.5h6"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                          />
+                        </svg>
+                      </button>
 
                       {/* Edit (change name) icon button */}
                       <button

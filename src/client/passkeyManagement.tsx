@@ -2,6 +2,7 @@ import { handleChangePasskeyName } from './lib/changePasskeyName.js';
 import { handleDeletePasskey } from './lib/deletePasskey.js';
 import { handleRegistration } from './lib/registration.js';
 import { openModalWithJSX } from './lib/modal/base.js';
+import { openMessageModal } from './lib/modal/message.js';
 import PasskeyHistories from './components/PasskeyHistories.js';
 import { webauthnClient } from './lib/rpc/webauthnClient.js';
 
@@ -75,6 +76,53 @@ Array.from(viewPasskeyHistoryBtns).forEach((btn) => {
     const passkeyId = btn.dataset.passkeyId;
     if (passkeyId) {
       await openPasskeyHistoryModal(passkeyId, 1);
+    }
+  });
+});
+
+// --- Test authentication per passkey ---
+const testPasskeyBtns = document.getElementsByClassName('test-passkey-btn') as HTMLCollectionOf<HTMLButtonElement>;
+
+async function handleTestAuthentication(passkeyId: string) {
+  openMessageModal('認証テストを開始します...');
+  const generateRes = await webauthnClient.authentication.generate.$get();
+  if (!generateRes.ok) {
+    openMessageModal('認証テスト開始に失敗しました。');
+    return;
+  }
+  // 取得したオプションを1つの allowCredentials に絞る
+  const json = await generateRes.json();
+  json.allowCredentials = [{ id: passkeyId, type: 'public-key' }];
+  let options: PublicKeyCredentialRequestOptions;
+  try {
+    options = PublicKeyCredential.parseRequestOptionsFromJSON(json);
+  } catch (e) {
+    console.error(e);
+    openMessageModal('認証テスト用オプションの解析に失敗しました。');
+    return;
+  }
+  try {
+    const credential = await navigator.credentials.get({ publicKey: options });
+    const verifyRes = await webauthnClient.authentication.verify.$post({
+      json: { body: credential }
+    });
+    if (!verifyRes.ok) {
+      const err = (await verifyRes.json()).error;
+      openMessageModal(`認証テストに失敗しました。エラー: ${err}`);
+      return;
+    }
+    openMessageModal('認証テストが成功しました。');
+  } catch (e) {
+    console.error(e);
+    openMessageModal('認証テストに失敗しました。キャンセルされたか、エラーが発生しました。');
+  }
+}
+
+Array.from(testPasskeyBtns).forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const passkeyId = btn.dataset.passkeyId;
+    if (passkeyId) {
+      await handleTestAuthentication(passkeyId);
     }
   });
 });
