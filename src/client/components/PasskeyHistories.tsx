@@ -107,28 +107,20 @@ const PasskeyHistories = ({
   const itemClass = css`
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 10px 12px;
+    padding: 12px 16px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     background: var(--header-bg);
     flex-wrap: wrap;
-
-    @media (max-width: 640px) {
-      align-items: flex-start;
-      gap: 8px 12px;
-    }
   `;
 
   const timeColumnClass = css`
-    flex: 1 1 240px;
+    flex: 1 1 220px;
+    min-width: 200px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-
-    @media (min-width: 641px) {
-      flex: 0 0 220px;
-    }
   `;
 
   const timeClass = css`
@@ -137,15 +129,13 @@ const PasskeyHistories = ({
   `;
 
   const typeBadgeClass = css`
-    flex: 0 0 110px;
+    flex: 0 0 auto;
     font-size: 13px;
     color: #4338ca;
     font-weight: 500;
     white-space: nowrap;
-
-    @media (max-width: 640px) {
-      flex: 1 1 auto;
-    }
+    display: flex;
+    align-items: center;
   `;
 
   const deviceInfoClass = css`
@@ -163,6 +153,7 @@ const PasskeyHistories = ({
   const actionCellClass = css`
     margin-left: auto;
     display: inline-flex;
+    align-self: center;
   `;
 
   const deleteIconClass = css`
