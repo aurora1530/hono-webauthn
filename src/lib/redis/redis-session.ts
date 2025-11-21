@@ -1,6 +1,6 @@
-import { getRedis } from "./redis.js";
-import { type SessionID, type SessionStore } from "../session.js";
 import type { JsonObject } from "../json.ts";
+import type { SessionID, SessionStore } from "../session.js";
+import { getRedis } from "./redis.js";
 
 type RedisSessionStoreOptions<T extends JsonObject = JsonObject> = {
   prefix: string;

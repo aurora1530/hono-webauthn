@@ -1,5 +1,5 @@
+import type { Child } from "hono/jsx";
 import { render } from "hono/jsx/dom";
-import { Child } from "hono/jsx";
 
 function openModal(contentElement: HTMLElement, onClose?: () => void) {
   const modal = document.getElementById("main-modal") as HTMLDialogElement | null;
