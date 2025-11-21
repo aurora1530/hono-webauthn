@@ -1,4 +1,4 @@
-import type { Passkey } from '@prisma/client';
+import { PasskeyHistoryType, type Passkey } from '@prisma/client';
 import { Hono } from 'hono';
 import prisma from '../../../prisma.js';
 import {
@@ -296,12 +296,13 @@ const webAuthnRoutes = webauthnApp
       );
     }
 
-    handlePostAuthentication({
+    await handlePostAuthentication({
       savedPasskeyID: savedPasskey.id,
       newCounter: authenticationInfo.newCounter,
       backedUp: authenticationInfo.credentialBackedUp,
       headers: c.req.raw.headers,
-    })
+      authType: PasskeyHistoryType.LOGIN,
+    });
 
     await loginSessionController.setLoggedIn(c, {
       userID: user.id,
@@ -438,12 +439,13 @@ const webAuthnRoutes = webauthnApp
       );
     }
 
-    handlePostAuthentication({
+    await handlePostAuthentication({
       savedPasskeyID: savedPasskey.id,
       newCounter: authenticationInfo.newCounter,
       backedUp: authenticationInfo.credentialBackedUp,
       headers: c.req.raw.headers,
-    })
+      authType: PasskeyHistoryType.REAUTH,
+    });
 
     await reauthSessionController.initialize(c, {
       userId: loginSessionData.userID,
@@ -451,6 +453,177 @@ const webAuthnRoutes = webauthnApp
 
     return c.json({}, 200);
   })
+  .post(
+    '/test-authentication/generate',
+    validator('json', (value, c) => {
+      const parsed = z.object({ passkeyId: z.string().min(1) }).safeParse(value);
+      if (!parsed.success) {
+        return c.json(
+          {
+            error: 'リクエストが不正です。',
+          },
+          400
+        );
+      }
+      return parsed.data;
+    }),
+    async (c) => {
+      const userData = await loginSessionController.getUserData(c);
+      if (!userData) {
+        return c.json(
+          {
+            error: 'ログインが必要です。',
+          },
+          401
+        );
+      }
+
+      const { passkeyId } = c.req.valid('json');
+
+      const passkey = await prisma.passkey.findFirst({
+        where: {
+          id: passkeyId,
+          userID: userData.userID,
+        },
+      });
+
+      if (!passkey) {
+        return c.json(
+          {
+            error: 'パスキーが見つかりません。',
+          },
+          404
+        );
+      }
+
+      const options: PublicKeyCredentialRequestOptionsJSON =
+        await generateAuthenticationOptions({
+          rpID,
+          allowCredentials: [
+            {
+              id: passkey.id,
+              transports: passkey.transports.filter(isAuthenticatorTransportFuture),
+            },
+          ],
+        });
+
+      await webauthnSessionController.testAuthentication.verify.initialize(c, {
+        challenge: options.challenge,
+        passkeyId,
+      });
+
+      return c.json(options, 200);
+    }
+  )
+  .post(
+    '/test-authentication/verify',
+    validator('json', (value, c) => {
+      const parsed = z.object({ body: z.any() }).safeParse(value);
+      if (!parsed.success) {
+        return c.json(
+          {
+            error: 'リクエストが不正です。',
+          },
+          400
+        );
+      }
+
+      return parsed.data;
+    }),
+    async (c) => {
+      const sessionData =
+        await webauthnSessionController.testAuthentication.verify.extractSessionData(c);
+      if (!sessionData?.challenge) {
+        return c.json(
+          {
+            error: 'セッションが不正です。認証をやり直してください',
+          },
+          401
+        );
+      }
+
+      const loginSessionData = await loginSessionController.getUserData(c);
+      if (!loginSessionData) {
+        return c.json(
+          {
+            error: 'ログインが必要です。',
+          },
+          401
+        );
+      }
+
+      const body = c.req.valid('json').body;
+
+      const savedPasskey = await prisma.passkey.findFirst({
+        where: {
+          id: sessionData.passkeyId,
+          userID: loginSessionData.userID,
+        },
+      });
+
+      if (!savedPasskey) {
+        return c.json(
+          {
+            error: '認証に失敗しました。もう一度やり直してください',
+          },
+          400
+        );
+      }
+
+      if (body?.id !== savedPasskey.id) {
+        return c.json(
+          {
+            error: '認証に失敗しました。もう一度やり直してください',
+          },
+          400
+        );
+      }
+
+      let verification;
+      try {
+        verification = await verifyAuthenticationResponse({
+          response: body,
+          expectedChallenge: sessionData.challenge,
+          expectedOrigin: origin,
+          expectedRPID: rpID,
+          credential: {
+            id: savedPasskey.id,
+            publicKey: savedPasskey.publicKey,
+            counter: savedPasskey.counter,
+            transports: savedPasskey.transports.filter(isAuthenticatorTransportFuture),
+          },
+        });
+      } catch (e) {
+        console.error(e);
+        return c.json(
+          {
+            error: '認証に失敗しました。もう一度やり直してください',
+          },
+          400
+        );
+      }
+
+      const { verified, authenticationInfo } = verification;
+      if (!verified || !authenticationInfo) {
+        return c.json(
+          {
+            error: '認証に失敗しました。もう一度やり直してください',
+          },
+          400
+        );
+      }
+
+      await handlePostAuthentication({
+        savedPasskeyID: savedPasskey.id,
+        newCounter: authenticationInfo.newCounter,
+        backedUp: authenticationInfo.credentialBackedUp,
+        headers: c.req.raw.headers,
+        authType: PasskeyHistoryType.TEST,
+      });
+
+      return c.json({}, 200);
+    }
+  )
   .post(
     '/change-passkey-name',
     validator('json', (value, c) => {

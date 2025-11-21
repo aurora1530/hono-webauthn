@@ -85,14 +85,14 @@ const testPasskeyBtns = document.getElementsByClassName('test-passkey-btn') as H
 
 async function handleTestAuthentication(passkeyId: string) {
   openMessageModal('認証テストを開始します...');
-  const generateRes = await webauthnClient.authentication.generate.$get();
+  const generateRes = await webauthnClient['test-authentication'].generate.$post({
+    json: { passkeyId },
+  });
   if (!generateRes.ok) {
     openMessageModal('認証テスト開始に失敗しました。');
     return;
   }
-  // 取得したオプションを1つの allowCredentials に絞る
   const json = await generateRes.json();
-  json.allowCredentials = [{ id: passkeyId, type: 'public-key' }];
   let options: PublicKeyCredentialRequestOptions;
   try {
     options = PublicKeyCredential.parseRequestOptionsFromJSON(json);
@@ -103,8 +103,8 @@ async function handleTestAuthentication(passkeyId: string) {
   }
   try {
     const credential = await navigator.credentials.get({ publicKey: options });
-    const verifyRes = await webauthnClient.authentication.verify.$post({
-      json: { body: credential }
+    const verifyRes = await webauthnClient['test-authentication'].verify.$post({
+      json: { body: credential },
     });
     if (!verifyRes.ok) {
       const err = (await verifyRes.json()).error;

@@ -27,6 +27,14 @@ type WebAuthnReauthenticationVerifySessionData = z.infer<
   typeof WebAuthnReauthenticationVerifySessionDataSchema
 >;
 
+const WebAuthnTestAuthenticationVerifySessionDataSchema = z.object({
+  challenge: z.string(),
+  passkeyId: z.string(),
+});
+type WebAuthnTestAuthenticationVerifySessionData = z.infer<
+  typeof WebAuthnTestAuthenticationVerifySessionDataSchema
+>;
+
 const SESSION_TTL_SEC = 60 * 5; // 5 minutes
 
 const makeStore = async <T extends JsonObject>(
@@ -58,6 +66,10 @@ const webAuthnReauthenticationVerifySessionStore = await makeStore(
   'webauthn-reauthentication',
   WebAuthnReauthenticationVerifySessionDataSchema
 );
+const webAuthnTestAuthenticationVerifySessionStore = await makeStore(
+  'webauthn-test-authentication',
+  WebAuthnTestAuthenticationVerifySessionDataSchema
+);
 
 interface WebAuthnSessionStores {
   registration: {
@@ -69,6 +81,9 @@ interface WebAuthnSessionStores {
   };
   reauthentication: {
     verify: typeof webAuthnReauthenticationVerifySessionStore;
+  };
+  testAuthentication: {
+    verify: typeof webAuthnTestAuthenticationVerifySessionStore;
   };
 }
 
@@ -82,6 +97,9 @@ const webauthnSessionStores: WebAuthnSessionStores = {
   },
   reauthentication: {
     verify: webAuthnReauthenticationVerifySessionStore
+  },
+  testAuthentication: {
+    verify: webAuthnTestAuthenticationVerifySessionStore,
   }
 };
 
@@ -101,13 +119,17 @@ interface WebAuthnSessionController {
   reauthentication: {
     verify: SessionDataHandler<WebAuthnReauthenticationVerifySessionData>;
   };
+  testAuthentication: {
+    verify: SessionDataHandler<WebAuthnTestAuthenticationVerifySessionData>;
+  };
 }
 
 const WEBAUTHN_SESSION_COOKIE_NAMES = {
   registrationGenerate: 'webauthn-r-g',
   registrationVerify: 'webauthn-r-v',
   authenticationVerify: 'webauthn-a-v',
-  reauthenticationVerify: 'webauthn-ra-v'
+  reauthenticationVerify: 'webauthn-ra-v',
+  testAuthenticationVerify: 'webauthn-ta-v'
 }
 
 const createHandler = <T extends object>(
@@ -151,6 +173,12 @@ const createWebAuthnSessionController = (
     verify: createHandler<WebAuthnReauthenticationVerifySessionData>(
       stores.reauthentication.verify,
       WEBAUTHN_SESSION_COOKIE_NAMES.reauthenticationVerify
+    )
+  },
+  testAuthentication: {
+    verify: createHandler<WebAuthnTestAuthenticationVerifySessionData>(
+      stores.testAuthentication.verify,
+      WEBAUTHN_SESSION_COOKIE_NAMES.testAuthenticationVerify
     )
   }
 });

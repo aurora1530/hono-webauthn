@@ -4,6 +4,7 @@ import { css, cx } from 'hono/css';
 import { aaguidToNameAndIcon, getIconsByName } from '../../lib/auth/aaguid/parse.js';
 import { MAX_PASSKEYS_PER_USER } from '../../routes/auth/webauthn/constant.ts';
 import { isSynced } from '../../lib/auth/sync.ts';
+import { getPasskeyHistoryTypeLabel } from '../../lib/auth/passkeyHistoryType.ts';
 
 type PasskeyData = {
   passkey: Passkey;
@@ -319,7 +320,7 @@ const PasskeyManagement: FC<{
                       最終使用日時:{' '}
                       {pData.lastUsed
                         ? pData.lastUsed.usedAt.toLocaleString() +
-                          ` by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS}`
+                          ` by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
                         : '未使用'}
                     </p>
                   </div>

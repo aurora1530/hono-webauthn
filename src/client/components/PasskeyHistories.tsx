@@ -1,6 +1,7 @@
 import { css } from 'hono/css';
 import type { PasskeyHistory } from '@prisma/client';
 import { webauthnClient } from '../lib/rpc/webauthnClient.js';
+import { getPasskeyHistoryTypeLabel } from '../lib/passkeyHistoryType.ts';
 
 type PasskeyHistoryProps = {
   passkeyId: string;
@@ -128,6 +129,16 @@ const PasskeyHistories = ({
     white-space: nowrap;
   `;
 
+  const typeBadgeClass = css`
+    font-size: 12px;
+    color: #5b21b6;
+    border: 1px solid #ddd6fe;
+    background: #ede9fe;
+    padding: 2px 6px;
+    border-radius: 9999px;
+    white-space: nowrap;
+  `;
+
   const emptyClass = css`
     color: #64748b;
     text-align: center;
@@ -247,26 +258,32 @@ const PasskeyHistories = ({
         <p class={emptyClass}>利用履歴はまだありません。</p>
       ) : (
         <ul class={listClass}>
-          {histories.map((h) => (
-            <li key={`${h.id}-${h.usedAt.toISOString()}`} class={itemClass}>
-              <span class={timeClass}>{h.usedAt.toLocaleString()}</span>
-              <span class={badgeClass} title={h.usedBrowser}>
-                🧭 {h.usedBrowser}
-              </span>
-              <span class={badgeClass} title={h.usedOS}>
-                💻 {h.usedOS}
-              </span>
-              <button
-                class={deleteBtnClass}
-                aria-label="履歴を削除"
-                title="履歴を削除"
-                data-history-id={h.id}
-                onClick={() => deleteHistory(h.id)}
-              >
-                <span class="material-symbols-outlined">delete</span>
-              </button>
-            </li>
-          ))}
+          {histories.map((h) => {
+            const typeLabel = getPasskeyHistoryTypeLabel(h.type);
+            return (
+              <li key={`${h.id}-${h.usedAt.toISOString()}`} class={itemClass}>
+                <span class={timeClass}>{h.usedAt.toLocaleString()}</span>
+                <span class={typeBadgeClass} title={`履歴種別: ${typeLabel}`}>
+                  🔐 {typeLabel}
+                </span>
+                <span class={badgeClass} title={h.usedBrowser}>
+                  🧭 {h.usedBrowser}
+                </span>
+                <span class={badgeClass} title={h.usedOS}>
+                  💻 {h.usedOS}
+                </span>
+                <button
+                  class={deleteBtnClass}
+                  aria-label="履歴を削除"
+                  title="履歴を削除"
+                  data-history-id={h.id}
+                  onClick={() => deleteHistory(h.id)}
+                >
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
 

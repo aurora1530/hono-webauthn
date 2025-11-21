@@ -1,19 +1,21 @@
 import prisma from "../../prisma.ts";
-import type { Passkey, PasskeyHistory } from "@prisma/client";
+import type { Passkey, PasskeyHistory, PasskeyHistoryType } from "@prisma/client";
 
 type HistoryParams = {
   passkeyId: string;
   browser: string;
   os: string;
+  authType: PasskeyHistoryType;
 };
 
-export const addHistory = async ({ passkeyId, browser, os }: HistoryParams) => {
+export const addHistory = async ({ passkeyId, browser, os, authType }: HistoryParams) => {
   try {
     await prisma.passkeyHistory.create({
       data: {
         passkeyID: passkeyId,
         usedBrowser: browser,
         usedOS: os,
+        type: authType,
       }
     })
 

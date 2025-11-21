@@ -47,4 +47,11 @@ model PasskeyHistory {
   usedBrowser String
   usedOS      String
   usedAt     DateTime @default(now())
+  type       PasskeyHistoryType @default(LOGIN)
+}
+
+enum PasskeyHistoryType {
+  LOGIN
+  REAUTH
+  TEST
 }
