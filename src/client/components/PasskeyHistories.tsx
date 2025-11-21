@@ -109,34 +109,65 @@ const PasskeyHistories = ({
     border-radius: 8px;
     padding: 10px 12px;
     display: flex;
-    gap: 12px;
     align-items: center;
+    gap: 16px;
     background: var(--header-bg);
     flex-wrap: wrap;
+
+    @media (max-width: 640px) {
+      align-items: flex-start;
+      gap: 8px 12px;
+    }
+  `;
+
+  const timeColumnClass = css`
+    flex: 1 1 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    @media (min-width: 641px) {
+      flex: 0 0 220px;
+    }
   `;
 
   const timeClass = css`
     font-weight: 600;
-  `;
-
-  const badgeClass = css`
-    font-size: 12px;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    padding: 2px 6px;
-    border-radius: 9999px;
-    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   `;
 
   const typeBadgeClass = css`
-    font-size: 12px;
-    color: #5b21b6;
-    border: 1px solid #ddd6fe;
-    background: #ede9fe;
-    padding: 2px 6px;
-    border-radius: 9999px;
+    flex: 0 0 110px;
+    font-size: 13px;
+    color: #4338ca;
+    font-weight: 500;
     white-space: nowrap;
+
+    @media (max-width: 640px) {
+      flex: 1 1 auto;
+    }
+  `;
+
+  const deviceInfoClass = css`
+    font-size: 13px;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @media (max-width: 640px) {
+      white-space: normal;
+    }
+  `;
+
+  const actionCellClass = css`
+    margin-left: auto;
+    display: inline-flex;
+  `;
+
+  const deleteIconClass = css`
+    font-size: 18px;
+    line-height: 1;
   `;
 
   const emptyClass = css`
@@ -161,9 +192,13 @@ const PasskeyHistories = ({
     cursor: pointer;
     background: #f1f5f9;
     color: #0f172a;
-    transition: background .15s ease, color .15s ease, border-color .15s ease;
-    &:hover { background: #e2e8f0; }
-    &:active { background: #cbd5e1; }
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    &:hover {
+      background: #e2e8f0;
+    }
+    &:active {
+      background: #cbd5e1;
+    }
   `;
 
   const deleteBtnClass = css`
@@ -178,8 +213,12 @@ const PasskeyHistories = ({
     background: #fee2e2; /* red-100 */
     color: #991b1b; /* red-800 */
     transition: background-color 0.15s ease-in-out, opacity 0.15s;
-    &:hover { background: #fecaca; }
-    &:active { background: #fca5a5; }
+    &:hover {
+      background: #fecaca;
+    }
+    &:active {
+      background: #fca5a5;
+    }
   `;
 
   const deleteAllBtnClass = css`
@@ -187,8 +226,12 @@ const PasskeyHistories = ({
     background: #f87171;
     color: #fff;
     border-color: #ef4444;
-    &:hover { background: #ef4444; }
-    &:active { background: #dc2626; }
+    &:hover {
+      background: #ef4444;
+    }
+    &:active {
+      background: #dc2626;
+    }
   `;
 
   const navButtonBase = css`
@@ -262,24 +305,25 @@ const PasskeyHistories = ({
             const typeLabel = getPasskeyHistoryTypeLabel(h.type);
             return (
               <li key={`${h.id}-${h.usedAt.toISOString()}`} class={itemClass}>
-                <span class={timeClass}>{h.usedAt.toLocaleString()}</span>
+                <div class={timeColumnClass}>
+                  <span class={timeClass}>{h.usedAt.toLocaleString()}</span>
+                  <span class={deviceInfoClass} title={`${h.usedBrowser} on ${h.usedOS}`}>
+                    {`${h.usedBrowser} on ${h.usedOS}`}
+                  </span>
+                </div>
                 <span class={typeBadgeClass} title={`履歴種別: ${typeLabel}`}>
-                  🔐 {typeLabel}
-                </span>
-                <span class={badgeClass} title={h.usedBrowser}>
-                  🧭 {h.usedBrowser}
-                </span>
-                <span class={badgeClass} title={h.usedOS}>
-                  💻 {h.usedOS}
+                  {typeLabel}
                 </span>
                 <button
-                  class={deleteBtnClass}
+                  class={`${deleteBtnClass} ${actionCellClass}`}
                   aria-label="履歴を削除"
                   title="履歴を削除"
                   data-history-id={h.id}
                   onClick={() => deleteHistory(h.id)}
                 >
-                  <span class="material-symbols-outlined">delete</span>
+                  <span class={`material-symbols-outlined ${deleteIconClass}`}>
+                    delete
+                  </span>
                 </button>
               </li>
             );
