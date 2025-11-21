@@ -1,7 +1,7 @@
-import { css } from "hono/css";
 import type { PasskeyHistory } from "@prisma/client";
-import { webauthnClient } from "../lib/rpc/webauthnClient.js";
+import { css } from "hono/css";
 import { getPasskeyHistoryTypeLabel } from "../lib/passkeyHistoryType.ts";
+import { webauthnClient } from "../lib/rpc/webauthnClient.js";
 
 type PasskeyHistoryProps = {
   passkeyId: string;
@@ -329,7 +329,7 @@ const PasskeyHistories = ({
       )}
 
       {totalPages > 1 && (
-        <div class={pagerFloatClass} aria-label="ページ切り替え">
+        <nav class={pagerFloatClass} aria-label="ページ切り替え">
           <div class={pagerGroupClass}>
             <button
               class={pagerButtonClass}
@@ -351,7 +351,7 @@ const PasskeyHistories = ({
               次へ ▶
             </button>
           </div>
-        </div>
+        </nav>
       )}
     </div>
   );
