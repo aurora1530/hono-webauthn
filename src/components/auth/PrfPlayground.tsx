@@ -305,12 +305,7 @@ export const PrfPlayground: FC<PrfPlaygroundProps> = ({ passkeys }) => {
             一覧を更新
           </button>
         </div>
-        <output
-          id="prf-status-message"
-          class={statusClass}
-          role="status"
-          aria-live="polite"
-        ></output>
+        <output id="prf-status-message" class={statusClass} aria-live="polite"></output>
         <div id="prf-latest-output" class={outputClass} hidden>
           <h4>直近の結果</h4>
           <div id="prf-output-content" class={outputGridClass}></div>

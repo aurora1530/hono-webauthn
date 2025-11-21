@@ -1,5 +1,5 @@
-import type { FC } from "hono/jsx";
 import { css, Style } from "hono/css";
+import type { FC } from "hono/jsx";
 
 const Modal: FC = async () => {
   const dialogClass = css`
@@ -55,7 +55,7 @@ const Modal: FC = async () => {
           }
         `}
       </Style>
-      <dialog id="main-modal" class={dialogClass} role="dialog" aria-modal="true" closedby="any">
+      <dialog id="main-modal" class={dialogClass} aria-modal="true" closedby="any">
         <form method="dialog">
           <button type="submit" class={closeBtnClass} aria-label="Close modal" title="Close">
             ×
