@@ -225,51 +225,58 @@ const PasskeyHistories = ({
     }
   `;
 
-  const navButtonBase = css`
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 28px;
-    min-height: 110px;
-    padding: 8px 6px;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
+  const pagerFloatClass = css`
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    display: flex;
     justify-content: center;
-    gap: 6px;
+    width: 100%;
+    pointer-events: none;
+    z-index: 1000;
+    padding: 0 16px;
+  `;
+
+  const pagerGroupClass = css`
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 999px;
     border: 1px solid #e2e8f0;
-    background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+    background: rgba(248, 250, 252, 0.98);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+    padding: 8px 18px;
+  `;
+
+  const pagerButtonClass = css`
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 14px;
+    min-width: 86px;
+    background: #e2e8f0;
     color: #0f172a;
-    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.15s ease-in-out, opacity 0.15s ease-in-out;
+    transition: background 0.15s ease, color 0.15s ease;
 
     &:hover:not(:disabled) {
-      background: #e2e8f0;
+      background: #cbd5e1;
     }
 
     &:disabled {
       cursor: not-allowed;
-      opacity: 0.5;
+      opacity: 0.45;
     }
   `;
 
-  const navPrevClass = css`
-    left: 0;
-  `;
-
-  const navNextClass = css`
-    right: 0;
-  `;
-
-  const navArrowClass = css`
-    font-size: 14px;
-  `;
-
-  const navLabelClass = css`
-    writing-mode: vertical-rl;
-    font-size: 11px;
-    letter-spacing: 0.08em;
+  const pagerStatusClass = css`
+    font-size: 13px;
+    color: #475569;
+    min-width: 80px;
+    text-align: center;
   `;
 
   return (
@@ -323,24 +330,27 @@ const PasskeyHistories = ({
       )}
 
       {totalPages > 1 && (
-        <>
-          <button
-            class={`${navButtonBase} ${navPrevClass}`}
-            onClick={() => onChangePage(Math.max(1, page - 1))}
-            disabled={page <= 1}
-          >
-            <span class={navArrowClass}>◀</span>
-            <span class={navLabelClass}>前へ</span>
-          </button>
-          <button
-            class={`${navButtonBase} ${navNextClass}`}
-            onClick={() => onChangePage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages}
-          >
-            <span class={navArrowClass}>▶</span>
-            <span class={navLabelClass}>次へ</span>
-          </button>
-        </>
+        <div class={pagerFloatClass} aria-label="ページ切り替え">
+          <div class={pagerGroupClass}>
+            <button
+              class={pagerButtonClass}
+              onClick={() => onChangePage(Math.max(1, page - 1))}
+              disabled={page <= 1}
+            >
+              ◀ 前へ
+            </button>
+            <span class={pagerStatusClass}>
+              {page} / {totalPages}
+            </span>
+            <button
+              class={pagerButtonClass}
+              onClick={() => onChangePage(Math.min(totalPages, page + 1))}
+              disabled={page >= totalPages}
+            >
+              次へ ▶
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
