@@ -35,7 +35,7 @@ const LoginForm: FC = () => {
     <div class={container}>
       <div>
         <p style="color:#64748b">パスキー認証を開始してください。</p>
-        <button class={primaryButton} id="login-button">
+        <button class={primaryButton} id="login-button" type="button">
           ログイン
         </button>
       </div>

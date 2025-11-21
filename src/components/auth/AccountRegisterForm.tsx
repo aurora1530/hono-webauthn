@@ -91,7 +91,7 @@ const AccountRegisterForm: FC = () => {
         <span id="username-count" class={counterText} aria-live="polite">
           0/64
         </span>
-        <button class={primaryButton} id="account-register-button" disabled>
+        <button class={primaryButton} id="account-register-button" disabled type="button">
           登録
         </button>
       </div>

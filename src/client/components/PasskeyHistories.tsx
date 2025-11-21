@@ -289,7 +289,7 @@ const PasskeyHistories = ({
           </p>
         </div>
         {total > 0 && (
-          <button class={deleteAllBtnClass} onClick={deleteAllHistories}>
+          <button class={deleteAllBtnClass} onClick={deleteAllHistories} type="button">
             全削除
           </button>
         )}
@@ -318,6 +318,7 @@ const PasskeyHistories = ({
                   title="履歴を削除"
                   data-history-id={h.id}
                   onClick={() => deleteHistory(h.id)}
+                  type="button"
                 >
                   <span class={`material-symbols-outlined ${deleteIconClass}`}>delete</span>
                 </button>
@@ -334,6 +335,7 @@ const PasskeyHistories = ({
               class={pagerButtonClass}
               onClick={() => onChangePage(Math.max(1, page - 1))}
               disabled={page <= 1}
+              type="button"
             >
               ◀ 前へ
             </button>
@@ -344,6 +346,7 @@ const PasskeyHistories = ({
               class={pagerButtonClass}
               onClick={() => onChangePage(Math.min(totalPages, page + 1))}
               disabled={page >= totalPages}
+              type="button"
             >
               次へ ▶
             </button>

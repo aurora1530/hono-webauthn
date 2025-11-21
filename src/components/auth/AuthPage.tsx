@@ -66,7 +66,7 @@ const AuthPage: FC = async () => {
         {userData ? (
           <>
             <span style="color:#64748b">ログイン中:</span> <strong>{userData.username}</strong>
-            <button class={secondary} id="add-passkey-button">
+            <button class={secondary} id="add-passkey-button" type="button">
               パスキー作成
             </button>
             <a class={secondary} href="/auth/prf">
