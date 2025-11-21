@@ -19,14 +19,9 @@ const PasskeyManagement: FC<{
   const canDelete = passkeyData.length > 1;
 
   const containerClass = css`
-    width: 100%;
-    max-width: 80%;
+    width: min(960px, 100%);
+    padding: 0 20px 32px;
     margin: 0 auto;
-    @media (max-width: 640px) {
-      max-width: 100%;
-      width: auto;
-      margin: 0 8px;
-    }
   `;
 
   const titleClass = css`
@@ -41,44 +36,71 @@ const PasskeyManagement: FC<{
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    align-items: center;
+    gap: 14px;
     width: 100%;
   `;
 
   const itemClass = css`
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 12px 14px;
+    border-radius: 12px;
+    padding: 16px 18px;
     display: flex;
     flex-direction: column;
-    gap: 0.1em;
-    position: relative;
+    gap: 0.6em;
     box-sizing: border-box;
-
-    width: 30em;
-    @media (max-width: 640px) {
-      width: 100%;
-    }
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   `;
 
-  const rowTopClass = css`
-    display: grid;
-    grid-template-columns: 1fr auto 1fr; /* left group | name | right group */
+  const statusRowClass = css`
+    display: flex;
     align-items: center;
-    column-gap: 8px;
-    margin-top: 8px;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 18px;
   `;
 
-  const rowLeftClass = css`
+  const statusLeftClass = css`
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 18px;
+  `;
+
+  const cardHeaderClass = css`
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    column-gap: 14px;
+  `;
+
+  const iconWrapperClass = css`
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #f8fafc;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 20px;
+    border: 1px solid #e2e8f0;
   `;
 
-  const rowRightClass = css`
+  const cardTitleStackClass = css`
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  `;
+
+  const nameRowClass = css`
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  `;
+
+  const actionGroupClass = css`
+    display: inline-flex;
     align-items: center;
     justify-content: flex-end;
     gap: 6px;
@@ -116,55 +138,85 @@ const PasskeyManagement: FC<{
   `;
 
   const iconClass = css`
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
     object-fit: contain;
   `;
 
   const nameClass = css`
     font-weight: 600;
-    text-align: center;
+    text-align: left;
+    font-size: 16px;
+    color: #0f172a;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
   `;
 
   const currentSessionClass = css`
     font-size: 12px;
     color: var(--primary-color);
-    margin-top: -4px;
-    text-align: center;
+    font-weight: 600;
   `;
 
   const metaClass = css`
-    font-size: 12px;
-    color: #64748b;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px 18px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
   `;
 
-  const badgeSyncedClass = css`
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: #ecfdf5; /* green-50 */
-    color: #065f46; /* green-800 */
-    border: 1px solid #a7f3d0; /* green-200 */
-    border-radius: 9999px; /* pill */
-    padding: 2px 8px;
+  const metaLabelClass = css`
     font-size: 11px;
-    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 4px;
+    display: block;
+  `;
+
+  const metaValueClass = css`
+    font-size: 13px;
+    color: #1f2937;
     line-height: 1.4;
   `;
 
-  const badgeUnsyncedClass = css`
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: #fffbeb; /* amber-50 */
-    color: #92400e; /* amber-800 */
-    border: 1px solid #fde68a; /* amber-300 */
+  const badgeGroupClass = css`
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+  `;
+
+  const badgeBaseClass = css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 9999px;
-    padding: 2px 8px;
+    padding: 2px 10px;
     font-size: 11px;
     font-weight: 600;
     line-height: 1.4;
+    border: 1px solid transparent;
   `;
+
+  const badgeSyncedClass = cx(
+    badgeBaseClass,
+    css`
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #a7f3d0;
+    `
+  );
+
+  const badgeUnsyncedClass = cx(
+    badgeBaseClass,
+    css`
+      background: #fffbeb;
+      color: #92400e;
+      border-color: #fde68a;
+    `
+  );
 
   const buttonBaseClass = css`
     cursor: pointer;
@@ -191,14 +243,37 @@ const PasskeyManagement: FC<{
     `
   );
 
-  const aaguidClass = css`
-    font-size: 12px;
+  const aaguidDesktopClass = css`
+    font-size: 11px;
     color: #94a3b8;
     word-break: break-all;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+    flex-shrink: 0;
+    @media (max-width: 560px) {
+      display: none;
+    }
+  `;
+
+  const aaguidMobileClass = css`
+    font-size: 11px;
+    color: #94a3b8;
+    word-break: break-all;
+    display: none;
+    @media (max-width: 560px) {
+      display: block;
+    }
   `;
 
   const smallMarginClass = css`
-    margin: 0.5em 0;
+    margin: 0.4em 0;
+  `;
+
+  const metaItemClass = css`
+    display: flex;
+    flex-direction: column;
   `;
 
   return (
@@ -225,26 +300,47 @@ const PasskeyManagement: FC<{
               const iconSrc =
                 aaguidToNameAndIcon(pData.passkey.aaguid)?.icon_light ??
                 getIconsByName(pData.passkey.name).icon_light;
+              const metaLastUsed = pData.lastUsed
+                ? `${pData.lastUsed.usedAt.toLocaleString()} by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
+                : '未使用';
               return (
                   <li key={pData.passkey.id} class={itemClass}>
-                    {isSynced(pData.passkey) ? (
-                    <span class={badgeSyncedClass}>Synced</span>
-                  ) : (
-                    <span class={badgeUnsyncedClass}>Unsynced</span>
-                  )}
-                  <div class={rowTopClass}>
-                    <div class={rowLeftClass}>
+                    <div class={statusRowClass}>
+                      <div class={statusLeftClass}>
+                        {pData.passkey.id === currentPasskeyID && (
+                          <span class={currentSessionClass}>現在のセッションで使用中</span>
+                        )}
+                      </div>
+                      <div class={badgeGroupClass}>
+                        {isSynced(pData.passkey) ? (
+                          <span class={badgeSyncedClass}>Synced</span>
+                        ) : (
+                          <span class={badgeUnsyncedClass}>Unsynced</span>
+                        )}
+                      </div>
+                    </div>
+                  <div class={cardHeaderClass}>
+                    <div class={iconWrapperClass}>
                       {iconSrc ? (
                         <img decoding="async" class={iconClass} src={iconSrc} alt="" />
                       ) : (
                         <span
                           aria-hidden="true"
-                          style="width:20px;height:20px;display:inline-block;"
+                          style="width:28px;height:28px;display:inline-block;"
                         ></span>
                       )}
                     </div>
-                    <p class={nameClass}>{pData.passkey.name}</p>
-                    <div class={rowRightClass}>
+
+                    <div class={cardTitleStackClass}>
+                      <div class={nameRowClass}>
+                        <p class={nameClass}>{pData.passkey.name}</p>
+                        {debugMode && (
+                          <span class={aaguidDesktopClass}>AAGUID: {pData.passkey.aaguid}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div class={actionGroupClass}>
                       {
                         /* history icon button */
                         debugMode && (
@@ -305,24 +401,23 @@ const PasskeyManagement: FC<{
                     </div>
                   </div>
 
-                  {pData.passkey.id === currentPasskeyID && (
-                    <p class={cx(currentSessionClass, smallMarginClass)}>現在のセッションで使用中</p>
+                  {debugMode && (
+                    <span class={cx(aaguidMobileClass, smallMarginClass)}>
+                      AAGUID: {pData.passkey.aaguid}
+                    </span>
                   )}
 
-                  {debugMode && (<span class={cx(aaguidClass, smallMarginClass)}>AAGUID: {pData.passkey.aaguid}</span>)}
-
                   <div class={metaClass}>
-                    <p class={smallMarginClass}>
-                      作成日時: {pData.passkey.createdAt.toLocaleString()} by {browser} on{' '}
-                      {os}
-                    </p>
-                    <p class={smallMarginClass}>
-                      最終使用日時:{' '}
-                      {pData.lastUsed
-                        ? pData.lastUsed.usedAt.toLocaleString() +
-                          ` by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
-                        : '未使用'}
-                    </p>
+                    <div class={metaItemClass}>
+                      <span class={metaLabelClass}>作成日時</span>
+                      <span class={metaValueClass}>
+                        {pData.passkey.createdAt.toLocaleString()} by {browser} on {os}
+                      </span>
+                    </div>
+                    <div class={metaItemClass}>
+                      <span class={metaLabelClass}>最終使用日時</span>
+                      <span class={metaValueClass}>{metaLastUsed}</span>
+                    </div>
                   </div>
                 </li>
               );
