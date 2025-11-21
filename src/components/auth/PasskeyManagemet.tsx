@@ -1,10 +1,10 @@
 import type { Passkey, PasskeyHistory } from "@prisma/client";
-import type { FC } from "hono/jsx";
 import { css, cx } from "hono/css";
+import type { FC } from "hono/jsx";
 import { aaguidToNameAndIcon, getIconsByName } from "../../lib/auth/aaguid/parse.js";
-import { MAX_PASSKEYS_PER_USER } from "../../routes/auth/webauthn/constant.ts";
-import { isSynced } from "../../lib/auth/sync.ts";
 import { getPasskeyHistoryTypeLabel } from "../../lib/auth/passkeyHistoryType.ts";
+import { isSynced } from "../../lib/auth/sync.ts";
+import { MAX_PASSKEYS_PER_USER } from "../../routes/auth/webauthn/constant.ts";
 
 type PasskeyData = {
   passkey: Passkey;
@@ -308,6 +308,7 @@ const PasskeyManagement: FC<{
     font-size: 12px;
     color: #991b1b;
     margin: 4px 0 0;
+    text-align: right;
   `;
 
   return (
