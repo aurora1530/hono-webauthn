@@ -18,6 +18,7 @@ model User {
   id      String    @id @default(cuid())
   name    String    @unique
   Passkey Passkey[]
+  prfCiphertexts PrfCiphertext[]
 }
 
 model Passkey {
@@ -36,6 +37,7 @@ model Passkey {
   createdBrowser   String
   createdOS        String
   passkeyHistories PasskeyHistory[]
+  prfCiphertexts   PrfCiphertext[]
 
   @@index([webauthnUserID], name: "webauthnUserID")
 }
@@ -54,4 +56,24 @@ enum PasskeyHistoryType {
   LOGIN
   REAUTH
   TEST
+  PRF
+}
+
+model PrfCiphertext {
+  id             String   @id @default(cuid())
+  userID         String
+  user           User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+  passkeyID      String
+  passkey        Passkey  @relation(fields: [passkeyID], references: [id], onDelete: Restrict)
+  label          String?  @db.VarChar(120)
+  ciphertext     String
+  iv             String   @db.VarChar(64)
+  tag            String   @db.VarChar(64)
+  associatedData String?
+  prfInput       String   @db.VarChar(128)
+  version        Int      @default(1)
+  createdAt      DateTime @default(now())
+
+  @@index([userID])
+  @@index([passkeyID])
 }
