@@ -51,7 +51,7 @@ const PasskeyManagement: FC<{
     padding: 12px 14px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.1em;
     position: relative;
     box-sizing: border-box;
 
@@ -135,7 +135,6 @@ const PasskeyManagement: FC<{
   const metaClass = css`
     font-size: 12px;
     color: #64748b;
-    margin-top: 4px;
   `;
 
   const badgeSyncedClass = css`
@@ -195,6 +194,10 @@ const PasskeyManagement: FC<{
     font-size: 12px;
     color: #94a3b8;
     word-break: break-all;
+  `;
+
+  const smallMarginClass = css`
+    margin: 0.5em 0;
   `;
 
   return (
@@ -302,17 +305,17 @@ const PasskeyManagement: FC<{
                   </div>
 
                   {pData.passkey.id === currentPasskeyID && (
-                    <p class={currentSessionClass}>現在のセッションで使用中</p>
+                    <p class={cx(currentSessionClass, smallMarginClass)}>現在のセッションで使用中</p>
                   )}
 
-                  {debugMode && (<span class={aaguidClass}>AAGUID: {pData.passkey.aaguid}</span>)}
+                  {debugMode && (<span class={cx(aaguidClass, smallMarginClass)}>AAGUID: {pData.passkey.aaguid}</span>)}
 
                   <div class={metaClass}>
-                    <p>
+                    <p class={smallMarginClass}>
                       作成日時: {pData.passkey.createdAt.toLocaleString()} by {browser} on{' '}
                       {os}
                     </p>
-                    <p>
+                    <p class={smallMarginClass}>
                       最終使用日時:{' '}
                       {pData.lastUsed
                         ? pData.lastUsed.usedAt.toLocaleString() +
