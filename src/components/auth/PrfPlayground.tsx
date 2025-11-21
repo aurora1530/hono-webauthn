@@ -237,7 +237,8 @@ export const PrfPlayground: FC<PrfPlaygroundProps> = ({ passkeys }) => {
         <div>
           <h2>WebAuthn PRF 暗号化プレイグラウンド</h2>
           <p>
-            パスキー由来のシークレットを使い、クライアント側のみで AES-128-GCM による暗号化を行います。
+            パスキー由来のシークレットを使い、クライアント側のみで AES-128-GCM
+            による暗号化を行います。
             生成された暗号文だけがサーバーに保存され、復号にも同じAuthenticatorが必要になります。
           </p>
         </div>
@@ -257,11 +258,7 @@ export const PrfPlayground: FC<PrfPlaygroundProps> = ({ passkeys }) => {
             <select id="prf-passkey-select" defaultValue="" disabled={controlsDisabled}>
               <option value="">選択してください</option>
               {passkeys.map((passkey) => (
-                <option
-                  key={passkey.id}
-                  value={passkey.id}
-                  data-passkey-name={passkey.name}
-                >
+                <option key={passkey.id} value={passkey.id} data-passkey-name={passkey.name}>
                   {passkey.name}
                 </option>
               ))}
@@ -278,7 +275,9 @@ export const PrfPlayground: FC<PrfPlaygroundProps> = ({ passkeys }) => {
             />
           </div>
           <div class={cx(fieldClass, textareaClass)}>
-            <label htmlFor="prf-plaintext-input">平文 (最大約 {MAX_PRF_PLAINTEXT_CHARS} バイト)</label>
+            <label htmlFor="prf-plaintext-input">
+              平文 (最大約 {MAX_PRF_PLAINTEXT_CHARS} バイト)
+            </label>
             <textarea
               id="prf-plaintext-input"
               rows={4}

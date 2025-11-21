@@ -134,9 +134,13 @@ if (playgroundRoot) {
   };
 
   const deriveAesArtifacts = async (prfBytes: Uint8Array, salt: Uint8Array) => {
-    const hkdfKey = await crypto.subtle.importKey("raw", prfBytes as unknown as BufferSource, "HKDF", false, [
-      "deriveBits",
-    ]);
+    const hkdfKey = await crypto.subtle.importKey(
+      "raw",
+      prfBytes as unknown as BufferSource,
+      "HKDF",
+      false,
+      ["deriveBits"],
+    );
     const deriveBits = async (infoLabel: string, bitLength: number) =>
       crypto.subtle.deriveBits(
         {
@@ -150,10 +154,13 @@ if (playgroundRoot) {
       );
     const keyBits = await deriveBits("prf-demo-aes-key-v1", 128);
     const ivBits = await deriveBits("prf-demo-aes-iv-v1", 96);
-    const aesKey = await crypto.subtle.importKey("raw", keyBits, { name: "AES-GCM", length: 128 }, false, [
-      "encrypt",
-      "decrypt",
-    ]);
+    const aesKey = await crypto.subtle.importKey(
+      "raw",
+      keyBits,
+      { name: "AES-GCM", length: 128 },
+      false,
+      ["encrypt", "decrypt"],
+    );
     return {
       aesKey,
       iv: new Uint8Array(ivBits),
@@ -173,7 +180,9 @@ if (playgroundRoot) {
     }
     const optionsJSON = await generateRes.json();
     const options = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJSON);
-    const credential = (await navigator.credentials.get({ publicKey: options })) as PublicKeyCredential;
+    const credential = (await navigator.credentials.get({
+      publicKey: options,
+    })) as PublicKeyCredential;
     const verifyRes = await webauthnClient.prf.assertion.verify.$post({
       json: { body: credential },
     });
@@ -181,7 +190,9 @@ if (playgroundRoot) {
       const error = (await verifyRes.json()).error ?? "PRF認証の検証に失敗しました";
       throw new Error(error);
     }
-    const prfResult = credential.getClientExtensionResults().prf?.results?.first as ArrayBuffer | undefined;
+    const prfResult = credential.getClientExtensionResults().prf?.results?.first as
+      | ArrayBuffer
+      | undefined;
     if (!prfResult) {
       throw new Error("この環境ではPRF拡張を利用できません");
     }
@@ -195,7 +206,8 @@ if (playgroundRoot) {
     if (!prfElements.entriesContainer) return;
     prfElements.entriesContainer.innerHTML = "";
     if (prfState.entries.length === 0) {
-      const emptyText = prfElements.entriesContainer.dataset.empty || "暗号化済みのデータはありません";
+      const emptyText =
+        prfElements.entriesContainer.dataset.empty || "暗号化済みのデータはありません";
       const p = document.createElement("p");
       p.textContent = emptyText;
       prfElements.entriesContainer.appendChild(p);
@@ -306,7 +318,10 @@ if (playgroundRoot) {
       renderEntries();
     } catch (error) {
       console.error(error);
-      setPrfStatus(error instanceof Error ? error.message : "一覧の取得中にエラーが発生しました", true);
+      setPrfStatus(
+        error instanceof Error ? error.message : "一覧の取得中にエラーが発生しました",
+        true,
+      );
     } finally {
       togglePrfBusy(false);
       setPrfStatus("暗号化済みデータの取得が完了しました。", false);

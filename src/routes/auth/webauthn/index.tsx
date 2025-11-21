@@ -22,7 +22,11 @@ import { reauthSessionController } from "../../../lib/auth/reauthSession.js";
 import inferClientPlatform from "../../../lib/auth/inferClientPlatform.js";
 import { MAX_PASSKEYS_PER_USER, origin, rpID, rpName } from "./constant.ts";
 import handlePostAuthentication from "../../../lib/auth/postAuthentication.ts";
-import { buildPrfExtensions, decodeBase64ToBytesWithBounds, PRF_CONSTRAINTS } from "../../../lib/auth/prfHelpers.ts";
+import {
+  buildPrfExtensions,
+  decodeBase64ToBytesWithBounds,
+  PRF_CONSTRAINTS,
+} from "../../../lib/auth/prfHelpers.ts";
 import { BASE64_REGEX } from "../../../lib/base64.ts";
 
 const webauthnApp = new Hono();
@@ -827,16 +831,16 @@ const webAuthnRoutes = webauthnApp
         .object({
           passkeyId: z.string().min(1),
           label: z.string().max(PRF_CONSTRAINTS.label.maxLength).optional(),
-          ciphertext: z.string().min(1).max(PRF_CONSTRAINTS.ciphertext.maxLength).regex(BASE64_REGEX),
+          ciphertext: z
+            .string()
+            .min(1)
+            .max(PRF_CONSTRAINTS.ciphertext.maxLength)
+            .regex(BASE64_REGEX),
           iv: z.string().min(1).regex(BASE64_REGEX),
           tag: z.string().min(1).regex(BASE64_REGEX),
           associatedData: z.string().max(PRF_CONSTRAINTS.associatedData.maxLength).optional(),
           version: z.number().int().min(1).max(10).default(1),
-          prfInput: z
-            .string()
-            .min(1)
-            .max(PRF_CONSTRAINTS.prfInput.exactLength)
-            .regex(BASE64_REGEX),
+          prfInput: z.string().min(1).max(PRF_CONSTRAINTS.prfInput.exactLength).regex(BASE64_REGEX),
         })
         .safeParse(value);
       if (!parsed.success) {

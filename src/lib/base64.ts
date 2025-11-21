@@ -1,9 +1,5 @@
 export const encodeBytesToBase64Url = (bytes: Uint8Array): string =>
-  Buffer.from(bytes)
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
+  Buffer.from(bytes).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 
 export const BASE64_REGEX = /^[A-Za-z0-9+/=]+$/;
 

@@ -5,12 +5,12 @@ export const buildPrfExtensions = (
 ): PublicKeyCredentialRequestOptionsJSON["extensions"] | undefined =>
   bytes
     ? ({
-      prf: {
-        eval: {
-          first: encodeBytesToBase64Url(bytes),
+        prf: {
+          eval: {
+            first: encodeBytesToBase64Url(bytes),
+          },
         },
-      },
-    } as unknown as PublicKeyCredentialRequestOptionsJSON["extensions"])
+      } as unknown as PublicKeyCredentialRequestOptionsJSON["extensions"])
     : undefined;
 
 export const decodeBase64ToBytesWithBounds = (
@@ -38,7 +38,7 @@ export const PRF_CONSTRAINTS = {
   tag: { maxLength: 64 },
   prfInput: {
     exactLength: 64, // base64 for 32 bytes
-    byteLength: 32
+    byteLength: 32,
   },
   ivByteLength: 12,
   tagByteLength: 16,
