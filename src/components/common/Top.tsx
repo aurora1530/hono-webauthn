@@ -1,7 +1,7 @@
-import type { FC } from 'hono/jsx';
-import { css, cx } from 'hono/css';
-import { useRequestContext } from 'hono/jsx-renderer';
-import { loginSessionController } from '../../lib/auth/loginSession.ts';
+import type { FC } from "hono/jsx";
+import { css, cx } from "hono/css";
+import { useRequestContext } from "hono/jsx-renderer";
+import { loginSessionController } from "../../lib/auth/loginSession.ts";
 
 const Top: FC = async () => {
   const c = useRequestContext();
@@ -55,7 +55,7 @@ const Top: FC = async () => {
       color: #fff;
       &:hover { background: var(--primary-hover); }
       &:active { opacity: 0.95; }
-    `
+    `,
   );
 
   const secondary = cx(
@@ -65,7 +65,7 @@ const Top: FC = async () => {
       color: var(--text-color);
       &:hover { background: #cbd5e1; }
       &:active { opacity: 0.95; }
-    `
+    `,
   );
 
   return (
@@ -76,16 +76,24 @@ const Top: FC = async () => {
           <>
             <p class={subtitle}>ようこそ、{username}さん。</p>
             <div class={actions}>
-              <a class={secondary} href="/profile">プロフィール</a>
-              <a class={primary} href="/auth/passkey-management">パスキー管理</a>
+              <a class={secondary} href="/profile">
+                プロフィール
+              </a>
+              <a class={primary} href="/auth/passkey-management">
+                パスキー管理
+              </a>
             </div>
           </>
         ) : (
           <>
             <p class={subtitle}>パスキー対応のデモアプリ。数クリックで安全に認証。</p>
             <div class={actions}>
-              <a class={primary} href="/auth/register">新規登録</a>
-              <a class={secondary} href="/auth/login">ログイン</a>
+              <a class={primary} href="/auth/register">
+                新規登録
+              </a>
+              <a class={secondary} href="/auth/login">
+                ログイン
+              </a>
             </div>
           </>
         )}

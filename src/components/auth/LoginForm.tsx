@@ -1,5 +1,5 @@
-import type { FC } from 'hono/jsx';
-import { css, cx } from 'hono/css';
+import type { FC } from "hono/jsx";
+import { css, cx } from "hono/css";
 
 const LoginForm: FC = () => {
   const container = css`
@@ -28,14 +28,16 @@ const LoginForm: FC = () => {
       &:active {
         opacity: 0.9;
       }
-    `
+    `,
   );
 
   return (
     <div class={container}>
       <div>
         <p style="color:#64748b">パスキー認証を開始してください。</p>
-        <button class={primaryButton} id="login-button">ログイン</button>
+        <button class={primaryButton} id="login-button">
+          ログイン
+        </button>
       </div>
       <script src="/public/loginForm.js" type="module"></script>
     </div>
@@ -43,4 +45,3 @@ const LoginForm: FC = () => {
 };
 
 export default LoginForm;
-

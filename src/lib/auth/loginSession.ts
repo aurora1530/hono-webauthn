@@ -1,30 +1,29 @@
-import { createMiddleware } from 'hono/factory';
-import { type SessionStore } from '../session.js';
-import { createRedisSessionStore } from '../redis/redis-session.js';
-import type { Context } from 'hono';
-import z from 'zod';
-import { deleteCookieHelper, getCookieHelper, setCookieHelper } from './cookieHelper.ts';
-
+import { createMiddleware } from "hono/factory";
+import { type SessionStore } from "../session.js";
+import { createRedisSessionStore } from "../redis/redis-session.js";
+import type { Context } from "hono";
+import z from "zod";
+import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.ts";
 
 const UserDataSchema = z.object({
   userID: z.string(),
   username: z.string(),
   usedPasskeyID: z.string(),
   debugMode: z.boolean().optional(),
-})
+});
 type UserData = z.infer<typeof UserDataSchema>;
 type LoginSessionStore = SessionStore<UserData>;
 
-const LOGIN_SESSION_COOKIE_NAME = 'ls';
+const LOGIN_SESSION_COOKIE_NAME = "ls";
 
 const TTL_SEC = 60 * 60 * 24 * 7; // 1 week
 const loginSessionStore = await createRedisSessionStore<UserData>({
-  prefix: 'login',
+  prefix: "login",
   ttlSec: TTL_SEC,
   dataParser: (data: unknown) => {
     const parsed = UserDataSchema.safeParse(data);
     return parsed.success ? parsed.data : undefined;
-  }
+  },
 });
 
 interface LoginSessionController {
@@ -61,9 +60,9 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
       if (!userData) return;
       userData.debugMode = debugMode;
       await store.set(sessionID, userData);
-    }
-  }
-}
+    },
+  };
+};
 
 export const loginSessionController = createLoginSessionController(loginSessionStore);
 
@@ -74,4 +73,4 @@ export const loginSessionMiddleware = createMiddleware(async (c, next) => {
   }
 
   await next();
-})
+});

@@ -1,7 +1,7 @@
-import { jsxRenderer } from 'hono/jsx-renderer';
-import Header from './components/common/Header.js';
-import { css, cx, Style } from 'hono/css';
-import Modal from './components/common/Modal.js';
+import { jsxRenderer } from "hono/jsx-renderer";
+import Header from "./components/common/Header.js";
+import { css, cx, Style } from "hono/css";
+import Modal from "./components/common/Modal.js";
 
 const rootRenderer = jsxRenderer(({ children, title }) => {
   const htmlClass = css`
@@ -24,7 +24,7 @@ const rootRenderer = jsxRenderer(({ children, title }) => {
       flex-direction: column;
       background-color: var(--bg-color);
       color: var(--text-color);
-    `
+    `,
   );
 
   const mainClass = css`

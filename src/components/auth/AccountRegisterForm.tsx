@@ -1,5 +1,5 @@
-import type { FC } from 'hono/jsx';
-import { css, cx } from 'hono/css';
+import type { FC } from "hono/jsx";
+import { css, cx } from "hono/css";
 
 const AccountRegisterForm: FC = () => {
   const container = css`
@@ -68,12 +68,14 @@ const AccountRegisterForm: FC = () => {
         cursor: not-allowed;
         opacity: 0.8;
       }
-    `
+    `,
   );
 
   return (
     <div class={container}>
-      <div id="username-hint" class={hintText}>ユーザー名は1〜64文字、半角英数字のみ。</div>
+      <div id="username-hint" class={hintText}>
+        ユーザー名は1〜64文字、半角英数字のみ。
+      </div>
       <div class={row}>
         <input
           class={input}
@@ -86,8 +88,12 @@ const AccountRegisterForm: FC = () => {
           aria-describedby="username-hint username-error"
           aria-invalid="false"
         />
-        <span id="username-count" class={counterText} aria-live="polite">0/64</span>
-        <button class={primaryButton} id="account-register-button" disabled>登録</button>
+        <span id="username-count" class={counterText} aria-live="polite">
+          0/64
+        </span>
+        <button class={primaryButton} id="account-register-button" disabled>
+          登録
+        </button>
       </div>
       <div class={errorWrap}>
         <span id="username-error" class={errorText} role="alert" aria-live="polite" />

@@ -8,24 +8,24 @@ async function handleAuthentication() {
   }
 
   const options = PublicKeyCredential.parseRequestOptionsFromJSON(
-    await generateAuthenticationOptionsResponse.json()
+    await generateAuthenticationOptionsResponse.json(),
   );
   console.log(options);
 
   const credential = await navigator.credentials.get({ publicKey: options });
   const credentialResponse = await webauthnClient.authentication.verify.$post({
     json: {
-      body: credential
-    }
-  })
+      body: credential,
+    },
+  });
 
   if (!credentialResponse.ok) {
-    const error = (await credentialResponse.json()).error
+    const error = (await credentialResponse.json()).error;
     alert(error);
     return;
   }
 
-  location.href = '/';
+  location.href = "/";
 }
 
 export { handleAuthentication };

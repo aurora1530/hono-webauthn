@@ -23,30 +23,26 @@ const reauthSessionStore = await createRedisSessionStore<ReauthData>({
   },
 });
 
-
 type ReauthSessionController = {
   initialize(c: Context, data: ReauthData): Promise<void>;
   extractSessionData(c: Context): Promise<ReauthData | undefined>;
 };
 
-
-const createReauthSessionController = (
-  store: ReauthSessionStore
-): ReauthSessionController => {
+const createReauthSessionController = (store: ReauthSessionStore): ReauthSessionController => {
   return {
     initialize: async (c: Context, data: ReauthData) => {
       const sessionID = await store.createSessionWith(data);
-      await setCookieHelper(c, REAUTH_SESSION_PREFIX, sessionID, { maxAge: REAUTH_SESSION_TTL_SEC });
+      await setCookieHelper(c, REAUTH_SESSION_PREFIX, sessionID, {
+        maxAge: REAUTH_SESSION_TTL_SEC,
+      });
     },
     extractSessionData: async (c: Context) => {
       const sessionID = await getCookieHelper(c, REAUTH_SESSION_PREFIX);
       if (!sessionID) return undefined;
       deleteCookieHelper(c, REAUTH_SESSION_PREFIX);
       return await store.getAndDestroy(sessionID);
-    }
+    },
   };
 };
 
-export const reauthSessionController = createReauthSessionController(
-  reauthSessionStore
-);
+export const reauthSessionController = createReauthSessionController(reauthSessionStore);

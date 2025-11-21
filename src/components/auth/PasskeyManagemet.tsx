@@ -1,15 +1,15 @@
-import type { Passkey, PasskeyHistory } from '@prisma/client';
-import type { FC } from 'hono/jsx';
-import { css, cx } from 'hono/css';
-import { aaguidToNameAndIcon, getIconsByName } from '../../lib/auth/aaguid/parse.js';
-import { MAX_PASSKEYS_PER_USER } from '../../routes/auth/webauthn/constant.ts';
-import { isSynced } from '../../lib/auth/sync.ts';
-import { getPasskeyHistoryTypeLabel } from '../../lib/auth/passkeyHistoryType.ts';
+import type { Passkey, PasskeyHistory } from "@prisma/client";
+import type { FC } from "hono/jsx";
+import { css, cx } from "hono/css";
+import { aaguidToNameAndIcon, getIconsByName } from "../../lib/auth/aaguid/parse.js";
+import { MAX_PASSKEYS_PER_USER } from "../../routes/auth/webauthn/constant.ts";
+import { isSynced } from "../../lib/auth/sync.ts";
+import { getPasskeyHistoryTypeLabel } from "../../lib/auth/passkeyHistoryType.ts";
 
 type PasskeyData = {
   passkey: Passkey;
   lastUsed: PasskeyHistory | undefined;
-}
+};
 
 const PasskeyManagement: FC<{
   passkeyData: PasskeyData[];
@@ -206,7 +206,7 @@ const PasskeyManagement: FC<{
       background: #ecfdf5;
       color: #065f46;
       border-color: #a7f3d0;
-    `
+    `,
   );
 
   const badgeUnsyncedClass = cx(
@@ -215,7 +215,7 @@ const PasskeyManagement: FC<{
       background: #fffbeb;
       color: #92400e;
       border-color: #fde68a;
-    `
+    `,
   );
 
   const buttonBaseClass = css`
@@ -240,7 +240,7 @@ const PasskeyManagement: FC<{
         opacity: 0.5;
         cursor: not-allowed;
       }
-    `
+    `,
   );
 
   const aaguidDesktopClass = css`
@@ -279,18 +279,25 @@ const PasskeyManagement: FC<{
   return (
     <div class={containerClass}>
       <h2 class={titleClass}>パスキー管理</h2>
-      <button class={addButtonClass} id="add-passkey-button" disabled={passkeyData.length >= MAX_PASSKEYS_PER_USER}>
+      <button
+        class={addButtonClass}
+        id="add-passkey-button"
+        disabled={passkeyData.length >= MAX_PASSKEYS_PER_USER}
+      >
         パスキー作成
       </button>
       <hr />
-      <p>パスキーの数: {passkeyData.length} / {MAX_PASSKEYS_PER_USER}</p>
+      <p>
+        パスキーの数: {passkeyData.length} / {MAX_PASSKEYS_PER_USER}
+      </p>
       {passkeyData.length === 0 ? (
         <p>作成されているパスキーはありません。</p>
       ) : (
-       <>
-          {passkeyData.every(pData =>  !isSynced(pData.passkey)) && (
+        <>
+          {passkeyData.every((pData) => !isSynced(pData.passkey)) && (
             <p style="color: #b45309; background: #fef3c7; padding: 8px 12px; border-radius: 6px; border: 1px solid #fcd34d;">
-              注意: 同期されたパスキーがありません。パスキーを紛失した場合、認証できなくなる可能性があります。
+              注意:
+              同期されたパスキーがありません。パスキーを紛失した場合、認証できなくなる可能性があります。
             </p>
           )}
           <ul class={listClass}>
@@ -302,23 +309,23 @@ const PasskeyManagement: FC<{
                 getIconsByName(pData.passkey.name).icon_light;
               const metaLastUsed = pData.lastUsed
                 ? `${pData.lastUsed.usedAt.toLocaleString()} by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
-                : '未使用';
+                : "未使用";
               return (
-                  <li key={pData.passkey.id} class={itemClass}>
-                    <div class={statusRowClass}>
-                      <div class={statusLeftClass}>
-                        {pData.passkey.id === currentPasskeyID && (
-                          <span class={currentSessionClass}>現在のセッションで使用中</span>
-                        )}
-                      </div>
-                      <div class={badgeGroupClass}>
-                        {isSynced(pData.passkey) ? (
-                          <span class={badgeSyncedClass}>Synced</span>
-                        ) : (
-                          <span class={badgeUnsyncedClass}>Unsynced</span>
-                        )}
-                      </div>
+                <li key={pData.passkey.id} class={itemClass}>
+                  <div class={statusRowClass}>
+                    <div class={statusLeftClass}>
+                      {pData.passkey.id === currentPasskeyID && (
+                        <span class={currentSessionClass}>現在のセッションで使用中</span>
+                      )}
                     </div>
+                    <div class={badgeGroupClass}>
+                      {isSynced(pData.passkey) ? (
+                        <span class={badgeSyncedClass}>Synced</span>
+                      ) : (
+                        <span class={badgeUnsyncedClass}>Unsynced</span>
+                      )}
+                    </div>
+                  </div>
                   <div class={cardHeaderClass}>
                     <div class={iconWrapperClass}>
                       {iconSrc ? (
@@ -346,7 +353,7 @@ const PasskeyManagement: FC<{
                         debugMode && (
                           <button
                             id="view-passkey-history-btn"
-                            class={cx(iconButtonBaseClass, 'view-passkey-history-btn')}
+                            class={cx(iconButtonBaseClass, "view-passkey-history-btn")}
                             aria-label="パスキー利用履歴を見る"
                             title="パスキー利用履歴を見る"
                             data-passkey-id={pData.passkey.id}
@@ -358,7 +365,7 @@ const PasskeyManagement: FC<{
 
                       {/* Test authentication icon button */}
                       <button
-                        class={cx(iconButtonBaseClass, iconButtonTestClass, 'test-passkey-btn')}
+                        class={cx(iconButtonBaseClass, iconButtonTestClass, "test-passkey-btn")}
                         aria-label="このパスキーで認証テスト"
                         title="このパスキーで認証テスト"
                         data-passkey-id={pData.passkey.id}
@@ -369,7 +376,7 @@ const PasskeyManagement: FC<{
                       {/* Edit (change name) icon button */}
                       <button
                         id="change-passkey-name-btn"
-                        class={cx(iconButtonBaseClass, 'change-passkey-name-btn')}
+                        class={cx(iconButtonBaseClass, "change-passkey-name-btn")}
                         aria-label="パスキー名を変更"
                         title="パスキー名を変更"
                         data-passkey-id={pData.passkey.id}
@@ -379,11 +386,7 @@ const PasskeyManagement: FC<{
                       </button>
                       {/* Delete icon button */}
                       <button
-                        class={cx(
-                          iconButtonBaseClass,
-                          iconButtonDangerClass,
-                          'delete-passkey-btn'
-                        )}
+                        class={cx(iconButtonBaseClass, iconButtonDangerClass, "delete-passkey-btn")}
                         aria-label="パスキーを削除"
                         title="パスキーを削除"
                         data-passkey-id={pData.passkey.id}
@@ -391,8 +394,8 @@ const PasskeyManagement: FC<{
                         data-only-synced-passkey={
                           isSynced(pData.passkey) &&
                           passkeyData.filter((pd) => isSynced(pd.passkey)).length === 1
-                            ? 'true'
-                            : 'false'
+                            ? "true"
+                            : "false"
                         }
                         disabled={!canDelete || pData.passkey.id === currentPasskeyID}
                       >
@@ -423,7 +426,7 @@ const PasskeyManagement: FC<{
               );
             })}
           </ul>
-       </>
+        </>
       )}
       <script src="/public/passkeyManagement.js" type="module"></script>
     </div>

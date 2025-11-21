@@ -1,7 +1,7 @@
-import { css } from 'hono/css';
-import type { PasskeyHistory } from '@prisma/client';
-import { webauthnClient } from '../lib/rpc/webauthnClient.js';
-import { getPasskeyHistoryTypeLabel } from '../lib/passkeyHistoryType.ts';
+import { css } from "hono/css";
+import type { PasskeyHistory } from "@prisma/client";
+import { webauthnClient } from "../lib/rpc/webauthnClient.js";
+import { getPasskeyHistoryTypeLabel } from "../lib/passkeyHistoryType.ts";
 
 type PasskeyHistoryProps = {
   passkeyId: string;
@@ -26,10 +26,10 @@ const PasskeyHistories = ({
   reload,
 }: PasskeyHistoryProps) => {
   const deleteHistory = async (historyID: string) => {
-    if(!confirm('本当にこの利用履歴を削除しますか？')) {
+    if (!confirm("本当にこの利用履歴を削除しますか？")) {
       return;
     }
-    const res = await webauthnClient['passkey-histories']['delete'].$post({
+    const res = await webauthnClient["passkey-histories"]["delete"].$post({
       json: {
         passkeyId,
         historyIds: [historyID],
@@ -37,7 +37,7 @@ const PasskeyHistories = ({
       },
     });
     if (!res.ok) {
-      alert(`Error: Failed to delete history.${(await res.json()).error ?? ''}`);
+      alert(`Error: Failed to delete history.${(await res.json()).error ?? ""}`);
       return;
     }
 
@@ -46,29 +46,29 @@ const PasskeyHistories = ({
       // 親側でモーダルを開き直し（最新取得）か、単に再オープン関数で更新
       reload?.();
     } else {
-      alert('Error: No histories were deleted.');
+      alert("Error: No histories were deleted.");
     }
   };
 
   const deleteAllHistories = async () => {
-    if(!confirm('本当に全ての利用履歴を削除しますか？')) {
+    if (!confirm("本当に全ての利用履歴を削除しますか？")) {
       return;
     }
-    const res = await webauthnClient['passkey-histories']['delete'].$post({
+    const res = await webauthnClient["passkey-histories"]["delete"].$post({
       json: {
         passkeyId,
         deleteAll: true,
       },
     });
     if (!res.ok) {
-      alert(`Error: Failed to delete histories.${(await res.json()).error ?? ''}`);
+      alert(`Error: Failed to delete histories.${(await res.json()).error ?? ""}`);
       return;
     }
     const data = await res.json();
     if (data.deletedCount > 0) {
       reload?.();
     } else {
-      alert('削除対象がありませんでした。');
+      alert("削除対象がありませんでした。");
     }
   };
 
@@ -319,9 +319,7 @@ const PasskeyHistories = ({
                   data-history-id={h.id}
                   onClick={() => deleteHistory(h.id)}
                 >
-                  <span class={`material-symbols-outlined ${deleteIconClass}`}>
-                    delete
-                  </span>
+                  <span class={`material-symbols-outlined ${deleteIconClass}`}>delete</span>
                 </button>
               </li>
             );

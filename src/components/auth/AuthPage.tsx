@@ -1,7 +1,7 @@
-import { css, cx } from 'hono/css';
-import type { FC } from 'hono/jsx';
-import { useRequestContext } from 'hono/jsx-renderer';
-import { loginSessionController } from '../../lib/auth/loginSession.js';
+import { css, cx } from "hono/css";
+import type { FC } from "hono/jsx";
+import { useRequestContext } from "hono/jsx-renderer";
+import { loginSessionController } from "../../lib/auth/loginSession.js";
 
 const AuthPage: FC = async () => {
   const c = useRequestContext();
@@ -42,7 +42,7 @@ const AuthPage: FC = async () => {
       &:active {
         opacity: 0.9;
       }
-    `
+    `,
   );
 
   const secondary = cx(
@@ -56,7 +56,7 @@ const AuthPage: FC = async () => {
       &:active {
         opacity: 0.95;
       }
-    `
+    `,
   );
 
   return (
@@ -66,7 +66,9 @@ const AuthPage: FC = async () => {
         {userData ? (
           <>
             <span style="color:#64748b">ログイン中:</span> <strong>{userData.username}</strong>
-            <button class={secondary} id="add-passkey-button">パスキー作成</button>
+            <button class={secondary} id="add-passkey-button">
+              パスキー作成
+            </button>
             <a
               class={primary}
               href="/auth/logout"
@@ -77,8 +79,12 @@ const AuthPage: FC = async () => {
           </>
         ) : (
           <>
-            <a class={primary} href="/auth/register">新規登録</a>
-            <a class={secondary} href="/auth/login">ログイン</a>
+            <a class={primary} href="/auth/register">
+              新規登録
+            </a>
+            <a class={secondary} href="/auth/login">
+              ログイン
+            </a>
           </>
         )}
       </div>

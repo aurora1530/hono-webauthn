@@ -16,15 +16,16 @@ export const addHistory = async ({ passkeyId, browser, os, authType }: HistoryPa
         usedBrowser: browser,
         usedOS: os,
         type: authType,
-      }
-    })
-
+      },
+    });
   } catch (error) {
     console.error("Failed to add passkey history:", error);
   }
 };
 
-export const findHistories = async (passkeyIds: Passkey["id"][]): Promise<{
+export const findHistories = async (
+  passkeyIds: Passkey["id"][],
+): Promise<{
   [key: Passkey["id"]]: PasskeyHistory[];
 }> => {
   const histories = await prisma.passkeyHistory.findMany({
@@ -38,11 +39,14 @@ export const findHistories = async (passkeyIds: Passkey["id"][]): Promise<{
     },
   });
 
-  return histories.reduce((acc, history) => {
-    if (!acc[history.passkeyID]) {
-      acc[history.passkeyID] = [];
-    }
-    acc[history.passkeyID].push(history);
-    return acc;
-  }, {} as { [key: Passkey["id"]]: PasskeyHistory[] });
+  return histories.reduce(
+    (acc, history) => {
+      if (!acc[history.passkeyID]) {
+        acc[history.passkeyID] = [];
+      }
+      acc[history.passkeyID].push(history);
+      return acc;
+    },
+    {} as { [key: Passkey["id"]]: PasskeyHistory[] },
+  );
 };

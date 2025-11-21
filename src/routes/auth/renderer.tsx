@@ -1,5 +1,5 @@
-import { css } from 'hono/css';
-import { jsxRenderer } from 'hono/jsx-renderer';
+import { css } from "hono/css";
+import { jsxRenderer } from "hono/jsx-renderer";
 
 const authPageRenderer = jsxRenderer(({ children, Layout }) => {
   const authContainerClass = css`

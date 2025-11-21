@@ -1,5 +1,5 @@
-import { createClient, type RedisClientType } from 'redis';
-import { typedEnv } from '../../env.ts';
+import { createClient, type RedisClientType } from "redis";
+import { typedEnv } from "../../env.ts";
 
 let client: RedisClientType | null = null;
 let shutdownHookRegistered = false;
@@ -13,18 +13,18 @@ export async function getRedis(): Promise<RedisClientType> {
       reconnectStrategy: (retries) => {
         // 初回は即時、以降は指数だが上限5秒
         return retries === 0 ? 0 : Math.min(500 * Math.pow(2, retries), 5_000);
-      }
-    }
+      },
+    },
   });
-  client.on('error', (err) => {
-    console.error('[redis] client error', err);
+  client.on("error", (err) => {
+    console.error("[redis] client error", err);
   });
   if (!client.isOpen) await client.connect();
   try {
     await client.ping();
-    console.info('[redis] connected');
+    console.info("[redis] connected");
   } catch (e) {
-    console.warn('[redis] ping failed after connect', e);
+    console.warn("[redis] ping failed after connect", e);
   }
 
   if (!shutdownHookRegistered) {
@@ -33,15 +33,14 @@ export async function getRedis(): Promise<RedisClientType> {
       if (client && client.isOpen) {
         try {
           await client.quit();
-          console.info('[redis] client closed');
+          console.info("[redis] client closed");
         } catch (e) {
-          console.warn('[redis] error during quit', e);
+          console.warn("[redis] error during quit", e);
         }
       }
     };
-    process.on('SIGTERM', graceful);
-    process.on('SIGINT', graceful);
+    process.on("SIGTERM", graceful);
+    process.on("SIGINT", graceful);
   }
   return client;
 }
-

@@ -1,28 +1,33 @@
 import { profileClient } from "./rpc/profileClient";
 
-const changeDebugMode = async (to: boolean): Promise<{
-  success: true;
-  mode: boolean;
-} | {
-  success: false;
-  error: string;
-}> => {
+const changeDebugMode = async (
+  to: boolean,
+): Promise<
+  | {
+      success: true;
+      mode: boolean;
+    }
+  | {
+      success: false;
+      error: string;
+    }
+> => {
   const res = await profileClient["change-debug-mode"].$post({
     json: {
-      debugMode: to
-    }
+      debugMode: to,
+    },
   });
 
   if (!res.ok) {
     return {
       success: false,
-      error: (await res.json()).error || "Unknown error"
-    }
+      error: (await res.json()).error || "Unknown error",
+    };
   }
   return {
     success: true,
-    mode: to
+    mode: to,
   };
-}
+};
 
 export { changeDebugMode };

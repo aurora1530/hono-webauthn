@@ -1,11 +1,11 @@
-import { css, cx } from 'hono/css';
-import type { FC } from 'hono/jsx';
-import { useRequestContext } from 'hono/jsx-renderer';
-import { loginSessionController } from '../../lib/auth/loginSession.js';
+import { css, cx } from "hono/css";
+import type { FC } from "hono/jsx";
+import { useRequestContext } from "hono/jsx-renderer";
+import { loginSessionController } from "../../lib/auth/loginSession.js";
 
 const Header: FC = async () => {
   const c = useRequestContext();
-  const userdata = (await loginSessionController.getUserData(c));
+  const userdata = await loginSessionController.getUserData(c);
 
   const headerClass = css`
     background-color: var(--header-bg);
@@ -84,16 +84,30 @@ const Header: FC = async () => {
         <div class={linkGroupClass}>
           {userdata ? (
             <>
-              { userdata.debugMode &&  <span class={debugModeClass}>デバッグモード</span> }
+              {userdata.debugMode && <span class={debugModeClass}>デバッグモード</span>}
               <span style="color: #64748b; font-size: 0.9rem;">{userdata.username}</span>
-              <a href="/profile" class={linkClass}>プロフィール</a>
-              <a href="/auth/passkey-management" class={linkClass}>パスキー管理</a>
-              <a href="/auth/logout" class={cx(linkClass, logoutBtnClass)} onclick="return confirm('ログアウトしますか？')">ログアウト</a>
+              <a href="/profile" class={linkClass}>
+                プロフィール
+              </a>
+              <a href="/auth/passkey-management" class={linkClass}>
+                パスキー管理
+              </a>
+              <a
+                href="/auth/logout"
+                class={cx(linkClass, logoutBtnClass)}
+                onclick="return confirm('ログアウトしますか？')"
+              >
+                ログアウト
+              </a>
             </>
           ) : (
             <>
-              <a href="/auth/login" class={linkClass}>ログイン</a>
-              <a href="/auth/register" class={css`
+              <a href="/auth/login" class={linkClass}>
+                ログイン
+              </a>
+              <a
+                href="/auth/register"
+                class={css`
                 background-color: var(--primary-color);
                 color: white;
                 padding: 0.5rem 1rem;
@@ -105,7 +119,10 @@ const Header: FC = async () => {
                   background-color: var(--primary-hover);
                   color: white;
                 }
-              `}>アカウント登録</a>
+              `}
+              >
+                アカウント登録
+              </a>
             </>
           )}
         </div>

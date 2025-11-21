@@ -9,7 +9,7 @@ type PostAuthParams = {
   backedUp: boolean;
   headers: Headers;
   authType: PasskeyHistoryType;
-}
+};
 
 const handlePostAuthentication = ({
   savedPasskeyID,

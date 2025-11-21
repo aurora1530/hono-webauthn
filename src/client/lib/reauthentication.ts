@@ -1,7 +1,8 @@
 import { webauthnClient } from "./rpc/webauthnClient.ts";
 
 async function handleReauthentication(): Promise<boolean> {
-  const generateReauthenticationOptionsResponse = await webauthnClient.reauthentication.generate.$get();
+  const generateReauthenticationOptionsResponse =
+    await webauthnClient.reauthentication.generate.$get();
   if (!generateReauthenticationOptionsResponse.ok) {
     alert(`パスキーによる再認証の開始に失敗しました。`);
     return false;
@@ -9,24 +10,24 @@ async function handleReauthentication(): Promise<boolean> {
 
   try {
     const options = PublicKeyCredential.parseRequestOptionsFromJSON(
-      await generateReauthenticationOptionsResponse.json()
+      await generateReauthenticationOptionsResponse.json(),
     );
     console.log(options);
 
     const credential = await navigator.credentials.get({ publicKey: options });
     const credentialResponse = await webauthnClient.reauthentication.verify.$post({
       json: {
-        body: credential
-      }
-    })
+        body: credential,
+      },
+    });
     if (!credentialResponse.ok) {
-      const error = (await credentialResponse.json()).error
+      const error = (await credentialResponse.json()).error;
       alert(error);
       return false;
     }
     return true;
   } catch (error) {
-    console.error('Reauthentication error:', error);
+    console.error("Reauthentication error:", error);
     return false;
   }
 }
