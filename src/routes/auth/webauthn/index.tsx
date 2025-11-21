@@ -8,6 +8,8 @@ import {
   verifyRegistrationResponse,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
+  type VerifiedAuthenticationResponse,
+  type VerifiedRegistrationResponse,
 } from "@simplewebauthn/server";
 import { isoUint8Array } from "@simplewebauthn/server/helpers";
 import { webauthnSessionController } from "../../../lib/auth/webauthnSession.js";
@@ -126,7 +128,7 @@ const webAuthnRoutes = webauthnApp
       }
 
       const body = c.req.valid("json").body;
-      let verification;
+      let verification: VerifiedRegistrationResponse;
       try {
         verification = await verifyRegistrationResponse({
           response: body,
@@ -246,7 +248,7 @@ const webAuthnRoutes = webauthnApp
         );
       }
 
-      let verification;
+      let verification: VerifiedAuthenticationResponse;
       try {
         verification = await verifyAuthenticationResponse({
           response: body,
@@ -405,7 +407,7 @@ const webAuthnRoutes = webauthnApp
         );
       }
 
-      let verification;
+      let verification: VerifiedAuthenticationResponse;
       try {
         verification = await verifyAuthenticationResponse({
           response: body,
@@ -579,7 +581,7 @@ const webAuthnRoutes = webauthnApp
         );
       }
 
-      let verification;
+      let verification: VerifiedAuthenticationResponse;
       try {
         verification = await verifyAuthenticationResponse({
           response: body,
@@ -773,7 +775,7 @@ const webAuthnRoutes = webauthnApp
         );
       }
 
-      let verification;
+      let verification: VerifiedAuthenticationResponse;
       try {
         verification = await verifyAuthenticationResponse({
           response: body,
