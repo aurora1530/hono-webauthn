@@ -35,6 +35,14 @@ type WebAuthnTestAuthenticationVerifySessionData = z.infer<
   typeof WebAuthnTestAuthenticationVerifySessionDataSchema
 >;
 
+const WebAuthnPrfAuthenticationVerifySessionDataSchema = z.object({
+  challenge: z.string(),
+  passkeyId: z.string(),
+});
+type WebAuthnPrfAuthenticationVerifySessionData = z.infer<
+  typeof WebAuthnPrfAuthenticationVerifySessionDataSchema
+>;
+
 const SESSION_TTL_SEC = 60 * 5; // 5 minutes
 
 const makeStore = async <T extends JsonObject>(prefix: string, schema: z.ZodType<T>) =>
@@ -67,6 +75,10 @@ const webAuthnTestAuthenticationVerifySessionStore = await makeStore(
   "webauthn-test-authentication",
   WebAuthnTestAuthenticationVerifySessionDataSchema,
 );
+const webAuthnPrfAuthenticationVerifySessionStore = await makeStore(
+  "webauthn-prf-authentication",
+  WebAuthnPrfAuthenticationVerifySessionDataSchema,
+);
 
 interface WebAuthnSessionStores {
   registration: {
@@ -81,6 +93,9 @@ interface WebAuthnSessionStores {
   };
   testAuthentication: {
     verify: typeof webAuthnTestAuthenticationVerifySessionStore;
+  };
+  prfAuthentication: {
+    verify: typeof webAuthnPrfAuthenticationVerifySessionStore;
   };
 }
 
@@ -97,6 +112,9 @@ const webauthnSessionStores: WebAuthnSessionStores = {
   },
   testAuthentication: {
     verify: webAuthnTestAuthenticationVerifySessionStore,
+  },
+  prfAuthentication: {
+    verify: webAuthnPrfAuthenticationVerifySessionStore,
   },
 };
 
@@ -119,6 +137,9 @@ interface WebAuthnSessionController {
   testAuthentication: {
     verify: SessionDataHandler<WebAuthnTestAuthenticationVerifySessionData>;
   };
+  prfAuthentication: {
+    verify: SessionDataHandler<WebAuthnPrfAuthenticationVerifySessionData>;
+  };
 }
 
 const WEBAUTHN_SESSION_COOKIE_NAMES = {
@@ -127,6 +148,7 @@ const WEBAUTHN_SESSION_COOKIE_NAMES = {
   authenticationVerify: "webauthn-a-v",
   reauthenticationVerify: "webauthn-ra-v",
   testAuthenticationVerify: "webauthn-ta-v",
+  prfAuthenticationVerify: "webauthn-prf-v",
 };
 
 const createHandler = <T extends object>(
@@ -179,6 +201,12 @@ const createWebAuthnSessionController = (
     verify: createHandler<WebAuthnTestAuthenticationVerifySessionData>(
       stores.testAuthentication.verify,
       WEBAUTHN_SESSION_COOKIE_NAMES.testAuthenticationVerify,
+    ),
+  },
+  prfAuthentication: {
+    verify: createHandler<WebAuthnPrfAuthenticationVerifySessionData>(
+      stores.prfAuthentication.verify,
+      WEBAUTHN_SESSION_COOKIE_NAMES.prfAuthenticationVerify,
     ),
   },
 });

@@ -69,6 +69,9 @@ const AuthPage: FC = async () => {
             <button class={secondary} id="add-passkey-button">
               パスキー作成
             </button>
+            <a class={secondary} href="/auth/prf">
+              PRF暗号化
+            </a>
             <a
               class={primary}
               href="/auth/logout"

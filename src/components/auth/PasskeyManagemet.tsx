@@ -9,6 +9,7 @@ import { getPasskeyHistoryTypeLabel } from "../../lib/auth/passkeyHistoryType.ts
 type PasskeyData = {
   passkey: Passkey;
   lastUsed: PasskeyHistory | undefined;
+  prfCiphertextCount: number;
 };
 
 const PasskeyManagement: FC<{
@@ -218,6 +219,15 @@ const PasskeyManagement: FC<{
     `,
   );
 
+  const badgeEncryptedClass = cx(
+    badgeBaseClass,
+    css`
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #fecaca;
+    `,
+  );
+
   const buttonBaseClass = css`
     cursor: pointer;
     border: none;
@@ -239,6 +249,24 @@ const PasskeyManagement: FC<{
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+      }
+    `,
+  );
+
+  const linkRowClass = css`
+    display: flex;
+    justify-content: flex-end;
+    margin: 12px 0;
+  `;
+
+  const prfLinkButtonClass = cx(
+    buttonBaseClass,
+    css`
+      background: #0f172a;
+      color: #fff;
+      text-decoration: none;
+      &:hover {
+        opacity: 0.9;
       }
     `,
   );
@@ -276,12 +304,19 @@ const PasskeyManagement: FC<{
     flex-direction: column;
   `;
 
+  const lockMessageClass = css`
+    font-size: 12px;
+    color: #991b1b;
+    margin: 4px 0 0;
+  `;
+
   return (
     <div class={containerClass}>
       <h2 class={titleClass}>パスキー管理</h2>
       <button
         class={addButtonClass}
         id="add-passkey-button"
+        type="button"
         disabled={passkeyData.length >= MAX_PASSKEYS_PER_USER}
       >
         パスキー作成
@@ -290,6 +325,11 @@ const PasskeyManagement: FC<{
       <p>
         パスキーの数: {passkeyData.length} / {MAX_PASSKEYS_PER_USER}
       </p>
+      <div class={linkRowClass}>
+        <a class={prfLinkButtonClass} href="/auth/prf">
+          PRF暗号化ページを開く
+        </a>
+      </div>
       {passkeyData.length === 0 ? (
         <p>作成されているパスキーはありません。</p>
       ) : (
@@ -310,8 +350,9 @@ const PasskeyManagement: FC<{
               const metaLastUsed = pData.lastUsed
                 ? `${pData.lastUsed.usedAt.toLocaleString()} by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
                 : "未使用";
+              const hasCiphertextLock = pData.prfCiphertextCount > 0;
               return (
-                <li key={pData.passkey.id} class={itemClass}>
+                <li key={pData.passkey.id} class={itemClass} data-passkey-id={pData.passkey.id}>
                   <div class={statusRowClass}>
                     <div class={statusLeftClass}>
                       {pData.passkey.id === currentPasskeyID && (
@@ -324,6 +365,15 @@ const PasskeyManagement: FC<{
                       ) : (
                         <span class={badgeUnsyncedClass}>Unsynced</span>
                       )}
+                      <span
+                        class={badgeEncryptedClass}
+                        title="暗号化済みのデータがあります"
+                        data-prf-badge=""
+                        data-passkey-id={pData.passkey.id}
+                        hidden={!hasCiphertextLock}
+                      >
+                        暗号化済み <span data-prf-badge-count>{pData.prfCiphertextCount}</span>
+                      </span>
                     </div>
                   </div>
                   <div class={cardHeaderClass}>
@@ -357,6 +407,7 @@ const PasskeyManagement: FC<{
                             aria-label="パスキー利用履歴を見る"
                             title="パスキー利用履歴を見る"
                             data-passkey-id={pData.passkey.id}
+                            type="button"
                           >
                             <span class="material-symbols-outlined">history</span>
                           </button>
@@ -369,6 +420,7 @@ const PasskeyManagement: FC<{
                         aria-label="このパスキーで認証テスト"
                         title="このパスキーで認証テスト"
                         data-passkey-id={pData.passkey.id}
+                        type="button"
                       >
                         <span class="material-symbols-outlined">experiment</span>
                       </button>
@@ -381,6 +433,7 @@ const PasskeyManagement: FC<{
                         title="パスキー名を変更"
                         data-passkey-id={pData.passkey.id}
                         data-passkey-name={pData.passkey.name}
+                        type="button"
                       >
                         <span class="material-symbols-outlined">edit</span>
                       </button>
@@ -397,12 +450,27 @@ const PasskeyManagement: FC<{
                             ? "true"
                             : "false"
                         }
-                        disabled={!canDelete || pData.passkey.id === currentPasskeyID}
+                        data-initial-disabled={(
+                          !canDelete || pData.passkey.id === currentPasskeyID
+                        ).toString()}
+                        type="button"
+                        disabled={
+                          !canDelete || pData.passkey.id === currentPasskeyID || hasCiphertextLock
+                        }
                       >
                         <span class="material-symbols-outlined">delete</span>
                       </button>
                     </div>
                   </div>
+
+                  <p
+                    class={lockMessageClass}
+                    data-prf-lock-message=""
+                    data-passkey-id={pData.passkey.id}
+                    hidden={!hasCiphertextLock}
+                  >
+                    暗号化されたデータが存在するため、削除できません。
+                  </p>
 
                   {debugMode && (
                     <span class={cx(aaguidMobileClass, smallMarginClass)}>

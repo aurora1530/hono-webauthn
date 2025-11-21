@@ -2,6 +2,7 @@ export const PASSKEY_HISTORY_TYPE_LABELS = {
   LOGIN: "ログイン",
   REAUTH: "再認証",
   TEST: "テスト",
+  PRF: "PRF派生",
 } as const;
 
 export type ClientPasskeyHistoryType = keyof typeof PASSKEY_HISTORY_TYPE_LABELS;

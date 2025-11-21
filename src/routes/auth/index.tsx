@@ -7,6 +7,7 @@ import LoginForm from "../../components/auth/LoginForm.js";
 import AuthPage from "../../components/auth/AuthPage.js";
 import authPageRenderer from "./renderer.js";
 import PasskeyManagement from "../../components/auth/PasskeyManagemet.js";
+import PrfPlayground from "../../components/auth/PrfPlayground.js";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
 import { webauthnSessionController } from "../../lib/auth/webauthnSession.js";
 import z from "zod";
@@ -98,11 +99,23 @@ const authAppRoutes = authApp
       where: {
         userID: userData.userID,
       },
+      include: {
+        _count: {
+          select: {
+            prfCiphertexts: true,
+          },
+        },
+      },
     });
 
     const histories = await findHistories(passkeys.map((pk) => pk.id));
     const passkeyData = passkeys.map((pk) => {
-      return { passkey: pk, lastUsed: histories[pk.id]?.[0] };
+      const { _count, ...passkeyRecord } = pk;
+      return {
+        passkey: passkeyRecord,
+        lastUsed: histories[pk.id]?.[0],
+        prfCiphertextCount: _count.prfCiphertexts,
+      };
     });
 
     return c.render(
@@ -113,6 +126,29 @@ const authAppRoutes = authApp
       />,
       { title: "パスキー管理" },
     );
+  })
+  .get("/prf", async (c) => {
+    const userData = await loginSessionController.getUserData(c);
+    if (!userData) {
+      return c.redirect("/auth/login");
+    }
+
+    const passkeys = await prisma.passkey.findMany({
+      where: {
+        userID: userData.userID,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return c.render(<PrfPlayground passkeys={passkeys} />, {
+      title: "WebAuthn PRF 暗号化",
+    });
   });
 
 export default authApp;
