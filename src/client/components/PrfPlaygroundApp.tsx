@@ -28,6 +28,8 @@ export type PrfEntry = {
 export type LatestOutputRow = {
   label: string;
   value: string;
+  copyAnnounce?: string;
+  copyValue?: string;
 };
 
 export type LatestOutput = {
@@ -305,6 +307,40 @@ const outputGridClass = css`
     padding: 6px 8px;
     border-radius: 6px;
     word-break: break-all;
+  }
+`;
+
+const outputRowHeaderClass = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 4px;
+`;
+
+const copyIconButtonClass = css`
+  border: none;
+  background: transparent;
+  padding: 2px;
+  border-radius: 4px;
+  color: #0f172a;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.08);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .material-symbols-outlined {
+    font-size: 18px;
   }
 `;
 
@@ -830,7 +866,18 @@ export const PrfPlaygroundApp = () => {
         title: "復号結果",
         rows: [
           { label: "Entry ID", value: entry.id },
-          { label: "Plaintext", value: plaintextResult },
+          {
+            label: "Label",
+            value: entry.label ?? "(ラベル未設定)",
+            copyAnnounce: "ラベル",
+            copyValue: entry.label ?? "",
+          },
+          {
+            label: "Plaintext",
+            value: plaintextResult,
+            copyAnnounce: "プレインテキスト",
+            copyValue: plaintextResult,
+          },
         ],
       });
       showStatus("復号に成功しました。", false);
@@ -887,6 +934,20 @@ export const PrfPlaygroundApp = () => {
     try {
       await navigator.clipboard.writeText(JSON.stringify(entry, null, 2));
       showStatus("暗号化データをクリップボードにコピーしました。", false);
+    } catch (error) {
+      console.error(error);
+      showStatus(error instanceof Error ? error.message : "コピーに失敗しました", true);
+    }
+  };
+
+  const handleCopyLatestOutputValue = async (value: string, description: string) => {
+    if (!navigator.clipboard) {
+      showStatus("クリップボードAPIがサポートされていません。", true);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(value);
+      showStatus(`${description}をクリップボードにコピーしました。`);
     } catch (error) {
       console.error(error);
       showStatus(error instanceof Error ? error.message : "コピーに失敗しました", true);
@@ -1005,7 +1066,21 @@ export const PrfPlaygroundApp = () => {
             <div class={outputGridClass}>
               {latestOutput.rows.map((row, index) => (
                 <div key={`${row.label}-${index}`}>
-                  <p style="margin:0 0 4px;font-weight:600;">{row.label}</p>
+                  <div class={outputRowHeaderClass}>
+                    <p style="margin:0;font-weight:600;">{row.label}</p>
+                    {row.copyAnnounce && (
+                      <button
+                        type="button"
+                        class={copyIconButtonClass}
+                        aria-label={`${row.copyAnnounce}をコピー`}
+                        onClick={() =>
+                          handleCopyLatestOutputValue(row.copyValue ?? row.value, row.copyAnnounce!)
+                        }
+                      >
+                        <span class="material-symbols-outlined">content_copy</span>
+                      </button>
+                    )}
+                  </div>
                   <code>{row.value}</code>
                 </div>
               ))}
