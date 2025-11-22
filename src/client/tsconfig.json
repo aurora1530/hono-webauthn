@@ -16,5 +16,5 @@
     "allowImportingTsExtensions": true,
   },
   "compileOnSave": false,
-  "include": ["./**/*.ts", "./**/*.tsx", "../rpc.ts"],
+  "include": ["./**/*", "../rpc.ts"],
 }
