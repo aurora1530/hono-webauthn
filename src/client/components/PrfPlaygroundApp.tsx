@@ -524,6 +524,8 @@ export const PrfPlaygroundApp = () => {
   const [latestOutput, setLatestOutput] = useState<LatestOutput>(null);
   const [status, setStatus] = useState<StatusMessage>(null);
   const [busy, setBusy] = useState(false);
+  const latestOutputRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollToLatestOutputRef = useRef(false);
 
   const controlsDisabled = passkeysLoading || passkeys.length === 0;
   const noPasskeys = !passkeysLoading && passkeys.length === 0;
@@ -660,6 +662,13 @@ export const PrfPlaygroundApp = () => {
     void loadPasskeys();
     void loadEntries({ silent: true });
   }, []);
+
+  useEffect(() => {
+    if (shouldScrollToLatestOutputRef.current && latestOutputRef.current) {
+      latestOutputRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      shouldScrollToLatestOutputRef.current = false;
+    }
+  }, [latestOutput]);
 
   const handleSelectChange = (event: Event) => {
     const target = event.currentTarget as HTMLSelectElement;
@@ -816,6 +825,7 @@ export const PrfPlaygroundApp = () => {
         cipherBytes.buffer as ArrayBuffer,
       );
       const plaintextResult = textDecoder.decode(decrypted);
+      shouldScrollToLatestOutputRef.current = true;
       setLatestOutput({
         title: "復号結果",
         rows: [
@@ -990,7 +1000,7 @@ export const PrfPlaygroundApp = () => {
         </output>
 
         {latestOutput && (
-          <div class={outputClass}>
+          <div class={outputClass} ref={latestOutputRef}>
             <h4 class={latestOutputHeadingClass}>{latestOutput.title}</h4>
             <div class={outputGridClass}>
               {latestOutput.rows.map((row, index) => (
