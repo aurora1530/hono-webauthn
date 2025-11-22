@@ -12,7 +12,5 @@
     "jsxImportSource": "hono/jsx",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": true
   }
 }
