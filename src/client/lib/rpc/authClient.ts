@@ -1,4 +1,4 @@
-import type { AuthAppType } from "../../../routes/auth/index.tsx";
 import { hc } from "hono/client";
+import type { AuthAppType } from "../../../rpc";
 
 export const authClient = hc<AuthAppType>("/auth");

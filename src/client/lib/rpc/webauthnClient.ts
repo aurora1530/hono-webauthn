@@ -1,4 +1,4 @@
-import type { WebAuthnAppType } from "../../../routes/auth/webauthn/index.tsx";
 import { hc } from "hono/client";
+import type { WebAuthnAppType } from "../../../rpc";
 
 export const webauthnClient = hc<WebAuthnAppType>("/auth/webauthn");

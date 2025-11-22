@@ -31,7 +31,7 @@ import { MAX_PASSKEYS_PER_USER, origin, rpID, rpName } from "./constant.ts";
 
 const webauthnApp = new Hono();
 
-const webAuthnRoutes = webauthnApp
+export const webAuthnRoutes = webauthnApp
   .get("/registration/generate", async (c) => {
     const loginSessionData = await loginSessionController.getUserData(c);
     const username =
@@ -1452,5 +1452,3 @@ const webAuthnRoutes = webauthnApp
   });
 
 export default webauthnApp;
-
-export type WebAuthnAppType = typeof webAuthnRoutes;

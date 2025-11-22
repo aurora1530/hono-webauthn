@@ -1,4 +1,4 @@
-import type { ProfileAppType } from "../../../routes/profile/index.ts";
 import { hc } from "hono/client";
+import type { ProfileAppType } from "../../../rpc";
 
 export const profileClient = hc<ProfileAppType>("/profile");

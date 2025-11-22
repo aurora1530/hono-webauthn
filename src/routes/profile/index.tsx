@@ -1,12 +1,12 @@
 import { Hono } from "hono";
-import Profile from "../../components/profile/Profile.tsx";
-import { loginSessionController } from "../../lib/auth/loginSession.ts";
 import { validator } from "hono/validator";
 import z from "zod";
+import Profile from "../../components/profile/Profile.tsx";
+import { loginSessionController } from "../../lib/auth/loginSession.ts";
 
 const profileApp = new Hono();
 
-const profileRoutes = profileApp
+export const profileRoutes = profileApp
   .get("/", async (c) => {
     const isLoginedIn = !!(await loginSessionController.getUserData(c));
     if (!isLoginedIn) {
@@ -45,5 +45,3 @@ const profileRoutes = profileApp
   );
 
 export default profileApp;
-
-export type ProfileAppType = typeof profileRoutes;

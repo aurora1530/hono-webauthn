@@ -17,7 +17,7 @@ const authApp = new Hono();
 
 authApp.route("/webauthn", webauthnApp);
 
-const authAppRoutes = authApp
+export const authAppRoutes = authApp
   .use(authPageRenderer)
   .get("/", (c) => {
     return c.render(<AuthPage />, {
@@ -138,5 +138,3 @@ const authAppRoutes = authApp
   });
 
 export default authApp;
-
-export type AuthAppType = typeof authAppRoutes;
