@@ -2,6 +2,9 @@
   "name": "hono-webauthn",
   "type": "module",
   "scripts": {
+    "build": "npm-run-all build:server build:db build:client",
+    "build:server": "tsc --outDir dist",
+    "build:db": "prisma generate && prisma migrate deploy",
     "build:client": "node scripts/bundler.js",
     "watch:client": "node scripts/bundler.js --watch",
     "dev": "npm-run-all --parallel watch:client dev:server",
