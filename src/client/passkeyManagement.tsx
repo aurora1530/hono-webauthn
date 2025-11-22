@@ -37,6 +37,7 @@ const viewPasskeyHistoryBtns = document.getElementsByClassName(
 ) as HTMLCollectionOf<HTMLButtonElement>;
 
 async function openPasskeyHistoryModal(passkeyId: string, page = 1) {
+  openMessageModal("パスキー履歴を取得中...", undefined, { loading: true });
   const HISTORY_PAGE_LIMIT = 10;
   const res = await webauthnClient["passkey-histories"].$post({
     json: { passkeyId, limit: HISTORY_PAGE_LIMIT, page },
