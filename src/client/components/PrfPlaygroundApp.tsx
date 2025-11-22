@@ -1,0 +1,910 @@
+import { css, cx } from "hono/css";
+import { useEffect, useMemo, useState } from "hono/jsx/dom";
+import { webauthnClient } from "../lib/rpc/webauthnClient.js";
+
+export const MAX_PRF_LABEL_LENGTH = 120;
+export const MAX_PRF_PLAINTEXT_CHARS = 3500;
+
+export type PasskeyOption = {
+  id: string;
+  name: string;
+};
+
+export type PrfEntry = {
+  id: string;
+  passkeyId: string;
+  passkeyName: string;
+  label: string | null;
+  ciphertext: string;
+  iv: string;
+  tag: string;
+  associatedData: string | null;
+  version: number;
+  createdAt: string;
+  prfInput: string;
+};
+
+export type LatestOutputRow = {
+  label: string;
+  value: string;
+};
+
+export type LatestOutput = {
+  title: string;
+  rows: LatestOutputRow[];
+} | null;
+
+export type StatusMessage = {
+  text: string;
+  isError: boolean;
+} | null;
+
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+const AES_GCM_TAG_BYTE_LENGTH = 16;
+const PRF_INPUT_BYTE_LENGTH = 32;
+
+const toBase64 = (bytes: Uint8Array): string => {
+  let binary = "";
+  bytes.forEach((b) => {
+    binary += String.fromCharCode(b);
+  });
+  return btoa(binary);
+};
+
+const fromBase64 = (value: string): Uint8Array => {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+};
+
+const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
+  const total = arrays.reduce((sum, arr) => sum + arr.length, 0);
+  const combined = new Uint8Array(total);
+  let offset = 0;
+  for (const arr of arrays) {
+    combined.set(arr, offset);
+    offset += arr.length;
+  }
+  return combined;
+};
+
+const randomBase64 = (byteLength: number): { bytes: Uint8Array; base64: string } => {
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+  return { bytes, base64: toBase64(bytes) };
+};
+
+const deriveAesArtifacts = async (prfBytes: Uint8Array, salt: Uint8Array) => {
+  const hkdfKey = await crypto.subtle.importKey("raw", prfBytes as BufferSource, "HKDF", false, [
+    "deriveBits",
+  ]);
+  const deriveBits = async (infoLabel: string, bitLength: number) =>
+    crypto.subtle.deriveBits(
+      {
+        name: "HKDF",
+        hash: "SHA-256",
+        salt: salt as BufferSource,
+        info: textEncoder.encode(infoLabel),
+      },
+      hkdfKey,
+      bitLength,
+    );
+  const keyBits = await deriveBits("prf-demo-aes-key-v1", 128);
+  const ivBits = await deriveBits("prf-demo-aes-iv-v1", 96);
+  const aesKey = await crypto.subtle.importKey(
+    "raw",
+    keyBits,
+    { name: "AES-GCM", length: 128 },
+    false,
+    ["encrypt", "decrypt"],
+  );
+  return {
+    aesKey,
+    iv: new Uint8Array(ivBits),
+  };
+};
+
+const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: string) => {
+  const generateRes = await webauthnClient.prf.assertion.generate.$post({
+    json: { passkeyId, prfInput: prfInputBase64 },
+  });
+  if (!generateRes.ok) {
+    const error = (await generateRes.json()).error;
+    throw new Error(error ?? "PRFオプションの取得に失敗しました");
+  }
+  const generateJson = await generateRes.json();
+  const options = PublicKeyCredential.parseRequestOptionsFromJSON(generateJson);
+  const credential = (await navigator.credentials.get({
+    publicKey: options,
+  })) as PublicKeyCredential;
+  const verifyRes = await webauthnClient.prf.assertion.verify.$post({
+    json: { body: credential },
+  });
+  if (!verifyRes.ok) {
+    const error = (await verifyRes.json()).error;
+    throw new Error(error ?? "PRF認証の検証に失敗しました");
+  }
+  const prfResult = credential.getClientExtensionResults().prf?.results?.first as
+    | ArrayBuffer
+    | undefined;
+  if (!prfResult) {
+    throw new Error("この環境ではPRF拡張を利用できません");
+  }
+  return new Uint8Array(prfResult);
+};
+
+const containerClass = css`
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 32px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+`;
+
+const headerClass = css`
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+  }
+
+  p {
+    margin: 0;
+    color: #475569;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+`;
+
+const buttonBaseClass = css`
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  transition: background-color 0.15s ease-in-out, opacity 0.15s;
+`;
+
+const navButtonClass = cx(
+  buttonBaseClass,
+  css`
+    background: #0f172a;
+    color: #fff;
+    text-decoration: none;
+    &:hover {
+      opacity: 0.9;
+    }
+  `,
+);
+
+const sectionClass = css`
+  border: 1px solid #cbd5f5;
+  border-radius: 16px;
+  background: #f8fafc;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const gridClass = css`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+`;
+
+const fieldClass = css`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+
+  label {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  select,
+  input,
+  textarea {
+    border: 1px solid #cbd5f5;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+  }
+`;
+
+const helperTextClass = css`
+  font-size: 11px;
+  color: #64748b;
+`;
+
+const textareaClass = css`
+  grid-column: 1 / -1;
+`;
+
+const buttonRowClass = css`
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
+const primaryButtonClass = cx(
+  buttonBaseClass,
+  css`
+    background: #2563eb;
+    color: #fff;
+    &:hover:enabled {
+      background: #1d4ed8;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  `,
+);
+
+const secondaryButtonClass = cx(
+  buttonBaseClass,
+  css`
+    background: #e2e8f0;
+    color: #0f172a;
+    &:hover:enabled {
+      background: #cbd5f5;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  `,
+);
+
+const statusClass = css`
+  min-height: 20px;
+  font-size: 13px;
+  color: #475569;
+`;
+
+const statusErrorClass = css`
+  color: #b91c1c;
+`;
+
+const outputClass = css`
+  border: 1px dashed #94a3b8;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+`;
+
+const outputGridClass = css`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  font-size: 13px;
+
+  code {
+    display: block;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 6px 8px;
+    border-radius: 6px;
+    word-break: break-all;
+  }
+`;
+
+const entriesHeaderClass = css`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const entriesContainerClass = css`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const entryCardClass = css`
+  border: 1px solid #cbd5f5;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const entryMetaClass = css`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  font-size: 12px;
+  color: #475569;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  span {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  code {
+    display: block;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #e2e8f0;
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+`;
+
+const entryActionsClass = css`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const entryChipClass = css`
+  font-size: 11px;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+`;
+
+const actionButtonClass = cx(
+  buttonBaseClass,
+  css`
+    padding: 4px 10px;
+    font-size: 12px;
+    background: #f1f5f9;
+    color: #0f172a;
+    &:hover:enabled {
+      background: #e2e8f0;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  `,
+);
+
+const deleteActionButtonClass = cx(
+  actionButtonClass,
+  css`
+    background: #fee2e2;
+    color: #991b1b;
+    &:hover:enabled {
+      background: #fecaca;
+    }
+  `,
+);
+
+const infoMessageClass = css`
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #fff8eb;
+  color: #92400e;
+  font-size: 13px;
+`;
+
+const emptyMessageClass = css`
+  margin: 0;
+  color: #64748b;
+`;
+
+const latestOutputHeadingClass = css`
+  margin: 0 0 12px;
+`;
+
+export const PrfPlaygroundApp = () => {
+  const [passkeys, setPasskeys] = useState<PasskeyOption[]>([]);
+  const [passkeysLoading, setPasskeysLoading] = useState(true);
+  const [selectedPasskeyId, setSelectedPasskeyId] = useState<string | null>(null);
+  const [label, setLabel] = useState("");
+  const [plaintext, setPlaintext] = useState("");
+  const [entries, setEntries] = useState<PrfEntry[]>([]);
+  const [latestOutput, setLatestOutput] = useState<LatestOutput>(null);
+  const [status, setStatus] = useState<StatusMessage>(null);
+  const [busy, setBusy] = useState(false);
+
+  const controlsDisabled = passkeysLoading || passkeys.length === 0;
+  const noPasskeys = !passkeysLoading && passkeys.length === 0;
+  const actionDisabled = controlsDisabled || busy;
+  const plaintextBytes = useMemo(() => textEncoder.encode(plaintext).length, [plaintext]);
+
+  const showStatus = (message: string, isError = false) => setStatus({ text: message, isError });
+  const clearStatus = () => setStatus(null);
+
+  /**
+   * Load registered passkeys from the server
+   * setPasskeys and setSelectedPasskeyId accordingly
+   */
+  const loadPasskeys = async () => {
+    setPasskeysLoading(true);
+    try {
+      const res = await webauthnClient["passkeys-list"].$get();
+      if (!res.ok) {
+        const error = (await res.json()).error;
+        throw new Error(error ?? "パスキーの取得に失敗しました");
+      }
+      const { passkeys } = await res.json();
+      setPasskeys(passkeys);
+      setSelectedPasskeyId((prev) => {
+        if (prev && passkeys.some((pk) => pk.id === prev)) {
+          return prev;
+        }
+        return passkeys[0]?.id ?? null;
+      });
+    } catch (error) {
+      console.error(error);
+      showStatus(error instanceof Error ? error.message : "パスキーの取得に失敗しました", true);
+      setPasskeys([]);
+      setSelectedPasskeyId(null);
+    } finally {
+      setPasskeysLoading(false);
+    }
+  };
+
+  /**
+   * Load registered passkeys and entries from the server
+   */
+  const loadEntries = async (options?: { silent?: boolean }) => {
+    if (busy) {
+      return;
+    }
+    const silent = options?.silent ?? false;
+    setBusy(true);
+    if (!silent) {
+      showStatus("暗号化済みデータを取得しています...");
+    }
+    try {
+      const res = await webauthnClient.prf.entries.$get();
+      if (!res.ok) {
+        const error = (await res.json()).error;
+        throw new Error(error ?? "一覧の取得に失敗しました");
+      }
+      const { entries } = await res.json();
+      setEntries(entries ?? []);
+      if (!silent) {
+        showStatus("暗号化済みデータの取得が完了しました。");
+      } else {
+        clearStatus();
+      }
+    } catch (error) {
+      console.error(error);
+      showStatus(
+        error instanceof Error ? error.message : "一覧の取得中にエラーが発生しました",
+        true,
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /**
+   * Load registered passkeys and entries from the server
+   */
+  useEffect(() => {
+    void loadPasskeys();
+    void loadEntries({ silent: true });
+  }, []);
+
+  const handleSelectChange = (event: Event) => {
+    const target = event.currentTarget as HTMLSelectElement;
+    setSelectedPasskeyId(target.value || null);
+    clearStatus();
+  };
+
+  const handleLabelInput = (event: Event) => {
+    const target = event.currentTarget as HTMLInputElement;
+    setLabel(target.value.slice(0, MAX_PRF_LABEL_LENGTH));
+  };
+
+  const handlePlaintextInput = (event: Event) => {
+    const target = event.currentTarget as HTMLTextAreaElement;
+    setPlaintext(target.value);
+  };
+
+  const handleEncrypt = async () => {
+    if (busy) {
+      return;
+    }
+    if (!selectedPasskeyId) {
+      showStatus("使用するパスキーを選択してください。", true);
+      return;
+    }
+    const plaintextBytesEncoded = textEncoder.encode(plaintext);
+    if (plaintextBytesEncoded.length === 0) {
+      showStatus("平文を入力してください。", true);
+      return;
+    }
+    if (plaintextBytesEncoded.length > MAX_PRF_PLAINTEXT_CHARS) {
+      showStatus(`平文が長すぎます (最大 ${MAX_PRF_PLAINTEXT_CHARS} バイト)`, true);
+      return;
+    }
+
+    setBusy(true);
+    showStatus("PRFを利用して暗号化しています...");
+    try {
+      const { bytes: prfInputBytes, base64: prfInputBase64 } = randomBase64(PRF_INPUT_BYTE_LENGTH);
+      const prfBytes = await requestPrfEvaluation(selectedPasskeyId, prfInputBase64);
+      const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
+      const associatedData = `${selectedPasskeyId}:${crypto.randomUUID()}`;
+      const ciphertextBuffer = await crypto.subtle.encrypt(
+        {
+          name: "AES-GCM",
+          iv,
+          additionalData: textEncoder.encode(associatedData),
+        },
+        aesKey,
+        plaintextBytesEncoded,
+      );
+      const ciphertextBytes = new Uint8Array(ciphertextBuffer);
+      const tagStart = ciphertextBytes.length - AES_GCM_TAG_BYTE_LENGTH;
+      const ciphertext = ciphertextBytes.slice(0, tagStart);
+      const tag = ciphertextBytes.slice(tagStart);
+
+      const normalizedLabel = label.trim();
+      const payload = {
+        passkeyId: selectedPasskeyId,
+        label: normalizedLabel || undefined,
+        ciphertext: toBase64(ciphertext),
+        iv: toBase64(iv),
+        tag: toBase64(tag),
+        associatedData,
+        version: 1,
+        prfInput: prfInputBase64,
+      };
+
+      const storeRes = await webauthnClient.prf.encrypt.$post({ json: payload });
+      const storeJson = (await storeRes.json()) as { entry?: PrfEntry; error?: string };
+      if (!storeRes.ok || !storeJson.entry) {
+        throw new Error(storeJson.error ?? "暗号化データの保存に失敗しました");
+      }
+      setEntries((prev) => [storeJson.entry as PrfEntry, ...prev]);
+      setLabel("");
+      setPlaintext("");
+      setLatestOutput({
+        title: "暗号化結果",
+        rows: [
+          { label: "Entry ID", value: storeJson.entry.id },
+          { label: "Ciphertext", value: storeJson.entry.ciphertext },
+          { label: "IV", value: storeJson.entry.iv },
+          { label: "Tag", value: storeJson.entry.tag },
+          { label: "Associated Data", value: storeJson.entry.associatedData ?? "" },
+          { label: "PRF Input", value: storeJson.entry.prfInput },
+        ],
+      });
+      showStatus("暗号化と保存が完了しました。", false);
+    } catch (error) {
+      console.error(error);
+      showStatus(error instanceof Error ? error.message : "暗号化中にエラーが発生しました", true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRefreshEntries = () => {
+    if (busy) {
+      return;
+    }
+    void loadEntries();
+  };
+
+  const handleDecrypt = async (entryId: string) => {
+    if (busy) {
+      return;
+    }
+    const entry = entries.find((item) => item.id === entryId);
+    if (!entry) {
+      return;
+    }
+
+    setBusy(true);
+    showStatus("PRFを利用して復号しています...");
+    try {
+      const prfBytes = await requestPrfEvaluation(entry.passkeyId, entry.prfInput);
+      const prfInputBytes = fromBase64(entry.prfInput);
+      const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
+      const cipherBytes = concatBytes(fromBase64(entry.ciphertext), fromBase64(entry.tag));
+      const decrypted = await crypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv,
+          additionalData: entry.associatedData
+            ? textEncoder.encode(entry.associatedData)
+            : undefined,
+        },
+        aesKey,
+        cipherBytes.buffer as ArrayBuffer,
+      );
+      const plaintextResult = textDecoder.decode(decrypted);
+      setLatestOutput({
+        title: "復号結果",
+        rows: [
+          { label: "Entry ID", value: entry.id },
+          { label: "Plaintext", value: plaintextResult },
+        ],
+      });
+      showStatus("復号に成功しました。", false);
+    } catch (error) {
+      console.error(error);
+      showStatus(error instanceof Error ? error.message : "復号に失敗しました", true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDeleteEntry = async (entryId: string) => {
+    if (busy) {
+      return;
+    }
+    if (!confirm("この暗号化データを削除しますか？")) {
+      return;
+    }
+    setBusy(true);
+    showStatus("暗号化データを削除しています...");
+    try {
+      const res = await fetch(`/auth/webauthn/prf/entries/${encodeURIComponent(entryId)}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string } | undefined;
+      if (!res.ok) {
+        throw new Error(body?.error ?? "暗号化データの削除に失敗しました");
+      }
+      setEntries((prev) => prev.filter((entry) => entry.id !== entryId));
+      showStatus("暗号化データを削除しました。", false);
+    } catch (error) {
+      console.error(error);
+      showStatus(error instanceof Error ? error.message : "削除に失敗しました", true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleCopyEntry = async (entryId: string) => {
+    const entry = entries.find((item) => item.id === entryId);
+    if (!entry) {
+      return;
+    }
+    if (!navigator.clipboard) {
+      showStatus("クリップボードAPIがサポートされていません。", true);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(entry, null, 2));
+      showStatus("暗号化データをクリップボードにコピーしました。", false);
+    } catch (error) {
+      console.error(error);
+      showStatus(error instanceof Error ? error.message : "コピーに失敗しました", true);
+    }
+  };
+
+  return (
+    <div class={containerClass}>
+      <div class={headerClass}>
+        <div>
+          <h2>WebAuthn PRF 暗号化プレイグラウンド</h2>
+          <p>
+            パスキー由来のシークレットを使い、クライアント側のみで AES-128-GCM
+            による暗号化を行います。
+            生成された暗号文だけがサーバーに保存され、復号にも同じAuthenticatorが必要になります。
+          </p>
+        </div>
+        <a class={navButtonClass} href="/auth/passkey-management">
+          パスキー管理へ戻る
+        </a>
+      </div>
+
+      {passkeysLoading ? (
+        <p class={infoMessageClass}>パスキーを取得しています...</p>
+      ) : (
+        noPasskeys && (
+          <p class={infoMessageClass}>
+            まずパスキーを 1 件以上登録してください。登録後、このページから暗号化・復号を試せます。
+          </p>
+        )
+      )}
+
+      <section class={sectionClass}>
+        <div class={gridClass}>
+          <div class={fieldClass}>
+            <label htmlFor="prf-passkey-select">使用するパスキー</label>
+            <select
+              id="prf-passkey-select"
+              value={selectedPasskeyId ?? ""}
+              onChange={handleSelectChange}
+              disabled={controlsDisabled}
+            >
+              <option value="">選択してください</option>
+              {passkeys.map((passkey) => (
+                <option key={passkey.id} value={passkey.id}>
+                  {passkey.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div class={fieldClass}>
+            <label htmlFor="prf-label-input">ラベル (任意)</label>
+            <input
+              id="prf-label-input"
+              type="text"
+              maxLength={MAX_PRF_LABEL_LENGTH}
+              placeholder="例: 家計簿バックアップ"
+              value={label}
+              onInput={handleLabelInput}
+              disabled={controlsDisabled}
+            />
+            <span class={helperTextClass}>
+              {label.length}/{MAX_PRF_LABEL_LENGTH} 文字
+            </span>
+          </div>
+
+          <div class={cx(fieldClass, textareaClass)}>
+            <label htmlFor="prf-plaintext-input">
+              平文 (最大約 {MAX_PRF_PLAINTEXT_CHARS} バイト)
+            </label>
+            <textarea
+              id="prf-plaintext-input"
+              rows={4}
+              value={plaintext}
+              onInput={handlePlaintextInput}
+              placeholder="暗号化したいテキストを入力してください"
+              disabled={controlsDisabled}
+            ></textarea>
+            <span class={helperTextClass}>
+              {plaintextBytes}/{MAX_PRF_PLAINTEXT_CHARS} バイト
+            </span>
+          </div>
+        </div>
+
+        <div class={buttonRowClass}>
+          <button
+            class={primaryButtonClass}
+            type="button"
+            onClick={handleEncrypt}
+            disabled={actionDisabled}
+          >
+            暗号化して保存
+          </button>
+          <button
+            class={secondaryButtonClass}
+            type="button"
+            onClick={handleRefreshEntries}
+            disabled={actionDisabled}
+          >
+            一覧を更新
+          </button>
+        </div>
+
+        <output
+          id="prf-status-message"
+          class={cx(statusClass, status?.isError && statusErrorClass)}
+          aria-live="polite"
+        >
+          {status?.text ?? "\u00a0"}
+        </output>
+
+        {latestOutput && (
+          <div class={outputClass}>
+            <h4 class={latestOutputHeadingClass}>{latestOutput.title}</h4>
+            <div class={outputGridClass}>
+              {latestOutput.rows.map((row, index) => (
+                <div key={`${row.label}-${index}`}>
+                  <p style="margin:0 0 4px;font-weight:600;">{row.label}</p>
+                  <code>{row.value}</code>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div class={entriesHeaderClass}>
+          <h4>暗号化済みデータ</h4>
+          <span class={entryChipClass}>{entries.length}件</span>
+        </div>
+
+        <div class={entriesContainerClass}>
+          {entries.length === 0 ? (
+            <p class={emptyMessageClass}>暗号化済みのデータはまだありません。</p>
+          ) : (
+            entries.map((entry) => (
+              <article key={entry.id} class={entryCardClass}>
+                <div>
+                  <strong>{entry.label || "(ラベル未設定)"}</strong>
+                </div>
+                <div class={helperTextClass}>
+                  {entry.passkeyName} ・ {new Date(entry.createdAt).toLocaleString()}
+                </div>
+
+                <div class={entryMetaClass}>
+                  <div>
+                    <span>Entry ID</span>
+                    <code>{entry.id}</code>
+                  </div>
+                  <div>
+                    <span>Ciphertext</span>
+                    <code>{entry.ciphertext}</code>
+                  </div>
+                  <div>
+                    <span>IV</span>
+                    <code>{entry.iv}</code>
+                  </div>
+                  <div>
+                    <span>Tag</span>
+                    <code>{entry.tag}</code>
+                  </div>
+                  {entry.associatedData && (
+                    <div>
+                      <span>Associated Data</span>
+                      <code>{entry.associatedData}</code>
+                    </div>
+                  )}
+                  <div>
+                    <span>PRF Input</span>
+                    <code>{entry.prfInput}</code>
+                  </div>
+                </div>
+
+                <div class={entryActionsClass}>
+                  <button
+                    class={actionButtonClass}
+                    type="button"
+                    onClick={() => handleDecrypt(entry.id)}
+                    disabled={busy}
+                  >
+                    復号
+                  </button>
+                  <button
+                    class={actionButtonClass}
+                    type="button"
+                    onClick={() => handleCopyEntry(entry.id)}
+                  >
+                    コピー
+                  </button>
+                  <button
+                    class={deleteActionButtonClass}
+                    type="button"
+                    onClick={() => handleDeleteEntry(entry.id)}
+                    disabled={busy}
+                  >
+                    削除
+                  </button>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+    </div>
+  );
+};

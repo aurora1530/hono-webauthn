@@ -1,33 +1,33 @@
-import { PasskeyHistoryType, type Passkey } from "@prisma/client";
-import { Hono } from "hono";
-import prisma from "../../../prisma.js";
+import { type Passkey, PasskeyHistoryType } from "@prisma/client";
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
-  verifyAuthenticationResponse,
-  verifyRegistrationResponse,
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
   type VerifiedAuthenticationResponse,
   type VerifiedRegistrationResponse,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
 } from "@simplewebauthn/server";
 import { isoUint8Array } from "@simplewebauthn/server/helpers";
-import { webauthnSessionController } from "../../../lib/auth/webauthnSession.js";
-import { isAuthenticatorTransportFuture } from "../../../lib/auth/transport.js";
-import { aaguidToNameAndIcon } from "../../../lib/auth/aaguid/parse.js";
+import { Hono } from "hono";
 import { validator } from "hono/validator";
-import { loginSessionController } from "../../../lib/auth/loginSession.js";
 import z from "zod";
-import { reauthSessionController } from "../../../lib/auth/reauthSession.js";
+import { aaguidToNameAndIcon } from "../../../lib/auth/aaguid/parse.js";
 import inferClientPlatform from "../../../lib/auth/inferClientPlatform.js";
-import { MAX_PASSKEYS_PER_USER, origin, rpID, rpName } from "./constant.ts";
+import { loginSessionController } from "../../../lib/auth/loginSession.js";
 import handlePostAuthentication from "../../../lib/auth/postAuthentication.ts";
 import {
   buildPrfExtensions,
   decodeBase64ToBytesWithBounds,
   PRF_CONSTRAINTS,
 } from "../../../lib/auth/prfHelpers.ts";
+import { reauthSessionController } from "../../../lib/auth/reauthSession.js";
+import { isAuthenticatorTransportFuture } from "../../../lib/auth/transport.js";
+import { webauthnSessionController } from "../../../lib/auth/webauthnSession.js";
 import { BASE64_REGEX } from "../../../lib/base64.ts";
+import prisma from "../../../prisma.js";
+import { MAX_PASSKEYS_PER_USER, origin, rpID, rpName } from "./constant.ts";
 
 const webauthnApp = new Hono();
 
@@ -1428,7 +1428,28 @@ const webAuthnRoutes = webauthnApp
         );
       }
     },
-  );
+  )
+  .get("/passkeys-list", async (c) => {
+    const userData = await loginSessionController.getUserData(c);
+    if (!userData) {
+      return c.json({ error: "ログインが必要です" }, 401);
+    }
+
+    const passkeys = await prisma.passkey.findMany({
+      where: {
+        userID: userData.userID,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return c.json({ passkeys }, 200);
+  });
 
 export default webauthnApp;
 

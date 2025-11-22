@@ -1,17 +1,17 @@
 import { Hono } from "hono";
-import AccountRegisterForm from "../../components/auth/AccountRegisterForm.js";
 import { validator } from "hono/validator";
-import prisma from "../../prisma.js";
-import webauthnApp from "./webauthn/index.js";
-import LoginForm from "../../components/auth/LoginForm.js";
+import z from "zod";
+import AccountRegisterForm from "../../components/auth/AccountRegisterForm.js";
 import AuthPage from "../../components/auth/AuthPage.js";
-import authPageRenderer from "./renderer.js";
+import LoginForm from "../../components/auth/LoginForm.js";
 import PasskeyManagement from "../../components/auth/PasskeyManagemet.js";
 import PrfPlayground from "../../components/auth/PrfPlayground.js";
+import { findHistories } from "../../lib/auth/history.js";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
 import { webauthnSessionController } from "../../lib/auth/webauthnSession.js";
-import z from "zod";
-import { findHistories } from "../../lib/auth/history.js";
+import prisma from "../../prisma.js";
+import authPageRenderer from "./renderer.js";
+import webauthnApp from "./webauthn/index.js";
 
 const authApp = new Hono();
 
@@ -132,21 +132,7 @@ const authAppRoutes = authApp
     if (!userData) {
       return c.redirect("/auth/login");
     }
-
-    const passkeys = await prisma.passkey.findMany({
-      where: {
-        userID: userData.userID,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    });
-
-    return c.render(<PrfPlayground passkeys={passkeys} />, {
+    return c.render(<PrfPlayground />, {
       title: "WebAuthn PRF 暗号化",
     });
   });
