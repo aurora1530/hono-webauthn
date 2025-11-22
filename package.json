@@ -1,6 +1,9 @@
 {
   "name": "hono-webauthn",
   "type": "module",
+  "engines": {
+    "node": ">=22.14.x"
+  },
   "scripts": {
     "build": "npm-run-all build:db build:server build:client",
     "build:server": "tsc --outDir dist",
