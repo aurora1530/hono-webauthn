@@ -27,7 +27,7 @@ import { isAuthenticatorTransportFuture } from "../../../lib/auth/transport.js";
 import { webauthnSessionController } from "../../../lib/auth/webauthnSession.js";
 import { BASE64_REGEX } from "../../../lib/base64.ts";
 import prisma from "../../../prisma.js";
-import { MAX_PASSKEYS_PER_USER, origin, rpID, rpName } from "./constant.ts";
+import { MAX_PASSKEYS_PER_USER, ORIGIN, rpID, rpName } from "./constant.ts";
 import prfApp from "./prf/index.ts";
 
 const webauthnApp = new Hono();
@@ -139,7 +139,7 @@ export const webAuthnRoutes = webauthnApp
         verification = await verifyRegistrationResponse({
           response: body,
           expectedChallenge: webauthnRegistrationSession.challenge,
-          expectedOrigin: origin,
+          expectedOrigin: ORIGIN,
           expectedRPID: rpID,
         });
       } catch (e) {
@@ -259,7 +259,7 @@ export const webAuthnRoutes = webauthnApp
         verification = await verifyAuthenticationResponse({
           response: body,
           expectedChallenge: savedChallenge,
-          expectedOrigin: origin,
+          expectedOrigin: ORIGIN,
           expectedRPID: rpID,
           credential: {
             id: savedPasskey.id,
@@ -418,7 +418,7 @@ export const webAuthnRoutes = webauthnApp
         verification = await verifyAuthenticationResponse({
           response: body,
           expectedChallenge: savedChallenge,
-          expectedOrigin: origin,
+          expectedOrigin: ORIGIN,
           expectedRPID: rpID,
           credential: {
             id: savedPasskey.id,
@@ -592,7 +592,7 @@ export const webAuthnRoutes = webauthnApp
         verification = await verifyAuthenticationResponse({
           response: body,
           expectedChallenge: sessionData.challenge,
-          expectedOrigin: origin,
+          expectedOrigin: ORIGIN,
           expectedRPID: rpID,
           credential: {
             id: savedPasskey.id,
