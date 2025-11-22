@@ -1,5 +1,5 @@
 import { css, cx } from "hono/css";
-import { useEffect, useMemo, useState } from "hono/jsx/dom";
+import { useEffect, useMemo, useRef, useState } from "hono/jsx/dom";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
 
@@ -44,6 +44,7 @@ const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 const AES_GCM_TAG_BYTE_LENGTH = 16;
 const PRF_INPUT_BYTE_LENGTH = 32;
+const PRF_ENTRIES_PAGE_SIZE = 5;
 
 const toBase64 = (bytes: Uint8Array): string => {
   let binary = "";
@@ -315,6 +316,84 @@ const entriesHeaderClass = css`
   gap: 8px;
 `;
 
+const entriesSummaryClass = css`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  h4 {
+    margin: 0;
+  }
+`;
+
+const entriesControlsClass = css`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+`;
+
+const entriesControlGroupClass = css`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const entriesFilterLabelClass = css`
+  font-size: 12px;
+  color: #475569;
+`;
+
+const entriesFilterSelectClass = css`
+  border: 1px solid #cbd5f5;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  background: #fff;
+  min-width: 180px;
+`;
+
+const entriesPaginationClass = css`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: rgba(248, 250, 252, 0.96);
+  padding: 6px 16px;
+  margin: auto;
+`;
+
+const entriesPaginationButtonClass = css`
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: #e2e8f0;
+  color: #0f172a;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #cbd5f5;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+
+const entriesPaginationStatusClass = css`
+  font-size: 12px;
+  color: #475569;
+  min-width: 90px;
+  text-align: center;
+`;
+
 const entriesContainerClass = css`
   display: flex;
   flex-direction: column;
@@ -431,6 +510,12 @@ export const PrfPlaygroundApp = () => {
   const [label, setLabel] = useState("");
   const [plaintext, setPlaintext] = useState("");
   const [entries, setEntries] = useState<PrfEntry[]>([]);
+  const [entriesPage, setEntriesPage] = useState(1);
+  const [entriesTotal, setEntriesTotal] = useState(0);
+  const [entriesTotalPages, setEntriesTotalPages] = useState(0);
+  const [entriesFilterPasskeyId, setEntriesFilterPasskeyId] = useState<string | null>(null);
+  const [entriesLoading, setEntriesLoading] = useState(false);
+  const entriesRequestIdRef = useRef<number>(0);
   const [latestOutput, setLatestOutput] = useState<LatestOutput>(null);
   const [status, setStatus] = useState<StatusMessage>(null);
   const [busy, setBusy] = useState(false);
@@ -438,7 +523,11 @@ export const PrfPlaygroundApp = () => {
   const controlsDisabled = passkeysLoading || passkeys.length === 0;
   const noPasskeys = !passkeysLoading && passkeys.length === 0;
   const actionDisabled = controlsDisabled || busy;
+  const refreshDisabled = busy || entriesLoading;
   const plaintextBytes = useMemo(() => textEncoder.encode(plaintext).length, [plaintext]);
+  const emptyEntriesMessage = entriesFilterPasskeyId
+    ? "選択したパスキーの暗号化データはありません。"
+    : "暗号化済みのデータはまだありません。";
 
   const showStatus = (message: string, isError = false) => setStatus({ text: message, isError });
   const clearStatus = () => setStatus(null);
@@ -476,23 +565,68 @@ export const PrfPlaygroundApp = () => {
   /**
    * Load registered passkeys and entries from the server
    */
-  const loadEntries = async (options?: { silent?: boolean }) => {
-    if (busy) {
+  const loadEntries = async (options?: {
+    silent?: boolean;
+    page?: number;
+    passkeyId?: string | null;
+    force?: boolean;
+  }) => {
+    if (entriesLoading && !options?.force) {
       return;
     }
+
+    const hasPasskeyOverride = options ? "passkeyId" in options : false;
+    const targetPasskeyId = hasPasskeyOverride
+      ? (options?.passkeyId ?? null)
+      : entriesFilterPasskeyId;
+    const targetPage = options?.page ?? entriesPage;
     const silent = options?.silent ?? false;
-    setBusy(true);
+
+    if (hasPasskeyOverride) {
+      setEntriesFilterPasskeyId(targetPasskeyId);
+    }
+
+    const requestId = (entriesRequestIdRef.current ?? 0) + 1;
+    entriesRequestIdRef.current = requestId;
+
+    setEntriesLoading(true);
     if (!silent) {
       showStatus("暗号化済みデータを取得しています...");
     }
+
     try {
-      const res = await prfClient.entries.$get();
+      const payload: {
+        page: number;
+        limit: number;
+        passkeyId?: string;
+      } = {
+        page: Math.max(1, targetPage),
+        limit: PRF_ENTRIES_PAGE_SIZE,
+      };
+      if (targetPasskeyId) {
+        payload.passkeyId = targetPasskeyId;
+      }
+
+      const res = await prfClient.entries.$post({ json: payload });
       if (!res.ok) {
         const error = (await res.json()).error;
         throw new Error(error ?? "一覧の取得に失敗しました");
       }
-      const { entries } = await res.json();
-      setEntries(entries ?? []);
+      const body = await res.json();
+      if ((entriesRequestIdRef.current ?? 0) !== requestId) {
+        return;
+      }
+
+      setEntries(body.entries ?? []);
+      const nextPage = Math.max(1, body.pagination?.page ?? targetPage);
+      setEntriesPage(nextPage);
+      setEntriesTotal(body.pagination?.total ?? body.entries?.length ?? 0);
+      const paginationTotalPages = body.pagination?.totalPages;
+      const fallbackTotalPages = body.entries && body.entries.length > 0 ? 1 : 0;
+      setEntriesTotalPages(
+        typeof paginationTotalPages === "number" ? paginationTotalPages : fallbackTotalPages,
+      );
+
       if (!silent) {
         showStatus("暗号化済みデータの取得が完了しました。");
       } else {
@@ -500,12 +634,17 @@ export const PrfPlaygroundApp = () => {
       }
     } catch (error) {
       console.error(error);
+      if ((entriesRequestIdRef.current ?? 0) !== requestId) {
+        return;
+      }
       showStatus(
         error instanceof Error ? error.message : "一覧の取得中にエラーが発生しました",
         true,
       );
     } finally {
-      setBusy(false);
+      if ((entriesRequestIdRef.current ?? 0) === requestId) {
+        setEntriesLoading(false);
+      }
     }
   };
 
@@ -531,6 +670,26 @@ export const PrfPlaygroundApp = () => {
   const handlePlaintextInput = (event: Event) => {
     const target = event.currentTarget as HTMLTextAreaElement;
     setPlaintext(target.value);
+  };
+
+  const handleEntriesFilterChange = (event: Event) => {
+    const target = event.currentTarget as HTMLSelectElement;
+    const nextValue = target.value ? target.value : null;
+    void loadEntries({
+      page: 1,
+      passkeyId: nextValue,
+      silent: true,
+      force: true,
+    });
+  };
+
+  const handleEntriesPageChange = (nextPage: number) => {
+    if (busy || entriesLoading) {
+      return;
+    }
+    const safeTotalPages = entriesTotalPages > 0 ? entriesTotalPages : 1;
+    const normalizedPage = Math.min(Math.max(1, nextPage), safeTotalPages);
+    void loadEntries({ page: normalizedPage });
   };
 
   const handleEncrypt = async () => {
@@ -589,7 +748,6 @@ export const PrfPlaygroundApp = () => {
       if (!storeRes.ok || !storeJson.entry) {
         throw new Error(storeJson.error ?? "暗号化データの保存に失敗しました");
       }
-      setEntries((prev) => [storeJson.entry as PrfEntry, ...prev]);
       setLabel("");
       setPlaintext("");
       setLatestOutput({
@@ -603,6 +761,12 @@ export const PrfPlaygroundApp = () => {
           { label: "PRF Input", value: storeJson.entry.prfInput },
         ],
       });
+      await loadEntries({
+        page: 1,
+        passkeyId: entriesFilterPasskeyId ?? null,
+        silent: true,
+        force: true,
+      });
       showStatus("暗号化と保存が完了しました。", false);
     } catch (error) {
       console.error(error);
@@ -613,7 +777,7 @@ export const PrfPlaygroundApp = () => {
   };
 
   const handleRefreshEntries = () => {
-    if (busy) {
+    if (busy || entriesLoading) {
       return;
     }
     void loadEntries();
@@ -681,7 +845,12 @@ export const PrfPlaygroundApp = () => {
       if (!res.ok) {
         throw new Error(body?.error ?? "暗号化データの削除に失敗しました");
       }
-      setEntries((prev) => prev.filter((entry) => entry.id !== entryId));
+      await loadEntries({
+        page: entriesPage,
+        passkeyId: entriesFilterPasskeyId ?? null,
+        silent: true,
+        force: true,
+      });
       showStatus("暗号化データを削除しました。", false);
     } catch (error) {
       console.error(error);
@@ -801,7 +970,7 @@ export const PrfPlaygroundApp = () => {
             class={secondaryButtonClass}
             type="button"
             onClick={handleRefreshEntries}
-            disabled={actionDisabled}
+            disabled={refreshDisabled}
           >
             一覧を更新
           </button>
@@ -830,13 +999,60 @@ export const PrfPlaygroundApp = () => {
         )}
 
         <div class={entriesHeaderClass}>
-          <h4>暗号化済みデータ</h4>
-          <span class={entryChipClass}>{entries.length}件</span>
+          <div class={entriesSummaryClass}>
+            <h4>暗号化済みデータ</h4>
+            <span class={entryChipClass}>総件数 {entriesTotal}件</span>
+          </div>
+          <div class={entriesControlsClass}>
+            <div class={entriesControlGroupClass}>
+              <label class={entriesFilterLabelClass} htmlFor="prf-entries-filter">
+                パスキーで絞り込み
+              </label>
+              <select
+                id="prf-entries-filter"
+                class={entriesFilterSelectClass}
+                value={entriesFilterPasskeyId ?? ""}
+                onChange={handleEntriesFilterChange}
+                disabled={passkeysLoading || passkeys.length === 0}
+              >
+                <option value="">すべて</option>
+                {passkeys.map((passkey) => (
+                  <option key={`list-filter-${passkey.id}`} value={passkey.id}>
+                    {passkey.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {entriesTotalPages > 1 && (
+            <div class={entriesPaginationClass}>
+              <button
+                class={entriesPaginationButtonClass}
+                type="button"
+                onClick={() => handleEntriesPageChange(Math.max(1, entriesPage - 1))}
+                disabled={entriesPage <= 1 || entriesLoading || busy}
+              >
+                ◀ 前へ
+              </button>
+              <span class={entriesPaginationStatusClass}>
+                {entriesTotal === 0 ? "0 / 0" : `${entriesPage} / ${entriesTotalPages}`}
+              </span>
+              <button
+                class={entriesPaginationButtonClass}
+                type="button"
+                onClick={() => handleEntriesPageChange(entriesPage + 1)}
+                disabled={entriesPage >= entriesTotalPages || entriesLoading || busy}
+              >
+                次へ ▶
+              </button>
+            </div>
+          )}
         </div>
 
         <div class={entriesContainerClass}>
-          {entries.length === 0 ? (
-            <p class={emptyMessageClass}>暗号化済みのデータはまだありません。</p>
+          {entriesLoading && <p class={infoMessageClass}>暗号化済みデータを読み込み中です...</p>}
+          {entries.length === 0 && !entriesLoading ? (
+            <p class={emptyMessageClass}>{emptyEntriesMessage}</p>
           ) : (
             entries.map((entry) => (
               <article key={entry.id} class={entryCardClass}>

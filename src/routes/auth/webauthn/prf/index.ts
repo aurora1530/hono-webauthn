@@ -19,6 +19,11 @@ import { webauthnSessionController } from "../../../../lib/auth/webauthnSession.
 import { BASE64_REGEX } from "../../../../lib/base64.ts";
 import prisma from "../../../../prisma.ts";
 import { ORIGIN, rpID } from "../constant.ts";
+import {
+  DEFAULT_PRF_ENTRIES_LIMIT,
+  MAX_PRF_ENTRIES_LIMIT,
+  MAX_PRF_ENTRIES_PAGE,
+} from "./constant.ts";
 
 const prfApp = new Hono();
 
@@ -346,56 +351,100 @@ export const prfRoutes = prfApp
       );
     },
   )
-  .get("/entries", async (c) => {
-    const userData = await loginSessionController.getUserData(c);
-    if (!userData) {
-      return c.json(
-        {
-          error: "ログインが必要です。",
-        },
-        401,
-      );
-    }
+  .post(
+    "/entries",
+    validator("json", (value, c) => {
+      const parsed = z
+        .object({
+          passkeyId: z.string().trim().min(1).max(255).optional().nullable(),
+          page: z.number().int().min(1).max(MAX_PRF_ENTRIES_PAGE).default(1),
+          limit: z
+            .number()
+            .int()
+            .min(1)
+            .max(MAX_PRF_ENTRIES_LIMIT)
+            .default(DEFAULT_PRF_ENTRIES_LIMIT),
+        })
+        .safeParse(value ?? {});
+      if (!parsed.success) {
+        return c.json(
+          {
+            error: "リクエストが不正です。",
+          },
+          400,
+        );
+      }
+      return parsed.data;
+    }),
+    async (c) => {
+      const userData = await loginSessionController.getUserData(c);
+      if (!userData) {
+        return c.json(
+          {
+            error: "ログインが必要です。",
+          },
+          401,
+        );
+      }
 
-    const queryPasskeyId = c.req.query("passkeyId")?.trim();
-    const passkeyFilter = queryPasskeyId && queryPasskeyId.length > 0 ? queryPasskeyId : undefined;
+      const { passkeyId, page, limit } = c.req.valid("json");
+      const passkeyFilter = passkeyId ?? undefined;
 
-    const entries = await prisma.prfCiphertext.findMany({
-      where: {
+      const whereClause = {
         userID: userData.userID,
         ...(passkeyFilter ? { passkeyID: passkeyFilter } : {}),
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        passkey: {
-          select: {
-            name: true,
+      };
+
+      const total = await prisma.prfCiphertext.count({
+        where: whereClause,
+      });
+
+      const computedTotalPages = Math.ceil(total / limit);
+      const cappedPage = computedTotalPages === 0 ? 1 : Math.min(page, computedTotalPages);
+      const skip = (cappedPage - 1) * limit;
+
+      const entries = await prisma.prfCiphertext.findMany({
+        where: whereClause,
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: limit,
+        skip,
+        include: {
+          passkey: {
+            select: {
+              name: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    return c.json(
-      {
-        entries: entries.map((entry) => ({
-          id: entry.id,
-          passkeyId: entry.passkeyID,
-          passkeyName: entry.passkey.name,
-          label: entry.label,
-          ciphertext: entry.ciphertext,
-          iv: entry.iv,
-          tag: entry.tag,
-          associatedData: entry.associatedData,
-          version: entry.version,
-          createdAt: entry.createdAt.toISOString(),
-          prfInput: entry.prfInput,
-        })),
-      },
-      200,
-    );
-  })
+      return c.json(
+        {
+          entries: entries.map((entry) => ({
+            id: entry.id,
+            passkeyId: entry.passkeyID,
+            passkeyName: entry.passkey.name,
+            label: entry.label,
+            ciphertext: entry.ciphertext,
+            iv: entry.iv,
+            tag: entry.tag,
+            associatedData: entry.associatedData,
+            version: entry.version,
+            createdAt: entry.createdAt.toISOString(),
+            prfInput: entry.prfInput,
+          })),
+          pagination: {
+            page: total === 0 ? 0 : cappedPage,
+            limit,
+            total,
+            totalPages: total === 0 ? 0 : computedTotalPages,
+          },
+        },
+        200,
+      );
+    },
+  )
   .delete("/entries/:id", async (c) => {
     const userData = await loginSessionController.getUserData(c);
     if (!userData) {
