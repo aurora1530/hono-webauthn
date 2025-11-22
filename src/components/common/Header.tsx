@@ -78,7 +78,7 @@ const Header: FC = async () => {
       <nav class={navClass}>
         <div>
           <a href="/" class={logoClass}>
-            Hono WebAuthn
+            Hono WebAuthn Demo App
           </a>
         </div>
         <div class={linkGroupClass}>
