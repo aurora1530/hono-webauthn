@@ -201,6 +201,29 @@ export const PrfPlayground: FC<PrfPlaygroundProps> = ({ passkeys }) => {
     gap: 10px;
     font-size: 12px;
     color: #475569;
+
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    span {
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    code {
+      display: block;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: #0f172a;
+      color: #e2e8f0;
+      word-break: break-all;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
   `;
 
   const entryActionsClass = css`
