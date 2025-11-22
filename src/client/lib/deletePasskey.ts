@@ -14,7 +14,7 @@ async function handleDeletePasskey(passkeyId: string, onlySyncedPasskey: boolean
       return;
     }
 
-    openMessageModal(`再認証を開始します。`);
+    openMessageModal(`再認証を開始します。`, undefined, { loading: true });
     const reauthSuccess = await handleReauthentication();
     if (!reauthSuccess) {
       openMessageModal("再認証に失敗しました。パスキーは削除されませんでした。");

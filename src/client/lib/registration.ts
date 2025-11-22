@@ -1,8 +1,8 @@
-import { authClient } from "./rpc/authClient.ts";
 import { closeModal } from "./modal/base.js";
-import { handleReauthentication } from "./reauthentication.ts";
-import { webauthnClient } from "./rpc/webauthnClient.ts";
 import { openMessageModal } from "./modal/message.js";
+import { handleReauthentication } from "./reauthentication.ts";
+import { authClient } from "./rpc/authClient.ts";
+import { webauthnClient } from "./rpc/webauthnClient.ts";
 
 function validateUsernameAndUpdateUI(): boolean {
   const usernameEle = document.getElementById("username");
@@ -69,7 +69,7 @@ async function handleRegistration(isNewAccount: boolean = true) {
       return;
     }
   } else {
-    openMessageModal(`再認証を開始します。`);
+    openMessageModal(`再認証を開始します。`, undefined, { loading: true });
     const reauthSuccess = await handleReauthentication();
     if (!reauthSuccess) {
       openMessageModal("再認証に失敗しました。パスキーの作成は行われませんでした。");

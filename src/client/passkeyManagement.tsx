@@ -1,9 +1,9 @@
+import PasskeyHistories from "./components/PasskeyHistories.js";
 import { handleChangePasskeyName } from "./lib/changePasskeyName.js";
 import { handleDeletePasskey } from "./lib/deletePasskey.js";
-import { handleRegistration } from "./lib/registration.js";
 import { openModalWithJSX } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
-import PasskeyHistories from "./components/PasskeyHistories.js";
+import { handleRegistration } from "./lib/registration.js";
 import { webauthnClient } from "./lib/rpc/webauthnClient.js";
 
 document.getElementById("add-passkey-button")?.addEventListener("click", () => {
@@ -88,7 +88,7 @@ const testPasskeyBtns = document.getElementsByClassName(
 ) as HTMLCollectionOf<HTMLButtonElement>;
 
 async function handleTestAuthentication(passkeyId: string) {
-  openMessageModal("認証テストを開始します...");
+  openMessageModal("認証テストを開始します...", undefined, { loading: true });
   const generateRes = await webauthnClient["test-authentication"].generate.$post({
     json: { passkeyId },
   });

@@ -2,6 +2,7 @@ import { css, cx } from "hono/css";
 import { useEffect, useMemo, useRef, useState } from "hono/jsx/dom";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
+import { LoadingIndicator } from "./common/LoadingIndicator.js";
 
 export const MAX_PRF_LABEL_LENGTH = 120;
 export const MAX_PRF_PLAINTEXT_CHARS = 3500;
@@ -981,7 +982,7 @@ export const PrfPlaygroundApp = () => {
       </div>
 
       {passkeysLoading ? (
-        <p class={infoMessageClass}>パスキーを取得しています...</p>
+        <LoadingIndicator message="パスキーを取得しています..." />
       ) : (
         noPasskeys && (
           <p class={infoMessageClass}>
@@ -1153,7 +1154,7 @@ export const PrfPlaygroundApp = () => {
         </div>
 
         <div class={entriesContainerClass}>
-          {entriesLoading && <p class={infoMessageClass}>暗号化済みデータを読み込み中です...</p>}
+          {entriesLoading && <LoadingIndicator message="暗号化済みデータを読み込み中です..." />}
           {entries.length === 0 && !entriesLoading ? (
             <p class={emptyMessageClass}>{emptyEntriesMessage}</p>
           ) : (
