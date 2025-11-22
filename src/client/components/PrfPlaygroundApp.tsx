@@ -440,6 +440,11 @@ const entryMetaClass = css`
   }
 `;
 
+const cypherTextClass = css`
+  max-height: 5em;
+  overflow-y: auto;
+`;
+
 const entryActionsClass = css`
   display: flex;
   flex-wrap: wrap;
@@ -1070,7 +1075,7 @@ export const PrfPlaygroundApp = () => {
                   </div>
                   <div>
                     <span>Ciphertext</span>
-                    <code>{entry.ciphertext}</code>
+                    <code class={cypherTextClass}>{entry.ciphertext}</code>
                   </div>
                   <div>
                     <span>IV</span>
