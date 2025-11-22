@@ -154,7 +154,6 @@ const containerClass = css`
 const headerClass = css`
   display: flex;
   justify-content: center;
-  align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
 
@@ -164,9 +163,9 @@ const headerClass = css`
   }
 
   p {
-    margin: 0;
+    margin: auto;
     color: #475569;
-    max-width: 600px;
+    max-width: 90%;
     line-height: 1.5;
   }
 `;
