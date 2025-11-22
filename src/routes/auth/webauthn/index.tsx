@@ -17,15 +17,9 @@ import { aaguidToNameAndIcon } from "../../../lib/auth/aaguid/parse.js";
 import inferClientPlatform from "../../../lib/auth/inferClientPlatform.js";
 import { loginSessionController } from "../../../lib/auth/loginSession.js";
 import handlePostAuthentication from "../../../lib/auth/postAuthentication.ts";
-import {
-  buildPrfExtensions,
-  decodeBase64ToBytesWithBounds,
-  PRF_CONSTRAINTS,
-} from "../../../lib/auth/prfHelpers.ts";
 import { reauthSessionController } from "../../../lib/auth/reauthSession.js";
 import { isAuthenticatorTransportFuture } from "../../../lib/auth/transport.js";
 import { webauthnSessionController } from "../../../lib/auth/webauthnSession.js";
-import { BASE64_REGEX } from "../../../lib/base64.ts";
 import prisma from "../../../prisma.js";
 import { MAX_PASSKEYS_PER_USER, ORIGIN, rpID, rpName } from "./constant.ts";
 import prfApp from "./prf/index.ts";
