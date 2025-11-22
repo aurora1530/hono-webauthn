@@ -1,8 +1,8 @@
 import type { Context } from "hono";
-import { createRedisSessionStore } from "../redis/redis-session.js";
 import z from "zod";
-import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.ts";
-import type { JsonObject } from "../json.ts";
+import type { JsonObject } from "../json.js";
+import { createRedisSessionStore } from "../redis/redis-session.js";
+import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.js";
 
 const WebAuthnRegistrationGenerateSessionDataSchema = z.object({ username: z.string() });
 type WebAuthnRegistrationGenerateSessionData = z.infer<

@@ -1,7 +1,7 @@
-import prisma from "../../prisma.ts";
-import { addHistory } from "./history.ts";
 import type { PasskeyHistoryType } from "@prisma/client";
-import inferClientPlatform from "./inferClientPlatform.ts";
+import prisma from "../../prisma.js";
+import { addHistory } from "./history.js";
+import inferClientPlatform from "./inferClientPlatform.js";
 
 type PostAuthParams = {
   savedPasskeyID: string;

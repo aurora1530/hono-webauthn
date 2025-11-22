@@ -1,8 +1,8 @@
-import z from "zod";
-import type { SessionStore } from "../session.js";
-import { createRedisSessionStore } from "../redis/redis-session.js";
 import type { Context } from "hono";
-import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.ts";
+import z from "zod";
+import { createRedisSessionStore } from "../redis/redis-session.js";
+import type { SessionStore } from "../session.js";
+import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.js";
 
 const ReauthDataSchema = z.object({
   userId: z.string(),

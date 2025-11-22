@@ -1,5 +1,5 @@
 import { createClient, type RedisClientType } from "redis";
-import { typedEnv } from "../../env.ts";
+import { typedEnv } from "../../env.js";
 
 let client: RedisClientType | null = null;
 let shutdownHookRegistered = false;
@@ -12,7 +12,7 @@ export async function getRedis(): Promise<RedisClientType> {
     socket: {
       reconnectStrategy: (retries) => {
         // 初回は即時、以降は指数だが上限5秒
-        return retries === 0 ? 0 : Math.min(500 * Math.pow(2, retries), 5_000);
+        return retries === 0 ? 0 : Math.min(500 * 2 ** retries, 5_000);
       },
     },
   });

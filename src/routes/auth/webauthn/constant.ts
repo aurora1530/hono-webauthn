@@ -1,4 +1,4 @@
-import { typedEnv } from "../../../env.ts";
+import { typedEnv } from "../../../env.js";
 
 export const MAX_PASSKEYS_PER_USER = 10;
 export const rpName = "Hono WebAuthn Example";

@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import z from "zod";
-import Profile from "../../components/profile/Profile.tsx";
-import { loginSessionController } from "../../lib/auth/loginSession.ts";
+import Profile from "../../components/profile/Profile.js";
+import { loginSessionController } from "../../lib/auth/loginSession.js";
 
 const profileApp = new Hono();
 

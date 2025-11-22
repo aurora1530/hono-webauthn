@@ -1,4 +1,4 @@
-import { decodeBase64ToBytes, encodeBytesToBase64Url } from "../base64.ts";
+import { decodeBase64ToBytes, encodeBytesToBase64Url } from "../base64.js";
 
 export const buildPrfExtensions = (
   bytes?: Uint8Array,

@@ -1,4 +1,4 @@
-import type { JsonObject } from "../json.ts";
+import type { JsonObject } from "../json.js";
 import type { SessionID, SessionStore } from "../session.js";
 import { getRedis } from "./redis.js";
 

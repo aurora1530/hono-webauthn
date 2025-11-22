@@ -1,6 +1,6 @@
 import type { FC } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
-import { loginSessionController } from "../../lib/auth/loginSession.ts";
+import { loginSessionController } from "../../lib/auth/loginSession.js";
 
 const Profile: FC = async () => {
   const c = useRequestContext();

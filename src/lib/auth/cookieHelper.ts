@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
 import type { CookieOptions } from "hono/utils/cookie";
-import { typedEnv } from "../../env.ts";
+import { typedEnv } from "../../env.js";
 
 // Unified cookie policy (inlined; removed cookie-options.ts)
 const isSecureCookie: boolean =

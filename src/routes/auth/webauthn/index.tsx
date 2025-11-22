@@ -16,13 +16,13 @@ import z from "zod";
 import { aaguidToNameAndIcon } from "../../../lib/auth/aaguid/parse.js";
 import inferClientPlatform from "../../../lib/auth/inferClientPlatform.js";
 import { loginSessionController } from "../../../lib/auth/loginSession.js";
-import handlePostAuthentication from "../../../lib/auth/postAuthentication.ts";
+import handlePostAuthentication from "../../../lib/auth/postAuthentication.js";
 import { reauthSessionController } from "../../../lib/auth/reauthSession.js";
 import { isAuthenticatorTransportFuture } from "../../../lib/auth/transport.js";
 import { webauthnSessionController } from "../../../lib/auth/webauthnSession.js";
 import prisma from "../../../prisma.js";
-import { MAX_PASSKEYS_PER_USER, ORIGIN, rpID, rpName } from "./constant.ts";
-import prfApp from "./prf/index.ts";
+import { MAX_PASSKEYS_PER_USER, ORIGIN, rpID, rpName } from "./constant.js";
+import prfApp from "./prf/index.js";
 
 const webauthnApp = new Hono();
 webauthnApp.route("/prf", prfApp);

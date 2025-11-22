@@ -7,23 +7,23 @@ import {
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import z from "zod";
-import { loginSessionController } from "../../../../lib/auth/loginSession.ts";
-import handlePostAuthentication from "../../../../lib/auth/postAuthentication.ts";
+import { loginSessionController } from "../../../../lib/auth/loginSession.js";
+import handlePostAuthentication from "../../../../lib/auth/postAuthentication.js";
 import {
   buildPrfExtensions,
   decodeBase64ToBytesWithBounds,
   PRF_CONSTRAINTS,
-} from "../../../../lib/auth/prfHelpers.ts";
-import { isAuthenticatorTransportFuture } from "../../../../lib/auth/transport.ts";
-import { webauthnSessionController } from "../../../../lib/auth/webauthnSession.ts";
-import { BASE64_REGEX } from "../../../../lib/base64.ts";
-import prisma from "../../../../prisma.ts";
-import { ORIGIN, rpID } from "../constant.ts";
+} from "../../../../lib/auth/prfHelpers.js";
+import { isAuthenticatorTransportFuture } from "../../../../lib/auth/transport.js";
+import { webauthnSessionController } from "../../../../lib/auth/webauthnSession.js";
+import { BASE64_REGEX } from "../../../../lib/base64.js";
+import prisma from "../../../../prisma.js";
+import { ORIGIN, rpID } from "../constant.js";
 import {
   DEFAULT_PRF_ENTRIES_LIMIT,
   MAX_PRF_ENTRIES_LIMIT,
   MAX_PRF_ENTRIES_PAGE,
-} from "./constant.ts";
+} from "./constant.js";
 
 const prfApp = new Hono();
 

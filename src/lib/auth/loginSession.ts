@@ -3,7 +3,7 @@ import { createMiddleware } from "hono/factory";
 import z from "zod";
 import { createRedisSessionStore } from "../redis/redis-session.js";
 import type { SessionStore } from "../session.js";
-import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.ts";
+import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.js";
 
 const UserDataSchema = z.object({
   userID: z.string(),
