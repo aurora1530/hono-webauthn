@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-FILE="./src/lib/auth/aaguid/aaguid.json"
+FILE="./aaguid.json"
 
 if git diff --quiet -- "$FILE"; then
   echo "No changes in $FILE"
