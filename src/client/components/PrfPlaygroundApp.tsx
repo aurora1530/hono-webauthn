@@ -1,6 +1,7 @@
 import { css, cx } from "hono/css";
 import { useEffect, useMemo, useState } from "hono/jsx/dom";
-import { webauthnClient } from "../lib/rpc/webauthnClient.js";
+import { prfClient } from "../lib/rpc/prfClient";
+import { webauthnClient } from "../lib/rpc/webauthnClient";
 
 export const MAX_PRF_LABEL_LENGTH = 120;
 export const MAX_PRF_PLAINTEXT_CHARS = 3500;
@@ -109,7 +110,7 @@ const deriveAesArtifacts = async (prfBytes: Uint8Array, salt: Uint8Array) => {
 };
 
 const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: string) => {
-  const generateRes = await webauthnClient.prf.assertion.generate.$post({
+  const generateRes = await prfClient.assertion.generate.$post({
     json: { passkeyId, prfInput: prfInputBase64 },
   });
   if (!generateRes.ok) {
@@ -121,7 +122,7 @@ const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: string) =
   const credential = (await navigator.credentials.get({
     publicKey: options,
   })) as PublicKeyCredential;
-  const verifyRes = await webauthnClient.prf.assertion.verify.$post({
+  const verifyRes = await prfClient.assertion.verify.$post({
     json: { body: credential },
   });
   if (!verifyRes.ok) {
@@ -485,7 +486,7 @@ export const PrfPlaygroundApp = () => {
       showStatus("暗号化済みデータを取得しています...");
     }
     try {
-      const res = await webauthnClient.prf.entries.$get();
+      const res = await prfClient.entries.$get();
       if (!res.ok) {
         const error = (await res.json()).error;
         throw new Error(error ?? "一覧の取得に失敗しました");
@@ -583,7 +584,7 @@ export const PrfPlaygroundApp = () => {
         prfInput: prfInputBase64,
       };
 
-      const storeRes = await webauthnClient.prf.encrypt.$post({ json: payload });
+      const storeRes = await prfClient.encrypt.$post({ json: payload });
       const storeJson = (await storeRes.json()) as { entry?: PrfEntry; error?: string };
       if (!storeRes.ok || !storeJson.entry) {
         throw new Error(storeJson.error ?? "暗号化データの保存に失敗しました");
