@@ -1,7 +1,7 @@
 import { closeModal } from "./modal/base.js";
 import { openMessageModal } from "./modal/message.js";
-import { handleReauthentication } from "./reauthentication.ts";
-import { webauthnClient } from "./rpc/webauthnClient.ts";
+import { handleReauthentication } from "./reauthentication.js";
+import { webauthnClient } from "./rpc/webauthnClient.js";
 
 async function handleDeletePasskey(passkeyId: string, onlySyncedPasskey: boolean = false) {
   if (confirm("本当にこのパスキーを削除しますか？")) {

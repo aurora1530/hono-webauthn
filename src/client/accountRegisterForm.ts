@@ -1,4 +1,4 @@
-import { handleRegistration, setupUsernameValidation } from "./lib/registration.ts";
+import { handleRegistration, setupUsernameValidation } from "./lib/registration.js";
 
 document.getElementById("account-register-button")?.addEventListener("click", () => {
   handleRegistration(true);

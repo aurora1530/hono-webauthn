@@ -1,6 +1,6 @@
 import type { PasskeyHistory } from "@prisma/client";
 import { css } from "hono/css";
-import { getPasskeyHistoryTypeLabel } from "../lib/passkeyHistoryType.ts";
+import { getPasskeyHistoryTypeLabel } from "../lib/passkeyHistoryType.js";
 import { webauthnClient } from "../lib/rpc/webauthnClient.js";
 
 type PasskeyHistoryProps = {

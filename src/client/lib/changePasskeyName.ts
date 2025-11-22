@@ -1,4 +1,4 @@
-import { webauthnClient } from "./rpc/webauthnClient.ts";
+import { webauthnClient } from "./rpc/webauthnClient.js";
 
 async function handleChangePasskeyName(passkeyId: string, currentName: string) {
   const newName = prompt("新しいパスキー名を入力してください:", currentName);

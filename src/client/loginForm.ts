@@ -1,4 +1,4 @@
-import { handleAuthentication } from "./lib/authentication.ts";
+import { handleAuthentication } from "./lib/authentication.js";
 
 document.getElementById("login-button")?.addEventListener("click", () => {
   handleAuthentication();

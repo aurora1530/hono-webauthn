@@ -1,8 +1,8 @@
 import { closeModal } from "./modal/base.js";
 import { openMessageModal } from "./modal/message.js";
-import { handleReauthentication } from "./reauthentication.ts";
-import { authClient } from "./rpc/authClient.ts";
-import { webauthnClient } from "./rpc/webauthnClient.ts";
+import { handleReauthentication } from "./reauthentication.js";
+import { authClient } from "./rpc/authClient.js";
+import { webauthnClient } from "./rpc/webauthnClient.js";
 
 function validateUsernameAndUpdateUI(): boolean {
   const usernameEle = document.getElementById("username");

@@ -1,4 +1,4 @@
-import { webauthnClient } from "./rpc/webauthnClient.ts";
+import { webauthnClient } from "./rpc/webauthnClient.js";
 
 async function handleReauthentication(): Promise<boolean> {
   const generateReauthenticationOptionsResponse =
