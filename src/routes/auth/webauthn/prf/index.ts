@@ -18,7 +18,7 @@ import { isAuthenticatorTransportFuture } from "../../../../lib/auth/transport.t
 import { webauthnSessionController } from "../../../../lib/auth/webauthnSession.ts";
 import { BASE64_REGEX } from "../../../../lib/base64.ts";
 import prisma from "../../../../prisma.ts";
-import { rpID } from "../constant.ts";
+import { ORIGIN, rpID } from "../constant.ts";
 
 const prfApp = new Hono();
 
@@ -177,7 +177,7 @@ export const prfRoutes = prfApp
         verification = await verifyAuthenticationResponse({
           response: body,
           expectedChallenge: sessionData.challenge,
-          expectedOrigin: origin,
+          expectedOrigin: ORIGIN,
           expectedRPID: rpID,
           credential: {
             id: savedPasskey.id,
