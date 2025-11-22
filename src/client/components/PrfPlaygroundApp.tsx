@@ -30,6 +30,7 @@ export type LatestOutputRow = {
   value: string;
   copyAnnounce?: string;
   copyValue?: string;
+  fullWidth?: boolean;
 };
 
 export type LatestOutput = {
@@ -316,6 +317,15 @@ const outputRowHeaderClass = css`
   justify-content: space-between;
   gap: 10px;
   margin: 0 0 4px;
+`;
+
+const outputRowClass = css`
+  display: flex;
+  flex-direction: column;
+`;
+
+const outputRowFullWidthClass = css`
+  grid-column: 1 / -1;
 `;
 
 const copyIconButtonClass = css`
@@ -877,6 +887,7 @@ export const PrfPlaygroundApp = () => {
             value: plaintextResult,
             copyAnnounce: "プレインテキスト",
             copyValue: plaintextResult,
+            fullWidth: true,
           },
         ],
       });
@@ -1065,7 +1076,10 @@ export const PrfPlaygroundApp = () => {
             <h4 class={latestOutputHeadingClass}>{latestOutput.title}</h4>
             <div class={outputGridClass}>
               {latestOutput.rows.map((row, index) => (
-                <div key={`${row.label}-${index}`}>
+                <div
+                  key={`${row.label}-${index}`}
+                  class={cx(outputRowClass, row.fullWidth && outputRowFullWidthClass)}
+                >
                   <div class={outputRowHeaderClass}>
                     <p style="margin:0;font-weight:600;">{row.label}</p>
                     {row.copyAnnounce && (
