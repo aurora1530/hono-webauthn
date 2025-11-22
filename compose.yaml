@@ -1,26 +1,4 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile.app
-    tty: true
-    volumes:
-      - type: bind
-        source: .
-        target: /app
-      - type: volume
-        source: hono_webauthn_app_nodemodules
-        target: /app/node_modules
-    ports:
-      - "${PORT:?port is not set}:${PORT:?port is not set}"
-      - "5555:5555"
-    environment:
-      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING:-false}
-    env_file:
-      - .env
-    depends_on:
-      - db
-      - redis
   db:
     build:
       context: .
@@ -35,8 +13,12 @@ services:
       - type: volume
         source: hono_webauthn_db_data
         target: /var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
   redis:
     image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
 
 volumes:
   hono_webauthn_db_data:
