@@ -5,8 +5,6 @@ import { pageTitleClass, surfaceClass, textMutedClass } from "../../ui/theme.js"
 export const PrfPlayground: FC = () => {
   const wrapperClass = css`
     max-width: 920px;
-    margin: 0 auto;
-    padding: 32px 16px 40px;
   `;
 
   const placeholderClass = cx(
