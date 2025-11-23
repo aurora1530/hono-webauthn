@@ -863,13 +863,10 @@ export const PrfPlaygroundApp = () => {
     setBusy(true);
     showStatus("暗号化データを削除しています...");
     try {
-      const res = await fetch(`/auth/webauthn/prf/entries/${encodeURIComponent(entryId)}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
-      const body = (await res.json().catch(() => ({}))) as { error?: string } | undefined;
+      const res = await prfClient.entries[":id"].$delete({ param: { id: entryId } });
       if (!res.ok) {
-        throw new Error(body?.error ?? "暗号化データの削除に失敗しました");
+        const error = (await res.json()).error;
+        throw new Error(error ?? "暗号化データの削除に失敗しました");
       }
       await loadEntries({
         page: entriesPage,
