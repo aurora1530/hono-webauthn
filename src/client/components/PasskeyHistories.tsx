@@ -76,9 +76,8 @@ const PasskeyHistories = ({
   const wrapClass = css`
     position: relative;
     width: 100%;
-    max-width: 680px;
     margin: 0 auto;
-    padding: 8px 32px 8px; /* space for side nav buttons */
+    padding: 0.5rem;
     box-sizing: border-box;
   `;
 
