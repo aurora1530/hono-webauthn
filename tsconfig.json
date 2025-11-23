@@ -11,7 +11,11 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ui/*": ["src/ui/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["./src/client/**/*"]

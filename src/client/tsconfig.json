@@ -13,7 +13,11 @@
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ui/*": ["../ui/*"]
+    }
   },
   "compileOnSave": false,
-  "include": ["./**/*", "../rpc.ts"],
+  "include": ["./**/*", "../rpc.ts", "../ui/**/*"]
 }
