@@ -57,6 +57,42 @@ const AES_GCM_TAG_BYTE_LENGTH = 16;
 const PRF_INPUT_BYTE_LENGTH = 32;
 const PRF_ENTRIES_PAGE_SIZE = 5;
 
+const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string | null => {
+  if (!bytes) return null;
+  const view = bytes instanceof ArrayBuffer ? new Uint8Array(bytes) : new Uint8Array(bytes);
+  let binary = "";
+  for (let i = 0; i < view.length; i++) {
+    binary += String.fromCharCode(view[i]);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+};
+
+const serializeAssertionForServer = (credential: PublicKeyCredential) => {
+  const response = credential.response as AuthenticatorAssertionResponse;
+  const sanitizedExtensions = (() => {
+    const ext = credential.getClientExtensionResults?.();
+    if (!ext) return undefined;
+    // PRF の結果は送らない
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { prf, ...rest } = ext as Record<string, unknown>;
+    return Object.keys(rest).length > 0 ? rest : undefined;
+  })();
+
+  return {
+    id: credential.id,
+    rawId: toBase64Url(credential.rawId),
+    type: credential.type,
+    authenticatorAttachment: credential.authenticatorAttachment,
+    response: {
+      authenticatorData: toBase64Url(response.authenticatorData),
+      clientDataJSON: toBase64Url(response.clientDataJSON),
+      signature: toBase64Url(response.signature),
+      userHandle: toBase64Url(response.userHandle),
+    },
+    clientExtensionResults: sanitizedExtensions,
+  };
+};
+
 const toBase64 = (bytes: Uint8Array): string => {
   let binary = "";
   bytes.forEach((b) => {
@@ -138,8 +174,10 @@ const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: string) =
     throw new Error("認証情報の取得に失敗しました");
   }
 
+  const credentialJson = serializeAssertionForServer(credential);
+
   const verifyRes = await prfClient.assertion.verify.$post({
-    json: { body: credential },
+    json: { body: credentialJson },
   });
   if (!verifyRes.ok) {
     const error = (await verifyRes.json()).error;
