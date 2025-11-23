@@ -1,5 +1,6 @@
-import { css } from "hono/css";
+import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
+import { pageTitleClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
 
 export const PrfPlayground: FC = () => {
   const wrapperClass = css`
@@ -8,20 +9,21 @@ export const PrfPlayground: FC = () => {
     padding: 32px 16px 40px;
   `;
 
-  const placeholderClass = css`
-    border: 1px dashed #cbd5f5;
-    border-radius: 16px;
-    padding: 32px 24px;
-    background: #fff;
-    text-align: center;
-    color: #475569;
-  `;
+  const placeholderClass = cx(
+    surfaceClass("muted"),
+    css`
+      border-style: dashed;
+      padding: 32px 24px;
+      text-align: center;
+    `,
+  );
+
   return (
     <div class={wrapperClass}>
       <div id="prf-playground-root" class={placeholderClass}>
-        <h2 style="margin: 0 0 12px;">WebAuthn PRF 暗号化プレイグラウンド</h2>
-        <p style="margin: 0 0 4px;">クライアントコンポーネントを読み込んでいます…</p>
-        <p style="margin: 0; font-size: 13px;">
+        <h2 class={pageTitleClass}>WebAuthn PRF 暗号化プレイグラウンド</h2>
+        <p class={textMutedClass}>クライアントコンポーネントを読み込んでいます…</p>
+        <p class={cx(textMutedClass, css`font-size: 13px;`)}>
           読み込まれない場合は JavaScript を有効にしてください。
         </p>
       </div>

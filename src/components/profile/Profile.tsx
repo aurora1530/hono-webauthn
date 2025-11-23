@@ -2,6 +2,14 @@ import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
+import {
+  badgeClass,
+  buttonClass,
+  pageTitleClass,
+  sectionStackClass,
+  surfaceClass,
+  textMutedClass,
+} from "../../ui/theme.js";
 
 const Profile: FC = async () => {
   const c = useRequestContext();
@@ -11,15 +19,15 @@ const Profile: FC = async () => {
     const backLinkClass = css`
       color: var(--primary-color);
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 700;
       &:hover {
         text-decoration: underline;
       }
     `;
     return (
       <div>
-        <h1>プロフィール</h1>
-        <p>ログインしてください。</p>
+        <h1 class={pageTitleClass}>プロフィール</h1>
+        <p class={textMutedClass}>ログインしてください。</p>
         <a href="/auth/login" class={backLinkClass}>
           ログインページへ
         </a>
@@ -27,79 +35,12 @@ const Profile: FC = async () => {
     );
   }
 
-  const pageClass = css`
-    display: grid;
-    gap: 20px;
-    max-width: 820px;
-  `;
-
-  const headingClass = css`
-    font-size: 26px;
-    font-weight: 800;
-    margin-bottom: 4px;
-  `;
-
-  const subHeadingClass = css`
-    color: #475569;
-    margin: 0 0 16px;
-  `;
-
-  const cardClass = css`
-    background: var(--header-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 18px 20px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-  `;
-
-  const sectionTitleClass = css`
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0 0 8px;
-  `;
-
-  const mutedTextClass = css`
-    color: #64748b;
-    margin: 0 0 12px;
-  `;
-
-  const dangerCardClass = cx(
-    cardClass,
+  const subHeadingClass = cx(
+    textMutedClass,
     css`
-      border-color: #fecdd3;
-      background: linear-gradient(135deg, #fff1f2, #fff5f7);
+      margin: 0 0 12px;
     `,
   );
-
-  const badgeClass = css`
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: #e2e8f0;
-    color: #0f172a;
-    font-weight: 600;
-    font-size: 14px;
-  `;
-
-  const dangerBtnClass = css`
-    background: #ef4444;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease;
-    width: fit-content;
-    &:hover {
-      background: #dc2626;
-    }
-    &:active {
-      transform: translateY(1px);
-    }
-  `;
 
   const infoListClass = css`
     list-style: none;
@@ -109,28 +50,58 @@ const Profile: FC = async () => {
     gap: 6px;
   `;
 
+  const toggleRowClass = css`
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  `;
+
+  const switchTrackClass = (enabled: boolean) =>
+    css`
+      position: relative;
+      width: 52px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      padding: 4px;
+      border-radius: 999px;
+      background: ${enabled ? "#22c55e" : "#cbd5e1"};
+      transition: background 0.2s ease;
+
+      &::after {
+        content: "";
+        position: absolute;
+        left: ${enabled ? "26px" : "4px"};
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        transition: left 0.2s ease;
+      }
+    `;
+
+  const dangerCardClass = surfaceClass("danger");
+  const defaultCardClass = surfaceClass("default");
+
+  const dangerButtonClass = buttonClass("danger", "md");
+
   return (
-    <div class={pageClass}>
+    <div class={sectionStackClass} style="max-width: 820px;">
       <header>
-        <h1 class={headingClass}>プロフィール</h1>
+        <h1 class={pageTitleClass}>プロフィール</h1>
         <p class={subHeadingClass}>こんにちは、{userData.username} さん</p>
       </header>
 
-      <section class={cardClass}>
-        <h2 class={sectionTitleClass}>デバッグモード</h2>
-        <p class={mutedTextClass}>
+      <section class={defaultCardClass}>
+        <h2 class={css`margin:0 0 8px; font-size:18px; font-weight:700;`}>デバッグモード</h2>
+        <p class={textMutedClass}>
           ログの詳細を確認するための内部モードです。必要な場合のみオンにしてください。
         </p>
-        <label
-          class={css`
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            user-select: none;
-          `}
-        >
+        <label class={toggleRowClass}>
           <input
             type="checkbox"
             checked={!!userData.debugMode}
@@ -141,49 +112,24 @@ const Profile: FC = async () => {
               pointer-events: none;
             `}
           />
-          <span
-            class={css`
-              position: relative;
-              width: 52px;
-              height: 30px;
-              display: inline-flex;
-              align-items: center;
-              padding: 4px;
-              border-radius: 999px;
-              background: ${userData.debugMode ? "#22c55e" : "#cbd5e1"};
-              transition: background 0.2s ease;
-
-              &::after {
-                content: "";
-                position: absolute;
-                left: ${userData.debugMode ? "26px" : "4px"};
-                width: 22px;
-                height: 22px;
-                border-radius: 50%;
-                background: #fff;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-                transition: left 0.2s ease;
-              }
-            `}
-            aria-hidden="true"
-          />
+          <span class={switchTrackClass(!!userData.debugMode)} aria-hidden="true" />
           <span>デバッグモードを有効にする</span>
         </label>
       </section>
 
       <section class={dangerCardClass}>
-        <h2 class={sectionTitleClass}>アカウント削除</h2>
-        <p class={mutedTextClass}>
+        <h2 class={css`margin:0 0 8px; font-size:18px; font-weight:700;`}>アカウント削除</h2>
+        <p class={textMutedClass}>
           この操作は取り消せません。すべてのパスキー、履歴、暗号データを削除します。
         </p>
-        <div class={badgeClass}>Danger zone</div>
+        <div class={badgeClass("warning")}>Danger zone</div>
         <ul class={infoListClass}>
           <li>暗号データも含めて完全に削除します。</li>
           <li>再登録しない限り復元できません。</li>
         </ul>
         <button
           id="delete-account-btn"
-          class={dangerBtnClass}
+          class={dangerButtonClass}
           data-username={userData.username}
           data-user-id={userData.userID}
           type="button"

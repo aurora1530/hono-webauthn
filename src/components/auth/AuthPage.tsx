@@ -1,7 +1,8 @@
-import { css, cx } from "hono/css";
+import { css } from "hono/css";
 import type { FC } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
+import { buttonClass, textMutedClass } from "../../ui/theme.js";
 
 const AuthPage: FC = async () => {
   const c = useRequestContext();
@@ -21,43 +22,8 @@ const AuthPage: FC = async () => {
     justify-content: center;
   `;
 
-  const pillBase = css`
-    display: inline-block;
-    border-radius: 999px;
-    padding: 8px 14px;
-    font-size: 14px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out, opacity 0.15s;
-  `;
-
-  const primary = cx(
-    pillBase,
-    css`
-      background: var(--primary-color);
-      color: #fff;
-      &:hover {
-        background: var(--primary-hover);
-      }
-      &:active {
-        opacity: 0.9;
-      }
-    `,
-  );
-
-  const secondary = cx(
-    pillBase,
-    css`
-      background: #e5e7eb;
-      color: var(--text-color);
-      &:hover {
-        background: #d1d5db;
-      }
-      &:active {
-        opacity: 0.95;
-      }
-    `,
-  );
+  const primary = buttonClass("primary", "md");
+  const secondary = buttonClass("secondary", "md");
 
   return (
     <>
@@ -65,7 +31,7 @@ const AuthPage: FC = async () => {
       <div class={authLinksClass}>
         {userData ? (
           <>
-            <span style="color:#64748b">ログイン中:</span> <strong>{userData.username}</strong>
+            <span class={textMutedClass}>ログイン中:</span> <strong>{userData.username}</strong>
             <button class={secondary} id="add-passkey-button" type="button">
               パスキー作成
             </button>

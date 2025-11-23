@@ -1,4 +1,5 @@
 import { css, cx } from "hono/css";
+import { badgeClass, buttonClass, inputFieldClass } from "../ui/theme.js";
 import { changeDebugMode } from "./lib/changeDebugMode.js";
 import {
   type AccountDeletionSummary,
@@ -41,18 +42,6 @@ const openConfirmModal = (summary: AccountDeletionSummary) => {
     gap: 6px;
   `;
 
-  const badgeClass = css`
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    background: #fef2f2;
-    color: #991b1b;
-    border-radius: 10px;
-    font-weight: 700;
-    width: fit-content;
-  `;
-
   const btnRow = css`
     display: flex;
     justify-content: flex-end;
@@ -60,37 +49,8 @@ const openConfirmModal = (summary: AccountDeletionSummary) => {
     flex-wrap: wrap;
   `;
 
-  const buttonBase = css`
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-weight: 700;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: background 0.15s ease, color 0.15s ease;
-  `;
-
-  const cancelClass = cx(
-    buttonBase,
-    css`
-      background: #e2e8f0;
-      color: #0f172a;
-      &:hover {
-        background: #cbd5e1;
-      }
-    `,
-  );
-
-  const proceedClass = cx(
-    buttonBase,
-    css`
-      background: #ef4444;
-      color: #fff;
-      border-color: #ef4444;
-      &:hover {
-        background: #dc2626;
-      }
-    `,
-  );
+  const cancelClass = buttonClass("secondary", "md");
+  const proceedClass = buttonClass("danger", "md");
 
   openModalWithJSX(
     <div class={wrapClass}>
@@ -98,7 +58,9 @@ const openConfirmModal = (summary: AccountDeletionSummary) => {
       <p>
         プロフィール <strong>{summary.username}</strong> を削除します。この操作は元に戻せません。
       </p>
-      <div class={badgeClass}>{summary.ciphertextCount} 個の暗号データが削除されます。</div>
+      <div class={badgeClass("danger")}>
+        {summary.ciphertextCount} 個の暗号データが削除されます。
+      </div>
       <ul class={listClass}>
         <li>パスキー: {summary.passkeyCount} 件</li>
         <li>履歴: {summary.passkeyHistoryCount} 件</li>
@@ -146,18 +108,13 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
       "Courier New", monospace;
   `;
 
-  const inputClass = css`
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
-    font-size: 15px;
-    box-sizing: border-box;
-    &:focus {
-      outline: 2px solid var(--primary-color);
-      border-color: var(--primary-color);
-    }
-  `;
+  const inputClass = cx(
+    inputFieldClass,
+    css`
+      width: 100%;
+      box-sizing: border-box;
+    `,
+  );
 
   const btnRow = css`
     display: flex;
@@ -166,31 +123,8 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
     flex-wrap: wrap;
   `;
 
-  const secondaryBtn = css`
-    border-radius: 8px;
-    padding: 8px 12px;
-    background: #e2e8f0;
-    color: #0f172a;
-    font-weight: 700;
-    border: 1px solid #cbd5e1;
-    cursor: pointer;
-    &:hover {
-      background: #cbd5e1;
-    }
-  `;
-
-  const dangerBtn = css`
-    border-radius: 8px;
-    padding: 8px 12px;
-    background: #ef4444;
-    color: #fff;
-    font-weight: 700;
-    border: 1px solid #ef4444;
-    cursor: pointer;
-    &:hover {
-      background: #dc2626;
-    }
-  `;
+  const secondaryBtn = buttonClass("secondary", "md");
+  const dangerBtn = buttonClass("danger", "md");
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();

@@ -2,6 +2,7 @@ import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
+import { badgeClass, buttonClass, navLinkClass, textMutedClass } from "../../ui/theme.js";
 
 const Header: FC = async () => {
   const c = useRequestContext();
@@ -14,7 +15,7 @@ const Header: FC = async () => {
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
   `;
 
   const navClass = css`
@@ -26,8 +27,8 @@ const Header: FC = async () => {
   `;
 
   const logoClass = css`
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.3rem;
+    font-weight: 800;
     color: var(--text-color);
     text-decoration: none;
     display: flex;
@@ -41,37 +42,18 @@ const Header: FC = async () => {
 
   const linkGroupClass = css`
     display: flex;
-    gap: 1.5rem;
+    gap: 1.25rem;
     align-items: center;
   `;
 
-  const linkClass = css`
-    text-decoration: none;
-    color: var(--text-color);
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: color 0.2s;
-
+  const dangerLinkClass = css`
+    color: var(--color-danger);
     &:hover {
-      color: var(--primary-color);
+      color: color-mix(in srgb, var(--color-danger) 85%, black);
     }
   `;
 
-  const logoutBtnClass = css`
-    color: #ef4444;
-    &:hover {
-      color: #dc2626;
-    }
-  `;
-
-  const debugModeClass = css`
-    font-size: 0.85rem;
-    color: #f59e0b;
-    border: 1px solid #fbbf24;
-    background-color: #fffbeb;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
-  `;
+  const registerButtonClass = buttonClass("primary", "sm");
 
   return (
     <header class={headerClass}>
@@ -84,43 +66,28 @@ const Header: FC = async () => {
         <div class={linkGroupClass}>
           {userdata ? (
             <>
-              {userdata.debugMode && <span class={debugModeClass}>デバッグモード</span>}
-              <span style="color: #64748b; font-size: 0.9rem;">{userdata.username}</span>
-              <a href="/profile" class={linkClass}>
+              {userdata.debugMode && <span class={badgeClass("warning")}>デバッグモード</span>}
+              <span class={textMutedClass}>{userdata.username}</span>
+              <a href="/profile" class={navLinkClass}>
                 プロフィール
               </a>
-              <a href="/auth/passkey-management" class={linkClass}>
+              <a href="/auth/passkey-management" class={navLinkClass}>
                 パスキー管理
               </a>
               <a
                 href="/auth/logout"
-                class={cx(linkClass, logoutBtnClass)}
-                onclick="return confirm('ログアウトしますか？')"
+                class={cx(navLinkClass, dangerLinkClass)}
+                onclick="return confirm('ログアウトしますか？');"
               >
                 ログアウト
               </a>
             </>
           ) : (
             <>
-              <a href="/auth/login" class={linkClass}>
+              <a href="/auth/login" class={navLinkClass}>
                 ログイン
               </a>
-              <a
-                href="/auth/register"
-                class={css`
-                background-color: var(--primary-color);
-                color: white;
-                padding: 0.5rem 1rem;
-                border-radius: 0.375rem;
-                text-decoration: none;
-                font-weight: 500;
-                transition: background-color 0.2s;
-                &:hover {
-                  background-color: var(--primary-hover);
-                  color: white;
-                }
-              `}
-              >
+              <a href="/auth/register" class={registerButtonClass}>
                 アカウント登録
               </a>
             </>

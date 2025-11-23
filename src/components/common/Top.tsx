@@ -2,6 +2,7 @@ import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
+import { buttonClass, textMutedClass } from "../../ui/theme.js";
 
 const Top: FC = async () => {
   const c = useRequestContext();
@@ -38,35 +39,8 @@ const Top: FC = async () => {
     margin-top: 0.5rem;
   `;
 
-  const btnBase = css`
-    display: inline-block;
-    border-radius: 0.375rem;
-    padding: 0.625rem 1rem;
-    font-size: 0.95rem;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.15s ease-in-out, opacity 0.15s;
-  `;
-
-  const primary = cx(
-    btnBase,
-    css`
-      background: var(--primary-color);
-      color: #fff;
-      &:hover { background: var(--primary-hover); }
-      &:active { opacity: 0.95; }
-    `,
-  );
-
-  const secondary = cx(
-    btnBase,
-    css`
-      background: #e2e8f0;
-      color: var(--text-color);
-      &:hover { background: #cbd5e1; }
-      &:active { opacity: 0.95; }
-    `,
-  );
+  const primary = buttonClass("primary", "md");
+  const secondary = buttonClass("secondary", "md");
 
   return (
     <div class={wrap}>
@@ -74,7 +48,7 @@ const Top: FC = async () => {
         <h1 class={title}>Hono WebAuthn Demo App</h1>
         {username ? (
           <>
-            <p class={subtitle}>ようこそ、{username}さん。</p>
+            <p class={cx(subtitle, textMutedClass)}>ようこそ、{username}さん。</p>
             <div class={actions}>
               <a class={secondary} href="/profile">
                 プロフィール
@@ -86,7 +60,9 @@ const Top: FC = async () => {
           </>
         ) : (
           <>
-            <p class={subtitle}>パスキー対応のデモアプリ。数クリックで安全に認証。</p>
+            <p class={cx(subtitle, textMutedClass)}>
+              パスキー対応のデモアプリ。数クリックで安全に認証。
+            </p>
             <div class={actions}>
               <a class={primary} href="/auth/register">
                 新規登録

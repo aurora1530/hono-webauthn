@@ -1,5 +1,12 @@
 import { css, cx } from "hono/css";
 import { useEffect, useMemo, useRef, useState } from "hono/jsx/dom";
+import {
+  badgeClass,
+  buttonClass,
+  inputFieldClass,
+  surfaceClass,
+  textMutedClass,
+} from "../../ui/theme.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
 import { LoadingIndicator } from "./common/LoadingIndicator.js";
@@ -165,42 +172,34 @@ const headerClass = css`
 
   p {
     margin: auto;
-    color: #475569;
     max-width: 90%;
     line-height: 1.5;
   }
 `;
 
-const buttonBaseClass = css`
+const navButtonClass = css`
   cursor: pointer;
   border: none;
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 13px;
-  transition: background-color 0.15s ease-in-out, opacity 0.15s;
+  background: #0f172a;
+  color: #fff;
+  text-decoration: none;
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 
-const navButtonClass = cx(
-  buttonBaseClass,
+const sectionClass = cx(
+  surfaceClass(),
   css`
-    background: #0f172a;
-    color: #fff;
-    text-decoration: none;
-    &:hover {
-      opacity: 0.9;
-    }
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   `,
 );
-
-const sectionClass = css`
-  border: 1px solid #cbd5f5;
-  border-radius: 16px;
-  background: #f8fafc;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
 
 const gridClass = css`
   display: grid;
@@ -232,10 +231,12 @@ const fieldClass = css`
   }
 `;
 
-const helperTextClass = css`
-  font-size: 11px;
-  color: #64748b;
-`;
+const helperTextClass = cx(
+  textMutedClass,
+  css`
+    font-size: 11px;
+  `,
+);
 
 const textareaClass = css`
   grid-column: 1 / -1;
@@ -248,52 +249,28 @@ const buttonRowClass = css`
   align-items: center;
 `;
 
-const primaryButtonClass = cx(
-  buttonBaseClass,
+const primaryButtonClass = buttonClass("primary", "md");
+const secondaryButtonClass = buttonClass("secondary", "md");
+
+const statusClass = cx(
+  textMutedClass,
   css`
-    background: #2563eb;
-    color: #fff;
-    &:hover:enabled {
-      background: #1d4ed8;
-    }
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    min-height: 20px;
+    font-size: 13px;
   `,
 );
-
-const secondaryButtonClass = cx(
-  buttonBaseClass,
-  css`
-    background: #e2e8f0;
-    color: #0f172a;
-    &:hover:enabled {
-      background: #cbd5f5;
-    }
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  `,
-);
-
-const statusClass = css`
-  min-height: 20px;
-  font-size: 13px;
-  color: #475569;
-`;
 
 const statusErrorClass = css`
   color: #b91c1c;
 `;
 
-const outputClass = css`
-  border: 1px dashed #94a3b8;
-  border-radius: 12px;
-  padding: 16px;
-  background: #fff;
-`;
+const outputClass = cx(
+  surfaceClass("muted"),
+  css`
+    border-style: dashed;
+    padding: 16px;
+  `,
+);
 
 const outputGridClass = css`
   display: grid;
@@ -387,31 +364,33 @@ const entriesControlGroupClass = css`
   flex-wrap: wrap;
 `;
 
-const entriesFilterLabelClass = css`
-  font-size: 12px;
-  color: #475569;
-`;
+const entriesFilterLabelClass = cx(
+  textMutedClass,
+  css`
+    font-size: 12px;
+  `,
+);
 
-const entriesFilterSelectClass = css`
-  border: 1px solid #cbd5f5;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 13px;
-  background: #fff;
-  min-width: 180px;
-`;
+const entriesFilterSelectClass = cx(
+  inputFieldClass,
+  css`
+    min-width: 180px;
+  `,
+);
 
-const entriesPaginationClass = css`
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  border-radius: 999px;
-  border: 1px solid #e2e8f0;
-  background: rgba(248, 250, 252, 0.96);
-  padding: 6px 16px;
-  margin: auto;
-`;
+const entriesPaginationClass = cx(
+  surfaceClass("muted"),
+  css`
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 999px;
+    padding: 6px 16px;
+    margin: auto;
+  `,
+);
 
+// 既存のグレー基調に揃える
 const entriesPaginationButtonClass = css`
   font-size: 13px;
   font-weight: 600;
@@ -430,15 +409,19 @@ const entriesPaginationButtonClass = css`
   &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+    background: #e2e8f0;
+    color: #0f172a;
   }
 `;
 
-const entriesPaginationStatusClass = css`
-  font-size: 12px;
-  color: #475569;
-  min-width: 90px;
-  text-align: center;
-`;
+const entriesPaginationStatusClass = cx(
+  textMutedClass,
+  css`
+    font-size: 12px;
+    min-width: 90px;
+    text-align: center;
+  `,
+);
 
 const entriesContainerClass = css`
   display: flex;
@@ -446,45 +429,47 @@ const entriesContainerClass = css`
   gap: 14px;
 `;
 
-const entryCardClass = css`
-  border: 1px solid #cbd5f5;
-  border-radius: 12px;
-  padding: 16px;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const entryMetaClass = css`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-  font-size: 12px;
-  color: #475569;
-
-  div {
+const entryCardClass = cx(
+  surfaceClass(),
+  css`
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-  }
+    gap: 12px;
+  `,
+);
 
-  span {
-    font-weight: 600;
-    color: #0f172a;
-  }
+const entryMetaClass = cx(
+  textMutedClass,
+  css`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    font-size: 12px;
 
-  code {
-    display: block;
-    padding: 6px 8px;
-    border-radius: 6px;
-    background: #0f172a;
-    color: #e2e8f0;
-    word-break: break-all;
-    white-space: pre-wrap;
-  }
-`;
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    span {
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    code {
+      display: block;
+      padding: 6px 8px;
+      border-radius: 6px;
+      background: #0f172a;
+      color: #e2e8f0;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+  `,
+);
 
 const cypherTextClass = css`
   max-height: 5em;
@@ -497,58 +482,30 @@ const entryActionsClass = css`
   gap: 8px;
 `;
 
-const entryChipClass = css`
-  font-size: 11px;
-  background: #e2e8f0;
-  color: #0f172a;
-  padding: 2px 8px;
-  border-radius: 999px;
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-`;
+const entryChipClass = badgeClass("neutral");
 
-const actionButtonClass = cx(
-  buttonBaseClass,
+const actionButtonClass = buttonClass("secondary", "sm");
+
+const deleteActionButtonClass = buttonClass("danger", "sm");
+
+const infoMessageClass = cx(
+  textMutedClass,
   css`
-    padding: 4px 10px;
-    font-size: 12px;
-    background: #f1f5f9;
-    color: #0f172a;
-    &:hover:enabled {
-      background: #e2e8f0;
-    }
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #fff8eb;
+    color: #92400e;
+    font-size: 13px;
   `,
 );
 
-const deleteActionButtonClass = cx(
-  actionButtonClass,
+const emptyMessageClass = cx(
+  textMutedClass,
   css`
-    background: #fee2e2;
-    color: #991b1b;
-    &:hover:enabled {
-      background: #fecaca;
-    }
+    margin: 0;
   `,
 );
-
-const infoMessageClass = css`
-  margin: 0;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: #fff8eb;
-  color: #92400e;
-  font-size: 13px;
-`;
-
-const emptyMessageClass = css`
-  margin: 0;
-  color: #64748b;
-`;
 
 const latestOutputHeadingClass = css`
   margin: 0 0 12px;

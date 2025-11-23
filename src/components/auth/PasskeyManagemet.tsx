@@ -5,6 +5,7 @@ import { aaguidToNameAndIcon, getIconsByName } from "../../lib/auth/aaguid/parse
 import { getPasskeyHistoryTypeLabel } from "../../lib/auth/passkeyHistoryType.js";
 import { isSynced } from "../../lib/auth/sync.js";
 import { MAX_PASSKEYS_PER_USER } from "../../routes/auth/webauthn/constant.js";
+import { badgeClass, buttonClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
 
 type PasskeyData = {
   passkey: Passkey;
@@ -23,12 +24,14 @@ const PasskeyManagement: FC<{
     width: min(960px, 100%);
     padding: 0 20px 32px;
     margin: 0 auto;
+    display: grid;
+    gap: 14px;
   `;
 
   const titleClass = css`
-    font-size: 20px;
-    font-weight: 600;
-    margin: 12px 0 16px;
+    font-size: 22px;
+    font-weight: 800;
+    margin: 8px 0 4px;
   `;
 
   const listClass = css`
@@ -41,17 +44,16 @@ const PasskeyManagement: FC<{
     width: 100%;
   `;
 
-  const itemClass = css`
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 16px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6em;
-    box-sizing: border-box;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-  `;
+  const itemClass = cx(
+    surfaceClass(),
+    css`
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6em;
+      box-sizing: border-box;
+    `,
+  );
 
   const statusRowClass = css`
     display: flex;
@@ -79,11 +81,11 @@ const PasskeyManagement: FC<{
     width: 44px;
     height: 44px;
     border-radius: 10px;
-    background: #f8fafc;
+    background: var(--color-surface-muted);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border);
   `;
 
   const cardTitleStackClass = css`
@@ -111,21 +113,26 @@ const PasskeyManagement: FC<{
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    border: none;
-    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    background: #f1f5f9;
+    background: var(--color-surface-strong);
     color: var(--text-color);
     transition: background-color 0.15s ease-in-out, opacity 0.15s;
-    &:hover { background: #e2e8f0; }
+    &:hover {
+      background: var(--color-surface-muted);
+    }
   `;
 
   const iconButtonDangerClass = css`
-    background: #fee2e2; /* red-100 */
-    color: #991b1b; /* red-800 */
-    &:hover { background: #fecaca; }
+    background: var(--color-danger-surface);
+    color: #991b1b;
+    border-color: color-mix(in srgb, var(--color-danger) 45%, white);
+    &:hover {
+      background: color-mix(in srgb, var(--color-danger-surface) 70%, white);
+    }
     &:disabled {
       opacity: 0.4;
       cursor: not-allowed;
@@ -133,9 +140,12 @@ const PasskeyManagement: FC<{
   `;
 
   const iconButtonTestClass = css`
-    background: #dbeafe; /* blue-100 */
-    color: #1e3a8a; /* blue-800 */
-    &:hover { background: #bfdbfe; }
+    background: #dbeafe;
+    color: #1e3a8a;
+    border-color: #bfdbfe;
+    &:hover {
+      background: #bfdbfe;
+    }
   `;
 
   const iconClass = css`
@@ -145,10 +155,10 @@ const PasskeyManagement: FC<{
   `;
 
   const nameClass = css`
-    font-weight: 600;
+    font-weight: 700;
     text-align: left;
     font-size: 16px;
-    color: #0f172a;
+    color: var(--text-color);
     margin: 0;
     flex: 1;
     min-width: 0;
@@ -157,7 +167,7 @@ const PasskeyManagement: FC<{
   const currentSessionClass = css`
     font-size: 12px;
     color: var(--primary-color);
-    font-weight: 600;
+    font-weight: 700;
   `;
 
   const metaClass = css`
@@ -165,21 +175,23 @@ const PasskeyManagement: FC<{
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 10px 18px;
     padding-top: 10px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--color-border);
   `;
 
-  const metaLabelClass = css`
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #94a3b8;
-    margin-bottom: 4px;
-    display: block;
-  `;
+  const metaLabelClass = cx(
+    textMutedClass,
+    css`
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: block;
+    `,
+  );
 
   const metaValueClass = css`
     font-size: 13px;
-    color: #1f2937;
+    color: var(--text-color);
     line-height: 1.4;
   `;
 
@@ -189,20 +201,23 @@ const PasskeyManagement: FC<{
     align-items: center;
   `;
 
-  const badgeBaseClass = css`
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-    padding: 2px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1.4;
-    border: 1px solid transparent;
+  const addButtonClass = buttonClass("primary", "md");
+  const prfLinkButtonClass = css`
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    background: #0f172a;
+    color: #fff;
+    text-decoration: none;
+    &:hover {
+      opacity: 0.9;
+    }
   `;
 
   const badgeSyncedClass = cx(
-    badgeBaseClass,
+    badgeClass("neutral"),
     css`
       background: #ecfdf5;
       color: #065f46;
@@ -211,7 +226,7 @@ const PasskeyManagement: FC<{
   );
 
   const badgeUnsyncedClass = cx(
-    badgeBaseClass,
+    badgeClass("warning"),
     css`
       background: #fffbeb;
       color: #92400e;
@@ -220,7 +235,7 @@ const PasskeyManagement: FC<{
   );
 
   const badgeEncryptedClass = cx(
-    badgeBaseClass,
+    badgeClass("danger"),
     css`
       background: #fee2e2;
       color: #991b1b;
@@ -228,48 +243,11 @@ const PasskeyManagement: FC<{
     `,
   );
 
-  const buttonBaseClass = css`
-    cursor: pointer;
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    transition: background-color 0.15s ease-in-out, opacity 0.15s;
-  `;
-
-  const addButtonClass = cx(
-    buttonBaseClass,
-    css`
-      background: var(--primary-color);
-      color: #fff;
-      &:hover {
-        background: var(--primary-hover);
-      }
-      margin: 6px;
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    `,
-  );
-
   const linkRowClass = css`
     display: flex;
     justify-content: flex-end;
-    margin: 12px 0;
+    margin: 6px 0 12px;
   `;
-
-  const prfLinkButtonClass = cx(
-    buttonBaseClass,
-    css`
-      background: #0f172a;
-      color: #fff;
-      text-decoration: none;
-      &:hover {
-        opacity: 0.9;
-      }
-    `,
-  );
 
   const aaguidDesktopClass = css`
     font-size: 11px;
@@ -314,29 +292,42 @@ const PasskeyManagement: FC<{
   return (
     <div class={containerClass}>
       <h2 class={titleClass}>パスキー管理</h2>
-      <button
-        class={addButtonClass}
-        id="add-passkey-button"
-        type="button"
-        disabled={passkeyData.length >= MAX_PASSKEYS_PER_USER}
-      >
-        パスキー作成
-      </button>
-      <hr />
-      <p>
-        パスキーの数: {passkeyData.length} / {MAX_PASSKEYS_PER_USER}
-      </p>
+      <div class={css`display:flex; align-items:center; gap:10px; flex-wrap:wrap;`}>
+        <button
+          class={addButtonClass}
+          id="add-passkey-button"
+          type="button"
+          disabled={passkeyData.length >= MAX_PASSKEYS_PER_USER}
+        >
+          パスキー作成
+        </button>
+        <span class={textMutedClass}>
+          パスキーの数: {passkeyData.length} / {MAX_PASSKEYS_PER_USER}
+        </span>
+      </div>
       <div class={linkRowClass}>
         <a class={prfLinkButtonClass} href="/auth/prf">
           PRF暗号化ページを開く
         </a>
       </div>
       {passkeyData.length === 0 ? (
-        <p>作成されているパスキーはありません。</p>
+        <p class={textMutedClass}>作成されているパスキーはありません。</p>
       ) : (
         <>
           {passkeyData.every((pData) => !isSynced(pData.passkey)) && (
-            <p style="color: #b45309; background: #fef3c7; padding: 8px 12px; border-radius: 6px; border: 1px solid #fcd34d;">
+            <p
+              class={cx(
+                textMutedClass,
+                css`
+                  color: #b45309;
+                  background: #fef3c7;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  border: 1px solid #fcd34d;
+                  font-weight: 600;
+                `,
+              )}
+            >
               注意:
               同期されたパスキーがありません。パスキーを紛失した場合、認証できなくなる可能性があります。
             </p>

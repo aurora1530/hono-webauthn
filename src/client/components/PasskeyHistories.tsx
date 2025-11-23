@@ -1,5 +1,6 @@
 import type { PasskeyHistory } from "@prisma/client";
-import { css } from "hono/css";
+import { css, cx } from "hono/css";
+import { badgeClass, buttonClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
 import { getPasskeyHistoryTypeLabel } from "../lib/passkeyHistoryType.js";
 import { webauthnClient } from "../lib/rpc/webauthnClient.js";
 
@@ -88,12 +89,14 @@ const PasskeyHistories = ({
     text-align: center;
   `;
 
-  const pagerInfoClass = css`
-    font-size: 13px;
-    color: #475569;
-    text-align: center;
-    margin: 0 0 10px;
-  `;
+  const pagerInfoClass = cx(
+    textMutedClass,
+    css`
+      font-size: 13px;
+      text-align: center;
+      margin: 0 0 10px;
+    `,
+  );
 
   const listClass = css`
     list-style: none;
@@ -104,16 +107,16 @@ const PasskeyHistories = ({
     gap: 8px;
   `;
 
-  const itemClass = css`
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--header-bg);
-    flex-wrap: wrap;
-  `;
+  const itemClass = cx(
+    surfaceClass(),
+    css`
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    `,
+  );
 
   const timeColumnClass = css`
     flex: 1 1 220px;
@@ -124,31 +127,25 @@ const PasskeyHistories = ({
   `;
 
   const timeClass = css`
-    font-weight: 600;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
   `;
 
-  const typeBadgeClass = css`
-    flex: 0 0 auto;
-    font-size: 13px;
-    color: #4338ca;
-    font-weight: 500;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-  `;
+  const typeBadgeClass = badgeClass("neutral");
 
-  const deviceInfoClass = css`
-    font-size: 13px;
-    color: #334155;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  const deviceInfoClass = cx(
+    textMutedClass,
+    css`
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
 
-    @media (max-width: 640px) {
-      white-space: normal;
-    }
-  `;
+      @media (max-width: 640px) {
+        white-space: normal;
+      }
+    `,
+  );
 
   const actionCellClass = css`
     margin-left: auto;
@@ -161,10 +158,12 @@ const PasskeyHistories = ({
     line-height: 1;
   `;
 
-  const emptyClass = css`
-    color: #64748b;
-    text-align: center;
-  `;
+  const emptyClass = cx(
+    textMutedClass,
+    css`
+      text-align: center;
+    `,
+  );
 
   const actionBarClass = css`
     display: flex;
@@ -175,55 +174,8 @@ const PasskeyHistories = ({
     flex-wrap: wrap;
   `;
 
-  const buttonBase = css`
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
-    cursor: pointer;
-    background: #f1f5f9;
-    color: #0f172a;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    &:hover {
-      background: #e2e8f0;
-    }
-    &:active {
-      background: #cbd5e1;
-    }
-  `;
-
-  const deleteBtnClass = css`
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    background: #fee2e2; /* red-100 */
-    color: #991b1b; /* red-800 */
-    transition: background-color 0.15s ease-in-out, opacity 0.15s;
-    &:hover {
-      background: #fecaca;
-    }
-    &:active {
-      background: #fca5a5;
-    }
-  `;
-
-  const deleteAllBtnClass = css`
-    ${buttonBase};
-    background: #f87171;
-    color: #fff;
-    border-color: #ef4444;
-    &:hover {
-      background: #ef4444;
-    }
-    &:active {
-      background: #dc2626;
-    }
-  `;
+  const deleteBtnClass = buttonClass("danger", "sm");
+  const deleteAllBtnClass = buttonClass("danger", "sm");
 
   const pagerFloatClass = css`
     position: fixed;
@@ -238,18 +190,19 @@ const PasskeyHistories = ({
     padding: 0 16px;
   `;
 
-  const pagerGroupClass = css`
-    pointer-events: auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    border-radius: 999px;
-    border: 1px solid #e2e8f0;
-    background: rgba(248, 250, 252, 0.98);
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
-    padding: 8px 18px;
-  `;
+  const pagerGroupClass = cx(
+    surfaceClass("muted"),
+    css`
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      border-radius: 999px;
+      padding: 8px 18px;
+    `,
+  );
 
+  // Pagerボタンは元の薄グレー基調を維持
   const pagerButtonClass = css`
     font-size: 14px;
     font-weight: 600;
@@ -269,15 +222,19 @@ const PasskeyHistories = ({
     &:disabled {
       cursor: not-allowed;
       opacity: 0.45;
+      background: #e2e8f0;
+      color: #0f172a;
     }
   `;
 
-  const pagerStatusClass = css`
-    font-size: 13px;
-    color: #475569;
-    min-width: 80px;
-    text-align: center;
-  `;
+  const pagerStatusClass = cx(
+    textMutedClass,
+    css`
+      font-size: 13px;
+      min-width: 80px;
+      text-align: center;
+    `,
+  );
 
   return (
     <div class={wrapClass}>

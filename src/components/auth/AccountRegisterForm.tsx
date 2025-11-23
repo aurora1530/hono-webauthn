@@ -1,5 +1,6 @@
-import type { FC } from "hono/jsx";
 import { css, cx } from "hono/css";
+import type { FC } from "hono/jsx";
+import { buttonClass, inputFieldClass, smallLabelClass, textMutedClass } from "../../ui/theme.js";
 
 const AccountRegisterForm: FC = () => {
   const container = css`
@@ -16,60 +17,40 @@ const AccountRegisterForm: FC = () => {
     align-items: center;
   `;
 
-  const input = css`
-    padding: 8px 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 14px;
-    min-width: 220px;
-    background: #fff;
-    color: var(--text-color);
-  `;
+  const input = cx(
+    inputFieldClass,
+    css`
+      min-width: 220px;
+    `,
+  );
+
   const errorText = css`
-    color: #dc2626;
+    color: var(--color-danger);
     font-size: 12px;
   `;
 
-  const buttonBase = css`
-    cursor: pointer;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-size: 14px;
-    transition: background-color 0.15s ease-in-out, opacity 0.15s;
-  `;
-  const hintText = css`
-    color: #64748b;
-    font-size: 12px;
-  `;
+  const hintText = cx(
+    textMutedClass,
+    smallLabelClass,
+    css`
+      text-align: center;
+    `,
+  );
+
   const errorWrap = css`
     min-height: 16px;
   `;
-  const counterText = css`
-    color: #64748b;
-    font-size: 12px;
-    min-width: 48px;
-    text-align: right;
-  `;
 
-  const primaryButton = cx(
-    buttonBase,
+  const counterText = cx(
+    textMutedClass,
     css`
-      background: var(--primary-color);
-      color: #fff;
-      &:hover {
-        background: var(--primary-hover);
-      }
-      &:active {
-        opacity: 0.9;
-      }
-      &:disabled {
-        background: color-mix(in srgb, var(--primary-color) 35%, white);
-        cursor: not-allowed;
-        opacity: 0.8;
-      }
+      font-size: 12px;
+      min-width: 48px;
+      text-align: right;
     `,
   );
+
+  const primaryButton = buttonClass("primary", "md");
 
   return (
     <div class={container}>
