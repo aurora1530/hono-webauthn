@@ -17,6 +17,11 @@ FROM base AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 
+# lightweight init to handle PID1 signal forwarding/zombie reaping
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends dumb-init && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 hono
 
@@ -26,6 +31,7 @@ COPY --from=builder --chown=hono:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=hono:nodejs /app/public ./public
 COPY --from=builder --chown=hono:nodejs /app/aaguid.json ./aaguid.json
 
+ENTRYPOINT ["dumb-init", "--"]
 USER hono
 EXPOSE 3000
 
