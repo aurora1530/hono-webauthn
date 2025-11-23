@@ -63,13 +63,6 @@ const Profile: FC = async () => {
     margin: 0 0 12px;
   `;
 
-  const checkboxWrapClass = css`
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-  `;
-
   const dangerCardClass = cx(
     cardClass,
     css`
@@ -128,9 +121,53 @@ const Profile: FC = async () => {
         <p class={mutedTextClass}>
           ログの詳細を確認するための内部モードです。必要な場合のみオンにしてください。
         </p>
-        <label class={checkboxWrapClass}>
-          <input type="checkbox" checked={!!userData.debugMode} id="change-debug-mode-btn" />
-          デバッグモードを有効にする
+        <label
+          class={css`
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+          `}
+        >
+          <input
+            type="checkbox"
+            checked={!!userData.debugMode}
+            id="change-debug-mode-btn"
+            class={css`
+              position: absolute;
+              opacity: 0;
+              pointer-events: none;
+            `}
+          />
+          <span
+            class={css`
+              position: relative;
+              width: 52px;
+              height: 30px;
+              display: inline-flex;
+              align-items: center;
+              padding: 4px;
+              border-radius: 999px;
+              background: ${userData.debugMode ? "#22c55e" : "#cbd5e1"};
+              transition: background 0.2s ease;
+
+              &::after {
+                content: "";
+                position: absolute;
+                left: ${userData.debugMode ? "26px" : "4px"};
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: #fff;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+                transition: left 0.2s ease;
+              }
+            `}
+            aria-hidden="true"
+          />
+          <span>デバッグモードを有効にする</span>
         </label>
       </section>
 
