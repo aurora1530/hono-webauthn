@@ -22,7 +22,6 @@ const PasskeyManagement: FC<{
 
   const containerClass = css`
     width: min(960px, 100%);
-    padding: 0 20px 32px;
     margin: 0 auto;
     display: grid;
     gap: 14px;
