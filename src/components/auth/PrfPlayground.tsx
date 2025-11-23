@@ -11,7 +11,7 @@ export const PrfPlayground: FC = () => {
     surfaceClass("muted"),
     css`
       border-style: dashed;
-      padding: 32px 24px;
+      padding: 32px 0;
       text-align: center;
     `,
   );
