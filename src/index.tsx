@@ -25,6 +25,17 @@ app.use(
   }),
 );
 app.use(csrf());
+// Cache-Control for static assets
+app.use("/public/icons/*", async (c, next) => {
+  c.header("Cache-Control", "public, max-age=31536000, immutable");
+  return next();
+});
+app.use("/public/*", async (c, next) => {
+  if (c.req.path.endsWith(".js")) {
+    c.header("Cache-Control", "public, max-age=300");
+  }
+  return next();
+});
 app.get("/public/*", serveStatic({ root: "./" }));
 app.use(rootRenderer);
 app.use(loginSessionMiddleware);
