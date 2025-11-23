@@ -131,9 +131,13 @@ const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: string) =
   }
   const generateJson = await generateRes.json();
   const options = PublicKeyCredential.parseRequestOptionsFromJSON(generateJson);
-  const credential = (await navigator.credentials.get({
+  const credential = await navigator.credentials.get({
     publicKey: options,
-  })) as PublicKeyCredential;
+  });
+  if (!(credential instanceof PublicKeyCredential)) {
+    throw new Error("認証情報の取得に失敗しました");
+  }
+
   const verifyRes = await prfClient.assertion.verify.$post({
     json: { body: credential },
   });
@@ -757,10 +761,11 @@ export const PrfPlaygroundApp = () => {
       };
 
       const storeRes = await prfClient.encrypt.$post({ json: payload });
-      const storeJson = (await storeRes.json()) as { entry?: PrfEntry; error?: string };
-      if (!storeRes.ok || !storeJson.entry) {
+      if (!storeRes.ok) {
+        const storeJson = await storeRes.json();
         throw new Error(storeJson.error ?? "暗号化データの保存に失敗しました");
       }
+      const storeJson = await storeRes.json();
       setLabel("");
       setPlaintext("");
       setLatestOutput({
