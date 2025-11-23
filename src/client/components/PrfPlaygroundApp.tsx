@@ -418,7 +418,7 @@ const entriesPaginationStatusClass = cx(
   textMutedClass,
   css`
     font-size: 12px;
-    min-width: 90px;
+    min-width: 3rem;
     text-align: center;
   `,
 );
