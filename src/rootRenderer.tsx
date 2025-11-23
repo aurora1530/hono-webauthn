@@ -1,5 +1,6 @@
 import { cx, Style } from "hono/css";
 import { jsxRenderer } from "hono/jsx-renderer";
+import Footer from "./components/common/Footer.js";
 import Header from "./components/common/Header.js";
 import Modal from "./components/common/Modal.js";
 import { bodyClass, mainContainerClass, themeClass } from "./ui/theme.js";
@@ -27,6 +28,7 @@ const rootRenderer = jsxRenderer(({ children, title }) => {
         <Header />
         <Modal />
         <main class={mainContainerClass}>{children}</main>
+        <Footer />
       </body>
     </html>
   );
