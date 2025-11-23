@@ -191,15 +191,11 @@ const navButtonClass = css`
   }
 `;
 
-const sectionClass = cx(
-  surfaceClass(),
-  css`
-    padding: 24px;
+const sectionClass = css`
     display: flex;
     flex-direction: column;
     gap: 20px;
-  `,
-);
+  `;
 
 const gridClass = css`
   display: grid;
