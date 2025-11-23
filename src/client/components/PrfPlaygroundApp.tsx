@@ -1085,30 +1085,30 @@ export const PrfPlaygroundApp = () => {
               </select>
             </div>
           </div>
-          {entriesTotalPages > 1 && (
-            <div class={entriesPaginationClass}>
-              <button
-                class={entriesPaginationButtonClass}
-                type="button"
-                onClick={() => handleEntriesPageChange(Math.max(1, entriesPage - 1))}
-                disabled={entriesPage <= 1 || entriesLoading || busy}
-              >
-                ◀ 前へ
-              </button>
-              <span class={entriesPaginationStatusClass}>
-                {entriesTotal === 0 ? "0 / 0" : `${entriesPage} / ${entriesTotalPages}`}
-              </span>
-              <button
-                class={entriesPaginationButtonClass}
-                type="button"
-                onClick={() => handleEntriesPageChange(entriesPage + 1)}
-                disabled={entriesPage >= entriesTotalPages || entriesLoading || busy}
-              >
-                次へ ▶
-              </button>
-            </div>
-          )}
         </div>
+        {entriesTotalPages > 1 && (
+          <div class={entriesPaginationClass}>
+            <button
+              class={entriesPaginationButtonClass}
+              type="button"
+              onClick={() => handleEntriesPageChange(Math.max(1, entriesPage - 1))}
+              disabled={entriesPage <= 1 || entriesLoading || busy}
+            >
+              ◀ 前へ
+            </button>
+            <span class={entriesPaginationStatusClass}>
+              {entriesTotal === 0 ? "0 / 0" : `${entriesPage} / ${entriesTotalPages}`}
+            </span>
+            <button
+              class={entriesPaginationButtonClass}
+              type="button"
+              onClick={() => handleEntriesPageChange(entriesPage + 1)}
+              disabled={entriesPage >= entriesTotalPages || entriesLoading || busy}
+            >
+              次へ ▶
+            </button>
+          </div>
+        )}
 
         <div class={entriesContainerClass}>
           {entriesLoading && <LoadingIndicator message="暗号化済みデータを読み込み中です..." />}
