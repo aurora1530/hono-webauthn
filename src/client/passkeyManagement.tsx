@@ -1,3 +1,4 @@
+import { showStatusToast } from "components/common/StatusToast.js";
 import PasskeyHistories from "./components/PasskeyHistories.js";
 import { handleChangePasskeyName } from "./lib/changePasskeyName.js";
 import { handleDeletePasskey } from "./lib/deletePasskey.js";
@@ -44,7 +45,12 @@ async function openPasskeyHistoryModal(passkeyId: string, page = 1) {
   });
 
   if (!res.ok) {
-    alert(`Error fetching passkey history: ${(await res.json()).error || "Unknown error"}`);
+    const error = (await res.json()).error || "Unknown error";
+    showStatusToast({
+      message: `パスキー履歴の取得に失敗しました: ${error}`,
+      variant: "error",
+      ariaLive: "assertive",
+    });
     return;
   }
 

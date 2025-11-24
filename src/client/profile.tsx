@@ -1,3 +1,4 @@
+import { showStatusToast } from "components/common/StatusToast.js";
 import { css, cx } from "hono/css";
 import { badgeClass, buttonClass, inputFieldClass } from "../ui/theme.js";
 import { changeDebugMode } from "./lib/changeDebugMode.js";
@@ -17,8 +18,13 @@ document.getElementById("change-debug-mode-btn")?.addEventListener("change", asy
   const result = await changeDebugMode(debugMode);
 
   if (!result.success) {
-    alert(`Error changing debug mode: ${result.error}`);
+    showStatusToast({
+      message: `Error changing debug mode: ${result.error}`,
+      variant: "error",
+      ariaLive: "assertive",
+    });
     target.checked = !debugMode;
+    return;
   }
 
   location.reload();
@@ -133,6 +139,7 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
     const value = input?.value.trim() ?? "";
 
     if (value.length === 0) {
+      // Fatal error なので alert で良い。通常、そもそも input は required 属性であり、空送信はできない。
       alert("確認文字列を入力してください");
       return;
     }

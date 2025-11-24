@@ -1,3 +1,4 @@
+import { showStatusToast } from "components/common/StatusToast.js";
 import { closeModal } from "./modal/base.js";
 import { openMessageModal } from "./modal/message.js";
 import { handleReauthentication } from "./reauthentication.js";
@@ -27,11 +28,16 @@ async function handleDeletePasskey(passkeyId: string, onlySyncedPasskey: boolean
     });
     if (!res.ok) {
       const error = (await res.json()).error;
-      alert(`パスキーの削除に失敗しました: ${error}`);
+      showStatusToast({
+        message: `パスキーの削除に失敗しました: ${error}`,
+        variant: "error",
+        ariaLive: "assertive",
+      });
       return;
     }
 
     const json = await res.json();
+    // reload 前の成功メッセージなので、alert を使う。
     alert(`${json.passkeyName} を削除しました。`);
 
     if (PublicKeyCredential.signalUnknownCredential) {

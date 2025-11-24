@@ -3,6 +3,7 @@ import { css, cx } from "hono/css";
 import { badgeClass, buttonClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
 import { getPasskeyHistoryTypeLabel } from "../lib/passkeyHistoryType.js";
 import { webauthnClient } from "../lib/rpc/webauthnClient.js";
+import { showStatusToast } from "./common/StatusToast.js";
 
 type PasskeyHistoryProps = {
   passkeyId: string;
@@ -38,7 +39,12 @@ const PasskeyHistories = ({
       },
     });
     if (!res.ok) {
-      alert(`Error: Failed to delete history.${(await res.json()).error ?? ""}`);
+      const error = (await res.json()).error ?? "";
+      showStatusToast({
+        message: `利用履歴の削除に失敗しました: ${error}`,
+        variant: "error",
+        ariaLive: "assertive",
+      });
       return;
     }
 
@@ -47,7 +53,11 @@ const PasskeyHistories = ({
       // 親側でモーダルを開き直し（最新取得）か、単に再オープン関数で更新
       reload?.();
     } else {
-      alert("Error: No histories were deleted.");
+      showStatusToast({
+        message: "利用履歴の削除に失敗しました。",
+        variant: "error",
+        ariaLive: "assertive",
+      });
     }
   };
 
@@ -62,14 +72,23 @@ const PasskeyHistories = ({
       },
     });
     if (!res.ok) {
-      alert(`Error: Failed to delete histories.${(await res.json()).error ?? ""}`);
+      const error = (await res.json()).error ?? "";
+      showStatusToast({
+        message: `利用履歴の削除に失敗しました: ${error}`,
+        variant: "error",
+        ariaLive: "assertive",
+      });
       return;
     }
     const data = await res.json();
     if (data.deletedCount > 0) {
       reload?.();
     } else {
-      alert("削除対象がありませんでした。");
+      showStatusToast({
+        message: "削除対象がありませんでした。",
+        variant: "error",
+        ariaLive: "assertive",
+      });
     }
   };
 

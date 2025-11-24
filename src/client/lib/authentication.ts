@@ -1,9 +1,14 @@
+import { showStatusToast } from "components/common/StatusToast.js";
 import { webauthnClient } from "./rpc/webauthnClient.js";
 
 async function handleAuthentication() {
   const generateAuthenticationOptionsResponse = await webauthnClient.authentication.generate.$get();
   if (!generateAuthenticationOptionsResponse.ok) {
-    alert(`パスキーによる認証の開始に失敗しました。`);
+    showStatusToast({
+      message: "パスキーによる認証の開始に失敗しました。",
+      variant: "error",
+      ariaLive: "assertive",
+    });
     return;
   }
 
@@ -21,7 +26,11 @@ async function handleAuthentication() {
 
   if (!credentialResponse.ok) {
     const error = (await credentialResponse.json()).error;
-    alert(error);
+    showStatusToast({
+      message: `パスキーによる認証に失敗しました: ${error}`,
+      variant: "error",
+      ariaLive: "assertive",
+    });
     return;
   }
 

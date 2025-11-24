@@ -65,7 +65,7 @@ async function handleRegistration(isNewAccount: boolean = true) {
     if (!usernameRegisterResponse.ok) {
       const error = (await usernameRegisterResponse.json()).error;
       if (errorEle) errorEle.textContent = error;
-      else alert(error);
+      else alert(error); // Fatal error なので alert で良い
       return;
     }
   } else {
