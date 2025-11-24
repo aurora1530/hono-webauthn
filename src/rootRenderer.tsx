@@ -3,6 +3,7 @@ import { jsxRenderer } from "hono/jsx-renderer";
 import Footer from "./components/common/Footer.js";
 import Header from "./components/common/Header.js";
 import Modal from "./components/common/Modal.js";
+import StatusToast from "./components/common/StatusToast.js";
 import { bodyClass, mainContainerClass, themeClass } from "./ui/theme.js";
 
 const rootRenderer = jsxRenderer(({ children, title }) => {
@@ -26,6 +27,7 @@ const rootRenderer = jsxRenderer(({ children, title }) => {
       </head>
       <body class={cx(themeClass, bodyClass)}>
         <Header />
+        <StatusToast />
         <Modal />
         <main class={mainContainerClass}>{children}</main>
         <Footer />

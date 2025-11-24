@@ -1,4 +1,5 @@
 import { css, cx } from "hono/css";
+import { render } from "hono/jsx/dom";
 import { tokens } from "../../../ui/theme.js";
 
 type StatusToastProps = {
@@ -40,18 +41,29 @@ const errorClass = css`
   color: #fff;
 `;
 
-export const StatusToast = ({
+let _toastTimer: number | undefined;
+
+export const showStatusToast = ({
   message,
   variant = "info",
   ariaLive = "polite",
-}: StatusToastProps) => {
-  if (!message) return null;
-
-  return (
+  duration = 4000,
+}: StatusToastProps & { duration?: number }) => {
+  const toastRoot = document.getElementById("status-toast-root");
+  if (!toastRoot) return;
+  if (!message) {
+    if (_toastTimer) clearTimeout(_toastTimer);
+    render(<></>, toastRoot);
+    return;
+  }
+  render(
     <div class={containerClass} aria-live={ariaLive}>
       <output class={cx(toastClass, variant === "error" && errorClass)}>{message}</output>
-    </div>
+    </div>,
+    toastRoot,
   );
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = window.setTimeout(() => {
+    render(<></>, toastRoot);
+  }, duration);
 };
-
-StatusToast.displayName = "StatusToast";
