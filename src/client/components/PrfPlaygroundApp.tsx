@@ -56,6 +56,7 @@ const textDecoder = new TextDecoder();
 const AES_GCM_TAG_BYTE_LENGTH = 16;
 const PRF_INPUT_BYTE_LENGTH = 32;
 const PRF_ENTRIES_PAGE_SIZE = 5;
+const STATUS_DISPLAY_DURATION_MS = 4000;
 
 const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string | null => {
   if (!bytes) return null;
@@ -290,16 +291,32 @@ const buttonRowClass = css`
 const primaryButtonClass = buttonClass("primary", "md");
 const secondaryButtonClass = buttonClass("secondary", "md");
 
-const statusClass = cx(
-  textMutedClass,
-  css`
-    min-height: 20px;
-    font-size: 13px;
-  `,
-);
+const statusContainerClass = css`
+  position: fixed;
+  top: 16px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+`;
+
+const statusToastClass = css`
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 9999px;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+  pointer-events: auto;
+`;
 
 const statusErrorClass = css`
-  color: #b91c1c;
+  background: #7f1d1d;
+  color: #fee2e2;
 `;
 
 const outputClass = cx(
@@ -579,6 +596,21 @@ export const PrfPlaygroundApp = () => {
 
   const showStatus = (message: string, isError = false) => setStatus({ text: message, isError });
   const clearStatus = () => setStatus(null);
+
+  useEffect(() => {
+    if (!status) {
+      return;
+    }
+
+    const currentStatus = status;
+    const timer = window.setTimeout(() => {
+      setStatus((prev) => (prev === currentStatus ? null : prev));
+    }, STATUS_DISPLAY_DURATION_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [status]);
 
   /**
    * Load registered passkeys from the server
@@ -960,6 +992,14 @@ export const PrfPlaygroundApp = () => {
 
   return (
     <div class={containerClass}>
+      <div class={statusContainerClass} aria-live="polite">
+        {status && (
+          <output class={cx(statusToastClass, status.isError && statusErrorClass)}>
+            {status.text}
+          </output>
+        )}
+      </div>
+
       <div class={headerClass}>
         <div>
           <h2>WebAuthn PRF 暗号化プレイグラウンド</h2>
@@ -1055,14 +1095,6 @@ export const PrfPlaygroundApp = () => {
             一覧を更新
           </button>
         </div>
-
-        <output
-          id="prf-status-message"
-          class={cx(statusClass, status?.isError && statusErrorClass)}
-          aria-live="polite"
-        >
-          {status?.text ?? "\u00a0"}
-        </output>
 
         {latestOutput && (
           <div class={outputClass} ref={latestOutputRef}>
