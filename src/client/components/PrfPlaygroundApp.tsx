@@ -6,11 +6,11 @@ import {
   inputFieldClass,
   surfaceClass,
   textMutedClass,
-  tokens,
 } from "../../ui/theme.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
 import { LoadingIndicator } from "./common/LoadingIndicator.js";
+import { StatusToast } from "./common/StatusToast.js";
 
 export const MAX_PRF_LABEL_LENGTH = 120;
 export const MAX_PRF_PLAINTEXT_CHARS = 3500;
@@ -291,36 +291,6 @@ const buttonRowClass = css`
 
 const primaryButtonClass = buttonClass("primary", "md");
 const secondaryButtonClass = buttonClass("secondary", "md");
-
-const statusContainerClass = css`
-  position: fixed;
-  bottom: 16px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 2000;
-`;
-
-const statusToastClass = css`
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 14px;
-  border-radius: 9999px;
-  background: ${tokens.color.surface};
-  border: 1px solid #0f172a;
-  color: #0f172a;
-  font-size: 13px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
-  pointer-events: auto;
-`;
-
-const statusErrorClass = css`
-  background: ${tokens.color.surface};
-  border: 1px solid ${tokens.color.danger};
-  color: ${tokens.color.danger};
-`;
 
 const outputClass = cx(
   surfaceClass("muted"),
@@ -995,13 +965,11 @@ export const PrfPlaygroundApp = () => {
 
   return (
     <div class={containerClass}>
-      <div class={statusContainerClass} aria-live="polite">
-        {status && (
-          <output class={cx(statusToastClass, status.isError && statusErrorClass)}>
-            {status.text}
-          </output>
-        )}
-      </div>
+      <StatusToast
+        message={status?.text ?? null}
+        variant={status?.isError ? "error" : "info"}
+        ariaLive="polite"
+      />
 
       <div class={headerClass}>
         <div>
