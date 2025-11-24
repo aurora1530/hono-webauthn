@@ -6,6 +6,7 @@ import {
   inputFieldClass,
   surfaceClass,
   textMutedClass,
+  tokens,
 } from "../../ui/theme.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
@@ -307,16 +308,18 @@ const statusToastClass = css`
   align-items: center;
   padding: 10px 14px;
   border-radius: 9999px;
-  background: #0f172a;
-  color: #f8fafc;
+  background: ${tokens.color.surface};
+  border: 1px solid #0f172a;
+  color: #0f172a;
   font-size: 13px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
   pointer-events: auto;
 `;
 
 const statusErrorClass = css`
-  background: #7f1d1d;
-  color: #fee2e2;
+  background: ${tokens.color.surface};
+  border: 1px solid ${tokens.color.danger};
+  color: ${tokens.color.danger};
 `;
 
 const outputClass = cx(
