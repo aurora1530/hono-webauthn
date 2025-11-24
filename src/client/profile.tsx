@@ -9,6 +9,7 @@ import {
 import { closeModal, openModalWithJSX } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
 import { handleReauthentication } from "./lib/reauthentication.js";
+import { showToast } from "./lib/toast.js";
 
 // --- debug mode toggle ---
 document.getElementById("change-debug-mode-btn")?.addEventListener("change", async (e) => {
@@ -17,7 +18,7 @@ document.getElementById("change-debug-mode-btn")?.addEventListener("change", asy
   const result = await changeDebugMode(debugMode);
 
   if (!result.success) {
-    alert(`Error changing debug mode: ${result.error}`);
+    showToast(`デバッグモードの切り替えに失敗しました: ${result.error}`, { variant: "error" });
     target.checked = !debugMode;
   }
 
@@ -133,7 +134,7 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
     const value = input?.value.trim() ?? "";
 
     if (value.length === 0) {
-      alert("確認文字列を入力してください");
+      showToast("確認文字列を入力してください", { variant: "error" });
       return;
     }
 

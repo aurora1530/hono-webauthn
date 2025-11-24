@@ -3,6 +3,7 @@ import { css, cx } from "hono/css";
 import { badgeClass, buttonClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
 import { getPasskeyHistoryTypeLabel } from "../lib/passkeyHistoryType.js";
 import { webauthnClient } from "../lib/rpc/webauthnClient.js";
+import { showToast } from "../lib/toast.js";
 
 type PasskeyHistoryProps = {
   passkeyId: string;
@@ -30,7 +31,7 @@ const PasskeyHistories = ({
     if (!confirm("本当にこの利用履歴を削除しますか？")) {
       return;
     }
-    const res = await webauthnClient["passkey-histories"]["delete"].$post({
+    const res = await webauthnClient["passkey-histories"].delete.$post({
       json: {
         passkeyId,
         historyIds: [historyID],
@@ -38,7 +39,9 @@ const PasskeyHistories = ({
       },
     });
     if (!res.ok) {
-      alert(`Error: Failed to delete history.${(await res.json()).error ?? ""}`);
+      showToast(`履歴の削除に失敗しました。${(await res.json()).error ?? ""}`.trim(), {
+        variant: "error",
+      });
       return;
     }
 
@@ -47,7 +50,7 @@ const PasskeyHistories = ({
       // 親側でモーダルを開き直し（最新取得）か、単に再オープン関数で更新
       reload?.();
     } else {
-      alert("Error: No histories were deleted.");
+      showToast("削除対象の履歴がありませんでした。", { variant: "error" });
     }
   };
 
@@ -55,21 +58,23 @@ const PasskeyHistories = ({
     if (!confirm("本当に全ての利用履歴を削除しますか？")) {
       return;
     }
-    const res = await webauthnClient["passkey-histories"]["delete"].$post({
+    const res = await webauthnClient["passkey-histories"].delete.$post({
       json: {
         passkeyId,
         deleteAll: true,
       },
     });
     if (!res.ok) {
-      alert(`Error: Failed to delete histories.${(await res.json()).error ?? ""}`);
+      showToast(`履歴の削除に失敗しました。${(await res.json()).error ?? ""}`.trim(), {
+        variant: "error",
+      });
       return;
     }
     const data = await res.json();
     if (data.deletedCount > 0) {
       reload?.();
     } else {
-      alert("削除対象がありませんでした。");
+      showToast("削除対象がありませんでした。", { variant: "error" });
     }
   };
 

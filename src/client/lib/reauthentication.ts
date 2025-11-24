@@ -1,10 +1,11 @@
 import { webauthnClient } from "./rpc/webauthnClient.js";
+import { showToast } from "./toast.js";
 
 async function handleReauthentication(): Promise<boolean> {
   const generateReauthenticationOptionsResponse =
     await webauthnClient.reauthentication.generate.$get();
   if (!generateReauthenticationOptionsResponse.ok) {
-    alert(`パスキーによる再認証の開始に失敗しました。`);
+    showToast("パスキーによる再認証の開始に失敗しました。", { variant: "error" });
     return false;
   }
 
@@ -22,7 +23,7 @@ async function handleReauthentication(): Promise<boolean> {
     });
     if (!credentialResponse.ok) {
       const error = (await credentialResponse.json()).error;
-      alert(error);
+      showToast(error, { variant: "error" });
       return false;
     }
     return true;

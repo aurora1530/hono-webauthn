@@ -5,6 +5,7 @@ import { openModalWithJSX } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
 import { handleRegistration } from "./lib/registration.js";
 import { webauthnClient } from "./lib/rpc/webauthnClient.js";
+import { showToast } from "./lib/toast.js";
 
 document.getElementById("add-passkey-button")?.addEventListener("click", () => {
   handleRegistration(false);
@@ -44,7 +45,9 @@ async function openPasskeyHistoryModal(passkeyId: string, page = 1) {
   });
 
   if (!res.ok) {
-    alert(`Error fetching passkey history: ${(await res.json()).error || "Unknown error"}`);
+    showToast(`パスキー履歴の取得に失敗しました: ${(await res.json()).error || "Unknown error"}`, {
+      variant: "error",
+    });
     return;
   }
 

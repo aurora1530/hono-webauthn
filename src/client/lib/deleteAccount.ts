@@ -13,7 +13,7 @@ export const fetchAccountDeletionSummary = async (): Promise<
   { success: true; summary: AccountDeletionSummary } | { success: false; error: string }
 > => {
   try {
-    const res = await profileClient["account-deletion"]["summary"].$get();
+    const res = await profileClient["account-deletion"].summary.$get();
     if (!res.ok) {
       return { success: false, error: (await res.json()).error || "Unknown error" };
     }

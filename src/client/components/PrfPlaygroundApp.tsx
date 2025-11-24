@@ -6,10 +6,10 @@ import {
   inputFieldClass,
   surfaceClass,
   textMutedClass,
-  tokens,
 } from "../../ui/theme.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
+import { clearToast, showToast } from "../lib/toast.js";
 import { LoadingIndicator } from "./common/LoadingIndicator.js";
 
 export const MAX_PRF_LABEL_LENGTH = 120;
@@ -47,17 +47,11 @@ export type LatestOutput = {
   rows: LatestOutputRow[];
 } | null;
 
-export type StatusMessage = {
-  text: string;
-  isError: boolean;
-} | null;
-
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 const AES_GCM_TAG_BYTE_LENGTH = 16;
 const PRF_INPUT_BYTE_LENGTH = 32;
 const PRF_ENTRIES_PAGE_SIZE = 5;
-const STATUS_DISPLAY_DURATION_MS = 4000;
 
 const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string | null => {
   if (!bytes) return null;
@@ -76,7 +70,7 @@ const serializeAssertionForServer = (credential: PublicKeyCredential) => {
     if (!ext) return undefined;
     // PRF の結果は送らない
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { prf, ...rest } = ext as Record<string, unknown>;
+    const { prf: _prf, ...rest } = ext as Record<string, unknown>;
     return Object.keys(rest).length > 0 ? rest : undefined;
   })();
 
@@ -291,36 +285,6 @@ const buttonRowClass = css`
 
 const primaryButtonClass = buttonClass("primary", "md");
 const secondaryButtonClass = buttonClass("secondary", "md");
-
-const statusContainerClass = css`
-  position: fixed;
-  bottom: 16px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 2000;
-`;
-
-const statusToastClass = css`
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 14px;
-  border-radius: 9999px;
-  background: ${tokens.color.surface};
-  border: 1px solid #0f172a;
-  color: #0f172a;
-  font-size: 13px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
-  pointer-events: auto;
-`;
-
-const statusErrorClass = css`
-  background: ${tokens.color.surface};
-  border: 1px solid ${tokens.color.danger};
-  color: ${tokens.color.danger};
-`;
 
 const outputClass = cx(
   surfaceClass("muted"),
@@ -583,7 +547,6 @@ export const PrfPlaygroundApp = () => {
   const [entriesLoading, setEntriesLoading] = useState(false);
   const entriesRequestIdRef = useRef<number>(0);
   const [latestOutput, setLatestOutput] = useState<LatestOutput>(null);
-  const [status, setStatus] = useState<StatusMessage>(null);
   const [busy, setBusy] = useState(false);
   const latestOutputRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollToLatestOutputRef = useRef(false);
@@ -597,23 +560,9 @@ export const PrfPlaygroundApp = () => {
     ? "選択したパスキーの暗号化データはありません。"
     : "暗号化済みのデータはまだありません。";
 
-  const showStatus = (message: string, isError = false) => setStatus({ text: message, isError });
-  const clearStatus = () => setStatus(null);
-
-  useEffect(() => {
-    if (!status) {
-      return;
-    }
-
-    const currentStatus = status;
-    const timer = window.setTimeout(() => {
-      setStatus((prev) => (prev === currentStatus ? null : prev));
-    }, STATUS_DISPLAY_DURATION_MS);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [status]);
+  const showStatus = (message: string, isError = false) =>
+    showToast(message, { variant: isError ? "error" : "info" });
+  const clearStatus = () => clearToast();
 
   /**
    * Load registered passkeys from the server
@@ -995,14 +944,6 @@ export const PrfPlaygroundApp = () => {
 
   return (
     <div class={containerClass}>
-      <div class={statusContainerClass} aria-live="polite">
-        {status && (
-          <output class={cx(statusToastClass, status.isError && statusErrorClass)}>
-            {status.text}
-          </output>
-        )}
-      </div>
-
       <div class={headerClass}>
         <div>
           <h2>WebAuthn PRF 暗号化プレイグラウンド</h2>
@@ -1114,9 +1055,12 @@ export const PrfPlaygroundApp = () => {
                       <button
                         type="button"
                         class={copyIconButtonClass}
-                        aria-label={`${row.copyAnnounce}をコピー`}
+                        aria-label={`${row.copyAnnounce ?? row.label ?? "値"}をコピー`}
                         onClick={() =>
-                          handleCopyLatestOutputValue(row.copyValue ?? row.value, row.copyAnnounce!)
+                          handleCopyLatestOutputValue(
+                            row.copyValue ?? row.value,
+                            row.copyAnnounce ?? row.label ?? "値",
+                          )
                         }
                       >
                         <span class="material-symbols-outlined">content_copy</span>
