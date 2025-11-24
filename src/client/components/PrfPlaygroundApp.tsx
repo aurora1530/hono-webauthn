@@ -293,7 +293,7 @@ const secondaryButtonClass = buttonClass("secondary", "md");
 
 const statusContainerClass = css`
   position: fixed;
-  top: 16px;
+  bottom: 16px;
   left: 0;
   width: 100%;
   display: flex;
