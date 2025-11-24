@@ -16,7 +16,6 @@ const containerClass = css`
   display: flex;
   justify-content: center;
   pointer-events: none;
-  z-index: 2000;
 `;
 
 const toastClass = css`
@@ -53,9 +52,12 @@ export const showStatusToast = ({
   if (!toastRoot) return;
   if (!message) {
     if (_toastTimer) clearTimeout(_toastTimer);
+    toastRoot.hidePopover();
     render(<></>, toastRoot);
     return;
   }
+
+  toastRoot.showPopover();
   render(
     <div class={containerClass} aria-live={ariaLive}>
       <output class={cx(toastClass, variant === "error" && errorClass)}>{message}</output>
@@ -64,6 +66,7 @@ export const showStatusToast = ({
   );
   if (_toastTimer) clearTimeout(_toastTimer);
   _toastTimer = window.setTimeout(() => {
+    toastRoot.hidePopover();
     render(<></>, toastRoot);
   }, duration);
 };
