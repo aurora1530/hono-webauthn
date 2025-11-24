@@ -6,6 +6,7 @@ import { buildDeletionSummary } from "../../lib/auth/deleteAccount.js";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
 import { reauthSessionController } from "../../lib/auth/reauthSession.js";
 import prisma from "../../prisma.js";
+import { rpID } from "../auth/webauthn/constant.js";
 
 const profileApp = new Hono();
 
@@ -136,6 +137,8 @@ export const profileRoutes = profileApp
           ciphertextCount: summary.ciphertextCount,
           passkeyCount: summary.passkeyCount,
           passkeyHistoryCount: summary.passkeyHistoryCount,
+          rpId: rpID,
+          credentialIds: passkeyIds.map((p) => p.id),
         },
         200,
       );

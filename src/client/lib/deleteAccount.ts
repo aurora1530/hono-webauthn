@@ -27,7 +27,9 @@ export const fetchAccountDeletionSummary = async (): Promise<
 
 export const deleteAccount = async (
   confirmationText: string,
-): Promise<{ success: true } | { success: false; error: string }> => {
+): Promise<
+  { success: true; rpId: string; credentialIds: string[] } | { success: false; error: string }
+> => {
   try {
     const res = await profileClient["delete-account"].$post({
       json: { confirmationText },
@@ -35,7 +37,8 @@ export const deleteAccount = async (
     if (!res.ok) {
       return { success: false, error: (await res.json()).error || "Unknown error" };
     }
-    return { success: true };
+    const { rpId, credentialIds } = await res.json();
+    return { success: true, rpId, credentialIds };
   } catch (error) {
     console.error(error);
     return { success: false, error: "Failed to delete account" };

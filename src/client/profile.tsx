@@ -147,6 +147,19 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
       return;
     }
 
+    if (PublicKeyCredential.signalUnknownCredential) {
+      for (const credentialId of result.credentialIds) {
+        try {
+          await PublicKeyCredential.signalUnknownCredential({
+            credentialId,
+            rpId: result.rpId,
+          });
+        } catch (err) {
+          console.error("Failed to signal unknown credential:", credentialId, err);
+        }
+      }
+    }
+
     openMessageModal("アカウントを削除しました。", () => {
       window.location.href = "/";
     });
