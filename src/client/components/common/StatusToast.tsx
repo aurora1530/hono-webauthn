@@ -9,7 +9,7 @@ type StatusToastProps = {
 
 const containerClass = css`
   position: fixed;
-  bottom: 16px;
+  top: 20px;
   left: 0;
   width: 100%;
   display: flex;
@@ -21,19 +21,23 @@ const containerClass = css`
 const toastClass = css`
   display: inline-flex;
   align-items: center;
-  padding: 10px 14px;
-  border-radius: 9999px;
-  background: ${tokens.color.surface};
-  border: 1px solid #0f172a;
-  color: #0f172a;
-  font-size: 13px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: ${tokens.color.surface};
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
   pointer-events: auto;
+  min-width: 260px;
+  justify-content: center;
 `;
 
 const errorClass = css`
+  background: ${tokens.color.danger};
   border-color: ${tokens.color.danger};
-  color: ${tokens.color.danger};
+  color: #fff;
 `;
 
 export const StatusToast = ({
