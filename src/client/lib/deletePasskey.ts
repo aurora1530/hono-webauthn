@@ -2,6 +2,7 @@ import { closeModal } from "./modal/base.js";
 import { openMessageModal } from "./modal/message.js";
 import { handleReauthentication } from "./reauthentication.js";
 import { webauthnClient } from "./rpc/webauthnClient.js";
+import { showToast } from "./toast.js";
 
 async function handleDeletePasskey(passkeyId: string, onlySyncedPasskey: boolean = false) {
   if (confirm("本当にこのパスキーを削除しますか？")) {
@@ -27,12 +28,12 @@ async function handleDeletePasskey(passkeyId: string, onlySyncedPasskey: boolean
     });
     if (!res.ok) {
       const error = (await res.json()).error;
-      alert(`パスキーの削除に失敗しました: ${error}`);
+      showToast(`パスキーの削除に失敗しました: ${error}`, { variant: "error" });
       return;
     }
 
     const json = await res.json();
-    alert(`${json.passkeyName} を削除しました。`);
+    showToast(`${json.passkeyName} を削除しました。`);
 
     if (PublicKeyCredential.signalUnknownCredential) {
       await PublicKeyCredential.signalUnknownCredential({

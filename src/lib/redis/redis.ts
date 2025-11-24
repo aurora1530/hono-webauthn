@@ -5,7 +5,7 @@ let client: RedisClientType | null = null;
 let shutdownHookRegistered = false;
 
 export async function getRedis(): Promise<RedisClientType> {
-  if (client && client.isOpen) return client;
+  if (client?.isOpen) return client;
   const url = typedEnv.REDIS_URL;
   client = createClient({
     url,
@@ -30,7 +30,7 @@ export async function getRedis(): Promise<RedisClientType> {
   if (!shutdownHookRegistered) {
     shutdownHookRegistered = true;
     const graceful = async () => {
-      if (client && client.isOpen) {
+      if (client?.isOpen) {
         try {
           await client.quit();
           console.info("[redis] client closed");

@@ -3,6 +3,7 @@ import { openMessageModal } from "./modal/message.js";
 import { handleReauthentication } from "./reauthentication.js";
 import { authClient } from "./rpc/authClient.js";
 import { webauthnClient } from "./rpc/webauthnClient.js";
+import { showToast } from "./toast.js";
 
 function validateUsernameAndUpdateUI(): boolean {
   const usernameEle = document.getElementById("username");
@@ -65,7 +66,10 @@ async function handleRegistration(isNewAccount: boolean = true) {
     if (!usernameRegisterResponse.ok) {
       const error = (await usernameRegisterResponse.json()).error;
       if (errorEle) errorEle.textContent = error;
-      else alert(error);
+      else
+        showToast(error, {
+          variant: "error",
+        });
       return;
     }
   } else {
