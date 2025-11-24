@@ -299,7 +299,7 @@ const statusContainerClass = css`
   display: flex;
   justify-content: center;
   pointer-events: none;
-  z-index: 10;
+  z-index: 2000;
 `;
 
 const statusToastClass = css`
