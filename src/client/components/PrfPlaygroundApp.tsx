@@ -10,7 +10,7 @@ import {
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
 import { LoadingIndicator } from "./common/LoadingIndicator.js";
-import { StatusToast } from "./common/StatusToast.js";
+import { showStatusToast } from "./common/StatusToast.js";
 
 export const MAX_PRF_LABEL_LENGTH = 120;
 export const MAX_PRF_PLAINTEXT_CHARS = 3500;
@@ -57,7 +57,6 @@ const textDecoder = new TextDecoder();
 const AES_GCM_TAG_BYTE_LENGTH = 16;
 const PRF_INPUT_BYTE_LENGTH = 32;
 const PRF_ENTRIES_PAGE_SIZE = 5;
-const STATUS_DISPLAY_DURATION_MS = 4000;
 
 const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string | null => {
   if (!bytes) return null;
@@ -568,21 +567,13 @@ export const PrfPlaygroundApp = () => {
     : "暗号化済みのデータはまだありません。";
 
   const showStatus = (message: string, isError = false) => setStatus({ text: message, isError });
-  const clearStatus = () => setStatus(null);
 
   useEffect(() => {
-    if (!status) {
-      return;
-    }
-
-    const currentStatus = status;
-    const timer = window.setTimeout(() => {
-      setStatus((prev) => (prev === currentStatus ? null : prev));
-    }, STATUS_DISPLAY_DURATION_MS);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
+    showStatusToast({
+      message: status?.text ?? null,
+      variant: status?.isError ? "error" : "info",
+      ariaLive: "polite",
+    });
   }, [status]);
 
   /**
@@ -682,8 +673,6 @@ export const PrfPlaygroundApp = () => {
 
       if (!silent) {
         showStatus("暗号化済みデータの取得が完了しました。");
-      } else {
-        clearStatus();
       }
     } catch (error) {
       console.error(error);
@@ -719,7 +708,6 @@ export const PrfPlaygroundApp = () => {
   const handleSelectChange = (event: Event) => {
     const target = event.currentTarget as HTMLSelectElement;
     setSelectedPasskeyId(target.value || null);
-    clearStatus();
   };
 
   const handleLabelInput = (event: Event) => {
@@ -965,12 +953,6 @@ export const PrfPlaygroundApp = () => {
 
   return (
     <div class={containerClass}>
-      <StatusToast
-        message={status?.text ?? null}
-        variant={status?.isError ? "error" : "info"}
-        ariaLive="polite"
-      />
-
       <div class={headerClass}>
         <div>
           <h2>WebAuthn PRF 暗号化プレイグラウンド</h2>
