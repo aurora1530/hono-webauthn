@@ -10,8 +10,8 @@ const envSchema = z.object({
     .string()
     .transform((val) => parseInt(val, 10))
     .default(3000),
-  RP_ID: z.string().default("localhost"),
-  ORIGIN: z.string().default("http://localhost:3000"),
+  RP_ID: z.string(),
+  ORIGIN: z.string(),
 });
 
 export const typedEnv = envSchema.parse(process.env);
