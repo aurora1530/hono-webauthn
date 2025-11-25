@@ -17,7 +17,7 @@ const REAUTH_SESSION_TTL_SEC = 60 * 10; // 10 minutes
 const reauthSessionStore = await createRedisSessionStore<ReauthData>({
   prefix: REAUTH_SESSION_PREFIX,
   ttlSec: REAUTH_SESSION_TTL_SEC,
-  dataParser: (data: unknown) => {
+  parse: (data: unknown) => {
     const parsed = ReauthDataSchema.safeParse(data);
     return parsed.success ? parsed.data : undefined;
   },

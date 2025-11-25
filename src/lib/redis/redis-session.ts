@@ -5,7 +5,7 @@ import { getRedis } from "./redis.js";
 type RedisSessionStoreOptions<T extends JsonObject = JsonObject> = {
   prefix: string;
   ttlSec: number;
-  dataParser: (data: unknown) => T | undefined;
+  parse: (data: unknown) => T | undefined;
 };
 
 const generateSessionID = (): SessionID => {
@@ -33,7 +33,7 @@ const createRedisSessionStore = async <T extends JsonObject>(
       if (!raw) return undefined;
       try {
         const parsed = JSON.parse(raw);
-        return options.dataParser(parsed);
+        return options.parse(parsed);
       } catch {
         return undefined;
       }
@@ -43,7 +43,7 @@ const createRedisSessionStore = async <T extends JsonObject>(
       if (!raw) return undefined;
       try {
         const parsed = JSON.parse(raw);
-        return options.dataParser(parsed);
+        return options.parse(parsed);
       } catch {
         return undefined;
       }

@@ -20,7 +20,7 @@ const TTL_SEC = 60 * 60 * 24 * 7; // 1 week
 const loginSessionStore = await createRedisSessionStore<UserData>({
   prefix: "login",
   ttlSec: TTL_SEC,
-  dataParser: (data: unknown) => {
+  parse: (data: unknown) => {
     const parsed = UserDataSchema.safeParse(data);
     return parsed.success ? parsed.data : undefined;
   },

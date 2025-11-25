@@ -49,7 +49,7 @@ const makeStore = async <T extends JsonObject>(prefix: string, schema: z.ZodType
   createRedisSessionStore<T>({
     prefix,
     ttlSec: SESSION_TTL_SEC,
-    dataParser: (data: unknown) => {
+    parse: (data: unknown) => {
       const parsed = schema.safeParse(data);
       return parsed.success ? parsed.data : undefined;
     },
