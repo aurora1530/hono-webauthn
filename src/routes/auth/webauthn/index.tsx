@@ -13,7 +13,7 @@ import { isoUint8Array } from "@simplewebauthn/server/helpers";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import z from "zod";
-import { aaguidToNameAndIcon } from "../../../lib/auth/aaguid/parse.js";
+import { aaguidToNameAndIcon } from "../../../lib/auth/aaguid.js";
 import inferClientPlatform from "../../../lib/auth/inferClientPlatform.js";
 import { loginSessionController } from "../../../lib/auth/loginSession.js";
 import handlePostAuthentication from "../../../lib/auth/postAuthentication.js";

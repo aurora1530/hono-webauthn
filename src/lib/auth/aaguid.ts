@@ -15,7 +15,7 @@ type PasskeyMetadataJson = z.infer<typeof passkeyMetadataJsonSchema>;
 
 const aaguidData: PasskeyMetadataJson = await (async () => {
   const parsed = JSON.parse(
-    await readFile(new URL("../../../../aaguid.json", import.meta.url), "utf-8"),
+    await readFile(new URL("../../../aaguid.json", import.meta.url), "utf-8"),
   );
   return passkeyMetadataJsonSchema.parse(parsed);
 })();
