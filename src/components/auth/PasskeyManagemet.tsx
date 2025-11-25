@@ -372,10 +372,9 @@ const PasskeyManagement: FC<{
                       {iconSrc ? (
                         <img decoding="async" class={iconClass} src={iconSrc} alt="" />
                       ) : (
-                        <span
-                          aria-hidden="true"
-                          style="width:28px;height:28px;display:inline-block;"
-                        ></span>
+                        <span style="width:28px;height:28px;display:inline-block;">
+                          <span class="material-symbols-outlined">passkey</span>
+                        </span>
                       )}
                     </div>
 
