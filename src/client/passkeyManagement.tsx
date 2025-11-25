@@ -1,3 +1,4 @@
+import type { PasskeyHistory } from "@prisma/client";
 import { showStatusToast } from "components/common/StatusToast.js";
 import PasskeyHistories from "./components/PasskeyHistories.js";
 import { handleChangePasskeyName } from "./lib/changePasskeyName.js";
@@ -6,6 +7,38 @@ import { openModalWithJSX } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
 import { handleRegistration } from "./lib/registration.js";
 import { webauthnClient } from "./lib/rpc/webauthnClient.js";
+
+type PasskeyHistoryPage = {
+  histories: PasskeyHistory[];
+  page: number;
+  totalPages: number;
+  total: number;
+  limit: number;
+};
+
+const HISTORY_PAGE_LIMIT = 10;
+
+/**
+ * パスキー利用履歴のキャッシュ
+ * ```
+ * key: passkeyId
+ * value: {
+ *   pages: Map<pageNumber, PasskeyHistory[]>
+ *   meta: { total, totalPages, limit }
+ * }
+ * ```
+ */
+const passkeyHistoryCache = new Map<
+  string,
+  {
+    pages: Map<number, PasskeyHistory[]>;
+    meta?: Pick<PasskeyHistoryPage, "total" | "totalPages" | "limit">;
+  }
+>();
+
+const invalidatePasskeyHistoryCache = (passkeyId: string) => {
+  passkeyHistoryCache.delete(passkeyId);
+};
 
 document.getElementById("add-passkey-button")?.addEventListener("click", () => {
   handleRegistration(false);
@@ -37,45 +70,94 @@ const viewPasskeyHistoryBtns = document.getElementsByClassName(
   "view-passkey-history-btn",
 ) as HTMLCollectionOf<HTMLButtonElement>;
 
-async function openPasskeyHistoryModal(passkeyId: string, page = 1) {
+const fetchPasskeyHistoryPage = async (
+  passkeyId: string,
+  page: number,
+  forceRefetch = false,
+): Promise<PasskeyHistoryPage | null> => {
+  const cache = passkeyHistoryCache.get(passkeyId);
+  if (!forceRefetch) {
+    const cachedPage = cache?.pages.get(page);
+    if (cachedPage && cache?.meta) {
+      return {
+        histories: cachedPage,
+        page,
+        total: cache.meta.total,
+        totalPages: cache.meta.totalPages,
+        limit: cache.meta.limit,
+      };
+    }
+  }
+
   openMessageModal("パスキー履歴を取得中...", undefined, { loading: true });
-  const HISTORY_PAGE_LIMIT = 10;
+
   const res = await webauthnClient["passkey-histories"].$post({
     json: { passkeyId, limit: HISTORY_PAGE_LIMIT, page },
   });
 
   if (!res.ok) {
     const error = (await res.json()).error || "Unknown error";
+    openMessageModal("パスキー履歴の取得に失敗しました。");
     showStatusToast({
       message: `パスキー履歴の取得に失敗しました: ${error}`,
       variant: "error",
       ariaLive: "assertive",
     });
-    return;
+    return null;
   }
 
   const data = await res.json();
-
   const histories = data.histories.map((h) => ({
     ...h,
     usedAt: new Date(h.usedAt),
   }));
 
+  const nextCache = cache ?? { pages: new Map<number, PasskeyHistory[]>() };
+  nextCache.pages.set(page, histories);
+  nextCache.meta = {
+    total: data.total,
+    totalPages: data.totalPages,
+    limit: data.limit,
+  };
+  passkeyHistoryCache.set(passkeyId, nextCache);
+
+  return {
+    histories,
+    page: data.page,
+    total: data.total,
+    totalPages: data.totalPages,
+    limit: data.limit,
+  };
+};
+
+async function openPasskeyHistoryModal(
+  passkeyId: string,
+  page = 1,
+  options?: { forceRefetch?: boolean },
+) {
+  const data = await fetchPasskeyHistoryPage(passkeyId, page, options?.forceRefetch === true);
+  if (!data) return;
+
   const handleChangePage = (nextPage: number) => {
     if (nextPage < 1 || nextPage === data.page || nextPage > data.totalPages) return;
-    openPasskeyHistoryModal(passkeyId, nextPage);
+    void openPasskeyHistoryModal(passkeyId, nextPage);
+  };
+
+  const reload = () => {
+    invalidatePasskeyHistoryCache(passkeyId);
+    void openPasskeyHistoryModal(passkeyId, data.page, { forceRefetch: true });
   };
 
   openModalWithJSX(
     <PasskeyHistories
       passkeyId={passkeyId}
-      histories={histories}
+      histories={data.histories}
       page={data.page}
       totalPages={data.totalPages}
       total={data.total}
       limit={data.limit}
       onChangePage={handleChangePage}
-      reload={() => openPasskeyHistoryModal(passkeyId, data.page)}
+      reload={reload}
     />,
   );
 }
@@ -84,7 +166,7 @@ Array.from(viewPasskeyHistoryBtns).forEach((btn) => {
   btn.addEventListener("click", async () => {
     const passkeyId = btn.dataset.passkeyId;
     if (passkeyId) {
-      await openPasskeyHistoryModal(passkeyId, 1);
+      await openPasskeyHistoryModal(passkeyId, 1, { forceRefetch: true });
     }
   });
 });
