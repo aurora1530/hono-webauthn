@@ -157,40 +157,52 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      // 新規作成ならユーザを作成し、既存ユーザならセッションからIDを取得
-      let userID = (await loginSessionController.getUserData(c))?.userID;
-      if (!userID) {
-        // 存在しないユーザ名であることは既に確認済み
-        const user = await prisma.user.create({
-          data: {
-            name: webauthnRegistrationSession.user.name,
-          },
-        });
-        userID = user.id;
-      }
-
       const { credential, credentialDeviceType, credentialBackedUp, aaguid } = registrationInfo;
-
       const passkeyName = aaguidToNameAndIcon(aaguid)?.name ?? "パスキー";
-
       const { os, browser } = inferClientPlatform(c.req.raw.headers);
 
-      await prisma.passkey.create({
-        data: {
-          id: credential.id,
-          webauthnUserID: webauthnRegistrationSession.user.id,
-          userID,
-          backedUp: credentialBackedUp,
-          publicKey: credential.publicKey,
-          transports: credential.transports,
-          deviceType: credentialDeviceType,
-          counter: credential.counter,
-          aaguid,
-          name: passkeyName,
-          createdBrowser: browser,
-          createdOS: os,
-        },
-      });
+      // 新規作成ならユーザを作成し、既存ユーザならセッションからIDを取得
+      let userID = (await loginSessionController.getUserData(c))?.userID;
+      try {
+        await prisma.$transaction(async (tx) => {
+          if (!userID) {
+            const user = await tx.user.create({
+              data: {
+                name: webauthnRegistrationSession.user.name,
+              },
+            });
+            userID = user.id;
+          }
+
+          await tx.passkey.create({
+            data: {
+              id: credential.id,
+              webauthnUserID: webauthnRegistrationSession.user.id,
+              userID,
+              backedUp: credentialBackedUp,
+              publicKey: credential.publicKey,
+              transports: credential.transports,
+              deviceType: credentialDeviceType,
+              counter: credential.counter,
+              aaguid,
+              name: passkeyName,
+              createdBrowser: browser,
+              createdOS: os,
+            },
+          });
+        });
+      } catch (e) {
+        console.error("Failed to create passkey record:", e);
+        const error = userID
+          ? "パスキーの保存に失敗しました。もう一度やり直してください。"
+          : "ユーザの作成に失敗しました。もう一度やり直してください。";
+        return c.json(
+          {
+            error,
+          },
+          400,
+        );
+      }
 
       return c.json({}, 200);
     },
