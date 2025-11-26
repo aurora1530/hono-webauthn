@@ -277,6 +277,7 @@ const helperTextClass = cx(
   textMutedClass,
   css`
     font-size: 11px;
+    text-align: left;
   `,
 );
 
@@ -335,10 +336,10 @@ const outputRowFullWidthClass = css`
   grid-column: 1 / -1;
 `;
 
-const copyIconButtonClass = css`
+const iconButtonClass = css`
   border: none;
   background: transparent;
-  padding: 2px;
+  padding: 6px;
   border-radius: 4px;
   color: var(--text-color);
   cursor: pointer;
@@ -357,7 +358,51 @@ const copyIconButtonClass = css`
   }
 
   .material-symbols-outlined {
-    font-size: 18px;
+    font-size: 20px;
+  }
+`;
+
+const deleteIconButtonClass = cx(
+  iconButtonClass,
+  css`
+    &:hover {
+      color: var(--color-danger);
+      background: var(--color-danger-surface);
+    }
+  `,
+);
+
+const entryHeaderClass = css`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+`;
+
+const entryTitleClass = css`
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.5;
+  word-break: break-all;
+  flex: 1;
+  text-align: left;
+`;
+
+const iconButtonGroupClass = css`
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-right: -4px;
+
+  @media (max-width: 480px) {
+    margin-right: 0;
+    justify-content: flex-end;
   }
 `;
 
@@ -465,7 +510,8 @@ const entryCardClass = cx(
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
+    text-align: left;
   `,
 );
 
@@ -476,6 +522,7 @@ const entryMetaClass = cx(
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 10px;
     font-size: 12px;
+    text-align: left;
 
     div {
       display: flex;
@@ -506,17 +553,7 @@ const cypherTextClass = css`
   overflow-y: auto;
 `;
 
-const entryActionsClass = css`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
-
 const entryChipClass = badgeClass("neutral");
-
-const actionButtonClass = buttonClass("secondary", "sm");
-
-const deleteActionButtonClass = buttonClass("danger", "sm");
 
 const infoMessageClass = cx(
   textMutedClass,
@@ -1126,7 +1163,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
                     {row.copyAnnounce && (
                       <button
                         type="button"
-                        class={copyIconButtonClass}
+                        class={iconButtonClass}
                         aria-label={`${row.copyAnnounce}をコピー`}
                         onClick={() =>
                           handleCopyLatestOutputValue(row.copyValue ?? row.value, row.copyAnnounce!)
@@ -1201,9 +1238,41 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
           ) : (
             entries.map((entry) => (
               <article key={entry.id} class={entryCardClass}>
-                <div>
-                  <strong>{entry.label || "(ラベル未設定)"}</strong>
+                <div class={entryHeaderClass}>
+                  <div class={entryTitleClass}>{entry.label || "(ラベル未設定)"}</div>
+                  <div class={iconButtonGroupClass}>
+                    <button
+                      class={iconButtonClass}
+                      type="button"
+                      title="復号"
+                      aria-label="復号"
+                      onClick={() => handleDecrypt(entry.id)}
+                      disabled={busy}
+                    >
+                      <span class="material-symbols-outlined">lock_open</span>
+                    </button>
+                    <button
+                      class={iconButtonClass}
+                      type="button"
+                      title="コピー"
+                      aria-label="コピー"
+                      onClick={() => handleCopyEntry(entry.id)}
+                    >
+                      <span class="material-symbols-outlined">content_copy</span>
+                    </button>
+                    <button
+                      class={deleteIconButtonClass}
+                      type="button"
+                      title="削除"
+                      aria-label="削除"
+                      onClick={() => handleDeleteEntry(entry.id)}
+                      disabled={busy}
+                    >
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
                 </div>
+
                 <div class={helperTextClass}>
                   {entry.passkeyName} ・ {new Date(entry.createdAt).toLocaleString()}
                 </div>
@@ -1241,32 +1310,6 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
                       </div>
                     </>
                   )}
-                </div>
-
-                <div class={entryActionsClass}>
-                  <button
-                    class={actionButtonClass}
-                    type="button"
-                    onClick={() => handleDecrypt(entry.id)}
-                    disabled={busy}
-                  >
-                    復号
-                  </button>
-                  <button
-                    class={actionButtonClass}
-                    type="button"
-                    onClick={() => handleCopyEntry(entry.id)}
-                  >
-                    コピー
-                  </button>
-                  <button
-                    class={deleteActionButtonClass}
-                    type="button"
-                    onClick={() => handleDeleteEntry(entry.id)}
-                    disabled={busy}
-                  >
-                    削除
-                  </button>
                 </div>
               </article>
             ))
