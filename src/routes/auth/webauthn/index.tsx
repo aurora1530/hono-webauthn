@@ -849,15 +849,6 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      if (!userData.debugMode) {
-        return c.json(
-          {
-            error: "利用履歴の取得はデバッグモードでのみ可能です。",
-          },
-          403,
-        );
-      }
-
       const { passkeyId, limit, page } = c.req.valid("json");
 
       const passkey = await prisma.passkey.findUnique({
@@ -941,15 +932,6 @@ export const webAuthnRoutes = webauthnApp
             error: "ログインが必要です。",
           },
           401,
-        );
-      }
-
-      if (!userData.debugMode) {
-        return c.json(
-          {
-            error: "利用履歴の削除はデバッグモードでのみ可能です。",
-          },
-          403,
         );
       }
 
