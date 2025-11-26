@@ -373,9 +373,6 @@ const PasskeyManagement: FC<{
                   </div>
 
                   <div class={badgeRowClass}>
-                    {isCurrent && (
-                      <span class={cx(badgeBaseClass, badgeCurrentClass)}>現在のセッション</span>
-                    )}
                     {isSynced(pData.passkey) ? (
                       <span class={cx(badgeBaseClass, badgeSyncedClass)}>
                         <span
@@ -415,6 +412,9 @@ const PasskeyManagement: FC<{
                           {pData.prfCiphertextCount}
                         </span>
                       </span>
+                    )}
+                    {isCurrent && (
+                      <span class={cx(badgeBaseClass, badgeCurrentClass)}>現在のセッション</span>
                     )}
                   </div>
 
