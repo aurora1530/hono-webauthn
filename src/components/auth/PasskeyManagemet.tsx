@@ -183,7 +183,7 @@ const PasskeyManagement: FC<{
   const actionSectionClass = css`
       flex-shrink: 0;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 8px;
       @media (max-width: 600px) {
         width: 100%;
@@ -262,18 +262,19 @@ const PasskeyManagement: FC<{
   const lockMessageClass = css`
       font-size: 12px;
       color: #dc2626;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      padding: 8px 12px;
-      border-radius: 8px;
-      margin-top: 8px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
+      line-height: 1.2;
+      text-align: left;
       &[hidden] {
         display: none !important;
       }
+      @media (max-width: 600px) {
+        font-size: 10px;
+      }
     `;
+
   return (
     <div class={containerClass}>
       <header class={headerClass}>
@@ -441,21 +442,21 @@ const PasskeyManagement: FC<{
                       </div>
                     )}
                   </div>
+                </div>
 
+                <div class={actionSectionClass}>
                   <div
                     class={lockMessageClass}
                     data-prf-lock-message=""
                     data-passkey-id={pData.passkey.id}
                     hidden={!hasCiphertextLock}
                   >
-                    <span class="material-symbols-outlined" style="font-size: 16px;">
-                      info
+                    <span class="material-symbols-outlined" style="font-size: 14px;">
+                      lock
                     </span>
-                    暗号化データが存在するため、削除できません。
+                    暗号化データが存在するため削除不可
                   </div>
-                </div>
 
-                <div class={actionSectionClass}>
                   <button
                     id="view-passkey-history-btn"
                     class={cx(iconButtonBaseClass, "view-passkey-history-btn")}
