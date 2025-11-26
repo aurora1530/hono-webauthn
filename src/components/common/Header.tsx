@@ -250,7 +250,7 @@ const Header: FC = async () => {
             <span class={cx(textMutedClass, usernameInlineClass)}>{userdata.username}</span>
           )}
 
-          <details class={menuRootClass}>
+          <details class={menuRootClass} id="header-menu">
             <summary class={menuTriggerClass} aria-label="メニュー">
               <span class="material-symbols-outlined">menu</span>
             </summary>
@@ -354,6 +354,13 @@ const Header: FC = async () => {
             } else {
               html.classList.add('dark');
               localStorage.setItem('theme', 'dark');
+            }
+          });
+
+          document.addEventListener('click', (event) => {
+            const menu = document.getElementById('header-menu');
+            if (menu && menu.hasAttribute('open') && !menu.contains(event.target)) {
+              menu.removeAttribute('open');
             }
           });
       </script>
