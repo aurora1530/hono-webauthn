@@ -2,46 +2,49 @@ import type { Context } from "hono";
 import z from "zod";
 import type { JsonObject } from "../json.js";
 import { createRedisSessionStore } from "../redis/redis-session.js";
+import type { SessionStore } from "../session.js";
 import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.js";
 
-const WebAuthnRegistrationGenerateSessionDataSchema = z.object({ username: z.string() });
-type WebAuthnRegistrationGenerateSessionData = z.infer<
-  typeof WebAuthnRegistrationGenerateSessionDataSchema
->;
+interface WebAuthnOperationTypes<T> {
+  registration: {
+    generate: T;
+    verify: T;
+  };
+  authentication: {
+    verify: T;
+  };
+  reauthentication: {
+    verify: T;
+  };
+  testAuthentication: {
+    verify: T;
+  };
+  prfAuthentication: {
+    verify: T;
+  };
+}
 
-const WebAuthnRegistrationVerifySessionDataSchema = z.object({
-  challenge: z.string(),
-  user: z.object({ id: z.string(), name: z.string() }),
-});
-type WebAuthnRegistrationVerifySessionData = z.infer<
-  typeof WebAuthnRegistrationVerifySessionDataSchema
->;
-
-const WebAuthnAuthenticationVerifySessionDataSchema = z.object({ challenge: z.string() });
-type WebAuthnAuthenticationVerifySessionData = z.infer<
-  typeof WebAuthnAuthenticationVerifySessionDataSchema
->;
-
-const WebAuthnReauthenticationVerifySessionDataSchema = z.object({ challenge: z.string() });
-type WebAuthnReauthenticationVerifySessionData = z.infer<
-  typeof WebAuthnReauthenticationVerifySessionDataSchema
->;
-
-const WebAuthnTestAuthenticationVerifySessionDataSchema = z.object({
-  challenge: z.string(),
-  passkeyId: z.string(),
-});
-type WebAuthnTestAuthenticationVerifySessionData = z.infer<
-  typeof WebAuthnTestAuthenticationVerifySessionDataSchema
->;
-
-const WebAuthnPrfAuthenticationVerifySessionDataSchema = z.object({
-  challenge: z.string(),
-  passkeyId: z.string(),
-});
-type WebAuthnPrfAuthenticationVerifySessionData = z.infer<
-  typeof WebAuthnPrfAuthenticationVerifySessionDataSchema
->;
+const webAuthnSessionSchemas = {
+  registration: {
+    generate: z.object({ username: z.string() }),
+    verify: z.object({
+      challenge: z.string(),
+      user: z.object({ id: z.string(), name: z.string() }),
+    }),
+  },
+  authentication: {
+    verify: z.object({ challenge: z.string() }),
+  },
+  reauthentication: {
+    verify: z.object({ challenge: z.string() }),
+  },
+  testAuthentication: {
+    verify: z.object({ challenge: z.string(), passkeyId: z.string() }),
+  },
+  prfAuthentication: {
+    verify: z.object({ challenge: z.string(), passkeyId: z.string() }),
+  },
+} satisfies WebAuthnOperationTypes<z.ZodType<JsonObject>>;
 
 const SESSION_TTL_SEC = 60 * 5; // 5 minutes
 
@@ -55,100 +58,70 @@ const makeStore = async <T extends JsonObject>(prefix: string, schema: z.ZodType
     },
   });
 
-const webAuthnRegistrationGenerateSessionStore = await makeStore(
-  "webauthn-registration-init",
-  WebAuthnRegistrationGenerateSessionDataSchema,
-);
-const webAuthnRegistrationVerifySessionStore = await makeStore(
-  "webauthn-registration",
-  WebAuthnRegistrationVerifySessionDataSchema,
-);
-const webAuthnAuthenticationVerifySessionStore = await makeStore(
-  "webauthn-authentication",
-  WebAuthnAuthenticationVerifySessionDataSchema,
-);
-const webAuthnReauthenticationVerifySessionStore = await makeStore(
-  "webauthn-reauthentication",
-  WebAuthnReauthenticationVerifySessionDataSchema,
-);
-const webAuthnTestAuthenticationVerifySessionStore = await makeStore(
-  "webauthn-test-authentication",
-  WebAuthnTestAuthenticationVerifySessionDataSchema,
-);
-const webAuthnPrfAuthenticationVerifySessionStore = await makeStore(
-  "webauthn-prf-authentication",
-  WebAuthnPrfAuthenticationVerifySessionDataSchema,
-);
-
-interface WebAuthnSessionStores {
+const webAuthnSessionStores = {
   registration: {
-    generate: typeof webAuthnRegistrationGenerateSessionStore;
-    verify: typeof webAuthnRegistrationVerifySessionStore;
-  };
-  authentication: {
-    verify: typeof webAuthnAuthenticationVerifySessionStore;
-  };
-  reauthentication: {
-    verify: typeof webAuthnReauthenticationVerifySessionStore;
-  };
-  testAuthentication: {
-    verify: typeof webAuthnTestAuthenticationVerifySessionStore;
-  };
-  prfAuthentication: {
-    verify: typeof webAuthnPrfAuthenticationVerifySessionStore;
-  };
-}
-
-const webauthnSessionStores: WebAuthnSessionStores = {
-  registration: {
-    generate: webAuthnRegistrationGenerateSessionStore,
-    verify: webAuthnRegistrationVerifySessionStore,
+    generate: await makeStore(
+      "webauthn-registration-init",
+      webAuthnSessionSchemas.registration.generate,
+    ),
+    verify: await makeStore("webauthn-registration", webAuthnSessionSchemas.registration.verify),
   },
   authentication: {
-    verify: webAuthnAuthenticationVerifySessionStore,
+    verify: await makeStore(
+      "webauthn-authentication",
+      webAuthnSessionSchemas.authentication.verify,
+    ),
   },
   reauthentication: {
-    verify: webAuthnReauthenticationVerifySessionStore,
+    verify: await makeStore(
+      "webauthn-reauthentication",
+      webAuthnSessionSchemas.reauthentication.verify,
+    ),
   },
   testAuthentication: {
-    verify: webAuthnTestAuthenticationVerifySessionStore,
+    verify: await makeStore(
+      "webauthn-test-authentication",
+      webAuthnSessionSchemas.testAuthentication.verify,
+    ),
   },
   prfAuthentication: {
-    verify: webAuthnPrfAuthenticationVerifySessionStore,
+    verify: await makeStore(
+      "webauthn-prf-authentication",
+      webAuthnSessionSchemas.prfAuthentication.verify,
+    ),
   },
-};
+} satisfies WebAuthnOperationTypes<SessionStore<JsonObject>>;
 
-interface SessionDataHandler<T extends object> {
+interface SessionDataHandler<T> {
   initialize(c: Context, data: T): Promise<string>;
   extractSessionData(c: Context): Promise<T | undefined>;
 }
 
-interface WebAuthnSessionController {
-  registration: {
-    generate: SessionDataHandler<WebAuthnRegistrationGenerateSessionData>;
-    verify: SessionDataHandler<WebAuthnRegistrationVerifySessionData>;
+type SessionDataHandlerMap<Schemas extends WebAuthnOperationTypes<z.ZodType<JsonObject>>> = {
+  [Operation in keyof Schemas]: {
+    [Step in keyof Schemas[Operation]]: SessionDataHandler<z.infer<Schemas[Operation][Step]>>;
   };
-  authentication: {
-    verify: SessionDataHandler<WebAuthnAuthenticationVerifySessionData>;
-  };
-  reauthentication: {
-    verify: SessionDataHandler<WebAuthnReauthenticationVerifySessionData>;
-  };
-  testAuthentication: {
-    verify: SessionDataHandler<WebAuthnTestAuthenticationVerifySessionData>;
-  };
-  prfAuthentication: {
-    verify: SessionDataHandler<WebAuthnPrfAuthenticationVerifySessionData>;
-  };
-}
+};
 
-const WEBAUTHN_SESSION_COOKIE_NAMES = {
-  registrationGenerate: "webauthn-r-g",
-  registrationVerify: "webauthn-r-v",
-  authenticationVerify: "webauthn-a-v",
-  reauthenticationVerify: "webauthn-ra-v",
-  testAuthenticationVerify: "webauthn-ta-v",
-  prfAuthenticationVerify: "webauthn-prf-v",
+type WebAuthnSessionController = SessionDataHandlerMap<typeof webAuthnSessionSchemas>;
+
+const COOKIE_NAMES: WebAuthnOperationTypes<string> = {
+  registration: {
+    generate: "webauthn-r-g",
+    verify: "webauthn-r-v",
+  },
+  authentication: {
+    verify: "webauthn-a-v",
+  },
+  reauthentication: {
+    verify: "webauthn-ra-v",
+  },
+  testAuthentication: {
+    verify: "webauthn-ta-v",
+  },
+  prfAuthentication: {
+    verify: "webauthn-prf-v",
+  },
 };
 
 const createHandler = <T extends object>(
@@ -173,42 +146,24 @@ const createHandler = <T extends object>(
 });
 
 const createWebAuthnSessionController = (
-  stores: WebAuthnSessionStores,
+  stores: typeof webAuthnSessionStores,
 ): WebAuthnSessionController => ({
   registration: {
-    generate: createHandler<WebAuthnRegistrationGenerateSessionData>(
-      stores.registration.generate,
-      WEBAUTHN_SESSION_COOKIE_NAMES.registrationGenerate,
-    ),
-    verify: createHandler<WebAuthnRegistrationVerifySessionData>(
-      stores.registration.verify,
-      WEBAUTHN_SESSION_COOKIE_NAMES.registrationVerify,
-    ),
+    generate: createHandler(stores.registration.generate, COOKIE_NAMES.registration.generate),
+    verify: createHandler(stores.registration.verify, COOKIE_NAMES.registration.verify),
   },
   authentication: {
-    verify: createHandler<WebAuthnAuthenticationVerifySessionData>(
-      stores.authentication.verify,
-      WEBAUTHN_SESSION_COOKIE_NAMES.authenticationVerify,
-    ),
+    verify: createHandler(stores.authentication.verify, COOKIE_NAMES.authentication.verify),
   },
   reauthentication: {
-    verify: createHandler<WebAuthnReauthenticationVerifySessionData>(
-      stores.reauthentication.verify,
-      WEBAUTHN_SESSION_COOKIE_NAMES.reauthenticationVerify,
-    ),
+    verify: createHandler(stores.reauthentication.verify, COOKIE_NAMES.reauthentication.verify),
   },
   testAuthentication: {
-    verify: createHandler<WebAuthnTestAuthenticationVerifySessionData>(
-      stores.testAuthentication.verify,
-      WEBAUTHN_SESSION_COOKIE_NAMES.testAuthenticationVerify,
-    ),
+    verify: createHandler(stores.testAuthentication.verify, COOKIE_NAMES.testAuthentication.verify),
   },
   prfAuthentication: {
-    verify: createHandler<WebAuthnPrfAuthenticationVerifySessionData>(
-      stores.prfAuthentication.verify,
-      WEBAUTHN_SESSION_COOKIE_NAMES.prfAuthenticationVerify,
-    ),
+    verify: createHandler(stores.prfAuthentication.verify, COOKIE_NAMES.prfAuthentication.verify),
   },
 });
 
-export const webauthnSessionController = createWebAuthnSessionController(webauthnSessionStores);
+export const webauthnSessionController = createWebAuthnSessionController(webAuthnSessionStores);
