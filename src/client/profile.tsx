@@ -9,12 +9,17 @@ import {
 } from "./lib/deleteAccount.js";
 import { closeModal, openModalWithJSX } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
+import { getPrfAnimationEnabled, setPrfAnimationEnabled } from "./lib/prfAnimationPreference.js";
 import { handleReauthentication } from "./lib/reauthentication.js";
 
 // --- debug mode toggle ---
-document.getElementById("change-debug-mode-btn")?.addEventListener("change", async (e) => {
+const debugToggle = document.getElementById("change-debug-mode-btn") as HTMLInputElement | null;
+const debugToggleTrack = debugToggle?.nextElementSibling as HTMLSpanElement | null;
+
+debugToggle?.addEventListener("change", async (e) => {
   const target = e.target as HTMLInputElement;
   const debugMode = target.checked;
+  debugToggleTrack?.setAttribute("data-enabled", String(debugMode));
   const result = await changeDebugMode(debugMode);
 
   if (!result.success) {
@@ -24,11 +29,38 @@ document.getElementById("change-debug-mode-btn")?.addEventListener("change", asy
       ariaLive: "assertive",
     });
     target.checked = !debugMode;
+    debugToggleTrack?.setAttribute("data-enabled", String(!debugMode));
     return;
   }
 
   location.reload();
 });
+
+// --- PRF animation toggle ---
+const prfAnimationToggle = document.getElementById(
+  "toggle-prf-animation",
+) as HTMLInputElement | null;
+const prfAnimationTrack = prfAnimationToggle?.nextElementSibling as HTMLSpanElement | null;
+
+if (prfAnimationToggle) {
+  const current = getPrfAnimationEnabled();
+  prfAnimationToggle.checked = current;
+  prfAnimationTrack?.setAttribute("data-enabled", String(current));
+
+  prfAnimationToggle.addEventListener("change", (e) => {
+    const target = e.target as HTMLInputElement;
+    const enabled = target.checked;
+    prfAnimationTrack?.setAttribute("data-enabled", String(enabled));
+    setPrfAnimationEnabled(enabled);
+    showStatusToast({
+      message: enabled
+        ? "PRFプレイグラウンドのアニメーションを有効にしました"
+        : "PRFプレイグラウンドのアニメーションを無効にしました",
+      variant: "info",
+      ariaLive: "polite",
+    });
+  });
+}
 
 // --- account deletion flow ---
 const deleteAccountBtn = document.getElementById("delete-account-btn") as HTMLButtonElement | null;

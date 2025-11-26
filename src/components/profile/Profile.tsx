@@ -59,30 +59,37 @@ const Profile: FC = async () => {
     user-select: none;
   `;
 
-  const switchTrackClass = (enabled: boolean) =>
-    css`
-      position: relative;
-      width: 52px;
-      height: 30px;
-      display: inline-flex;
-      align-items: center;
-      padding: 4px;
-      border-radius: 999px;
-      background: ${enabled ? "#22c55e" : "#cbd5e1"};
-      transition: background 0.2s ease;
+  const switchTrackClass = css`
+    position: relative;
+    width: 52px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    transition: background 0.2s ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      transition: left 0.2s ease;
+    }
+
+    &[data-enabled="true"] {
+      background: #22c55e;
 
       &::after {
-        content: "";
-        position: absolute;
-        left: ${enabled ? "26px" : "4px"};
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-        transition: left 0.2s ease;
+        left: 26px;
       }
-    `;
+    }
+  `;
 
   const dangerCardClass = surfaceClass("danger");
   const defaultCardClass = surfaceClass("default");
@@ -112,9 +119,37 @@ const Profile: FC = async () => {
               pointer-events: none;
             `}
           />
-          <span class={switchTrackClass(!!userData.debugMode)} aria-hidden="true" />
+          <span
+            class={switchTrackClass}
+            data-enabled={String(!!userData.debugMode)}
+            aria-hidden="true"
+          />
           <span>デバッグモードを有効にする</span>
         </label>
+      </section>
+
+      <section class={defaultCardClass}>
+        <h2 class={css`margin:0 0 8px; font-size:18px; font-weight:700;`}>PRF プレイグラウンド</h2>
+        <p class={textMutedClass}>
+          暗号化/復号の進行を示すアニメーションを表示するかどうかを切り替えます。
+        </p>
+        <label class={toggleRowClass}>
+          <input
+            type="checkbox"
+            defaultChecked
+            id="toggle-prf-animation"
+            class={css`
+              position: absolute;
+              opacity: 0;
+              pointer-events: none;
+            `}
+          />
+          <span class={switchTrackClass} data-enabled="true" aria-hidden="true" />
+          <span>アニメーションを有効にする（このブラウザに保存）</span>
+        </label>
+        <p class={textMutedClass}>
+          設定はローカルストレージにのみ保存され、サーバーには送信されません。
+        </p>
       </section>
 
       <section class={dangerCardClass}>

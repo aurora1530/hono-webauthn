@@ -8,6 +8,10 @@ import {
   textMutedClass,
 } from "../../ui/theme.js";
 import { closeModal, openModalWithJSX } from "../lib/modal/base.js";
+import {
+  getPrfAnimationEnabled,
+  PRF_ANIMATION_STORAGE_KEY,
+} from "../lib/prfAnimationPreference.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
 import {
@@ -596,6 +600,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
   const [busy, setBusy] = useState(false);
   const [processStep, setProcessStep] = useState<ProcessStep>("idle");
   const [processMode, setProcessMode] = useState<"encrypt" | "decrypt">("encrypt");
+  const [animationEnabled, setAnimationEnabled] = useState(true);
   const latestOutputRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollToLatestOutputRef = useRef(false);
   const isModalDismissedRef = useRef(false);
@@ -609,6 +614,8 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     ? "選択したパスキーの暗号化データはありません。"
     : "暗号化済みのデータはまだありません。";
 
+  const maybeWait = (ms: number) => (animationEnabled ? wait(ms) : Promise.resolve());
+
   const showStatus = (message: string, isError = false) => setStatus({ text: message, isError });
 
   useEffect(() => {
@@ -618,6 +625,19 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       ariaLive: "polite",
     });
   }, [status]);
+
+  useEffect(() => {
+    setAnimationEnabled(getPrfAnimationEnabled());
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === null || event.key === PRF_ANIMATION_STORAGE_KEY) {
+        setAnimationEnabled(getPrfAnimationEnabled());
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   useEffect(() => {
     if (processStep === "idle") {
@@ -630,6 +650,11 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       return;
     }
 
+    if (!animationEnabled) {
+      closeModal();
+      return;
+    }
+
     if (isModalDismissedRef.current) {
       return;
     }
@@ -637,7 +662,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     openModalWithJSX(<PrfProcessVisualizer step={processStep} mode={processMode} />, () => {
       isModalDismissedRef.current = true;
     });
-  }, [processStep, processMode]);
+  }, [processStep, processMode, animationEnabled]);
 
   /**
    * Load registered passkeys from the server
@@ -823,13 +848,13 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       const prfBytes = await requestPrfEvaluation(selectedPasskeyId, prfInputBase64);
 
       setProcessStep("derive");
-      await wait(600);
+      await maybeWait(600);
 
       const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
       const associatedData = `${selectedPasskeyId}:${crypto.randomUUID()}`;
 
       setProcessStep("encrypt");
-      await wait(600);
+      await maybeWait(600);
 
       const ciphertextBuffer = await crypto.subtle.encrypt(
         {
@@ -858,7 +883,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       };
 
       setProcessStep("save");
-      await wait(600);
+      await maybeWait(600);
 
       const storeRes = await prfClient.encrypt.$post({ json: payload });
       if (!storeRes.ok) {
@@ -868,7 +893,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       const storeJson = await storeRes.json();
 
       setProcessStep("complete");
-      await wait(600);
+      await maybeWait(600);
 
       setLabel("");
       setPlaintext("");
@@ -928,14 +953,14 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       const prfBytes = await requestPrfEvaluation(entry.passkeyId, entry.prfInput);
 
       setProcessStep("derive");
-      await wait(600);
+      await maybeWait(600);
 
       const prfInputBytes = fromBase64(entry.prfInput);
       const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
       const cipherBytes = concatBytes(fromBase64(entry.ciphertext), fromBase64(entry.tag));
 
       setProcessStep("decrypt");
-      await wait(600);
+      await maybeWait(600);
 
       const decrypted = await crypto.subtle.decrypt(
         {
@@ -951,7 +976,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       const plaintextResult = textDecoder.decode(decrypted);
 
       setProcessStep("complete");
-      await wait(600);
+      await maybeWait(600);
 
       shouldScrollToLatestOutputRef.current = true;
       setLatestOutput({
