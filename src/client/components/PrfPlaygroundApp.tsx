@@ -7,6 +7,7 @@ import {
   surfaceClass,
   textMutedClass,
 } from "../../ui/theme.js";
+import { closeModal, openModalWithJSX } from "../lib/modal/base.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
 import {
@@ -17,6 +18,7 @@ import {
 } from "../lib/webauthnAbort.js";
 import { LoadingIndicator } from "./common/LoadingIndicator.js";
 import { showStatusToast } from "./common/StatusToast.js";
+import { PrfProcessVisualizer, type ProcessStep } from "./PrfProcessVisualizer.js";
 
 export const MAX_PRF_LABEL_LENGTH = 120;
 export const MAX_PRF_PLAINTEXT_CHARS = 3500;
@@ -63,6 +65,8 @@ const textDecoder = new TextDecoder();
 const AES_GCM_TAG_BYTE_LENGTH = 16;
 const PRF_INPUT_BYTE_LENGTH = 32;
 const PRF_ENTRIES_PAGE_SIZE = 5;
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string | null => {
   if (!bytes) return null;
@@ -553,8 +557,11 @@ export const PrfPlaygroundApp = () => {
   const [latestOutput, setLatestOutput] = useState<LatestOutput>(null);
   const [status, setStatus] = useState<StatusMessage>(null);
   const [busy, setBusy] = useState(false);
+  const [processStep, setProcessStep] = useState<ProcessStep>("idle");
+  const [processMode, setProcessMode] = useState<"encrypt" | "decrypt">("encrypt");
   const latestOutputRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollToLatestOutputRef = useRef(false);
+  const isModalDismissedRef = useRef(false);
 
   const controlsDisabled = passkeysLoading || passkeys.length === 0;
   const noPasskeys = !passkeysLoading && passkeys.length === 0;
@@ -574,6 +581,26 @@ export const PrfPlaygroundApp = () => {
       ariaLive: "polite",
     });
   }, [status]);
+
+  useEffect(() => {
+    if (processStep === "idle") {
+      closeModal();
+      isModalDismissedRef.current = false;
+      if (shouldScrollToLatestOutputRef.current && latestOutputRef.current) {
+        latestOutputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        shouldScrollToLatestOutputRef.current = false;
+      }
+      return;
+    }
+
+    if (isModalDismissedRef.current) {
+      return;
+    }
+
+    openModalWithJSX(<PrfProcessVisualizer step={processStep} mode={processMode} />, () => {
+      isModalDismissedRef.current = true;
+    });
+  }, [processStep, processMode]);
 
   /**
    * Load registered passkeys from the server
@@ -697,13 +724,6 @@ export const PrfPlaygroundApp = () => {
     void loadEntries({ silent: true });
   }, []);
 
-  useEffect(() => {
-    if (shouldScrollToLatestOutputRef.current && latestOutputRef.current) {
-      latestOutputRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-      shouldScrollToLatestOutputRef.current = false;
-    }
-  }, [latestOutput]);
-
   const handleSelectChange = (event: Event) => {
     const target = event.currentTarget as HTMLSelectElement;
     setSelectedPasskeyId(target.value || null);
@@ -758,12 +778,22 @@ export const PrfPlaygroundApp = () => {
     }
 
     setBusy(true);
+    setProcessMode("encrypt");
+    setProcessStep("prf");
     showStatus("PRFを利用して暗号化しています...");
     try {
       const { bytes: prfInputBytes, base64: prfInputBase64 } = randomBase64(PRF_INPUT_BYTE_LENGTH);
       const prfBytes = await requestPrfEvaluation(selectedPasskeyId, prfInputBase64);
+
+      setProcessStep("derive");
+      await wait(600);
+
       const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
       const associatedData = `${selectedPasskeyId}:${crypto.randomUUID()}`;
+
+      setProcessStep("encrypt");
+      await wait(600);
+
       const ciphertextBuffer = await crypto.subtle.encrypt(
         {
           name: "AES-GCM",
@@ -790,12 +820,19 @@ export const PrfPlaygroundApp = () => {
         prfInput: prfInputBase64,
       };
 
+      setProcessStep("save");
+      await wait(600);
+
       const storeRes = await prfClient.encrypt.$post({ json: payload });
       if (!storeRes.ok) {
         const storeJson = await storeRes.json();
         throw new Error(storeJson.error ?? "暗号化データの保存に失敗しました");
       }
       const storeJson = await storeRes.json();
+
+      setProcessStep("complete");
+      await wait(600);
+
       setLabel("");
       setPlaintext("");
       setLatestOutput({
@@ -824,6 +861,7 @@ export const PrfPlaygroundApp = () => {
       showStatus(error instanceof Error ? error.message : "暗号化中にエラーが発生しました", true);
     } finally {
       setBusy(false);
+      setProcessStep("idle");
     }
   };
 
@@ -844,12 +882,22 @@ export const PrfPlaygroundApp = () => {
     }
 
     setBusy(true);
+    setProcessMode("decrypt");
+    setProcessStep("prf");
     showStatus("PRFを利用して復号しています...");
     try {
       const prfBytes = await requestPrfEvaluation(entry.passkeyId, entry.prfInput);
+
+      setProcessStep("derive");
+      await wait(600);
+
       const prfInputBytes = fromBase64(entry.prfInput);
       const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
       const cipherBytes = concatBytes(fromBase64(entry.ciphertext), fromBase64(entry.tag));
+
+      setProcessStep("decrypt");
+      await wait(600);
+
       const decrypted = await crypto.subtle.decrypt(
         {
           name: "AES-GCM",
@@ -862,6 +910,10 @@ export const PrfPlaygroundApp = () => {
         cipherBytes.buffer as ArrayBuffer,
       );
       const plaintextResult = textDecoder.decode(decrypted);
+
+      setProcessStep("complete");
+      await wait(600);
+
       shouldScrollToLatestOutputRef.current = true;
       setLatestOutput({
         title: "復号結果",
@@ -891,6 +943,7 @@ export const PrfPlaygroundApp = () => {
       showStatus(error instanceof Error ? error.message : "復号に失敗しました", true);
     } finally {
       setBusy(false);
+      setProcessStep("idle");
     }
   };
 
