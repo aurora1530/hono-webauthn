@@ -4,9 +4,8 @@ import type { FC } from "hono/jsx";
 const Modal: FC = async () => {
   const dialogClass = css`
     position: fixed;
-    inset: 50% auto auto 50%;
-    transform: translate(-50%, -50%);
-    margin: 0;
+    inset: 0;
+    margin: auto;
     z-index: 1000;
     box-sizing: border-box;
     border: none;

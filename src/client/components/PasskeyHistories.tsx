@@ -96,7 +96,7 @@ const PasskeyHistories = ({
     position: relative;
     width: 100%;
     margin: 0 auto;
-    padding: 0.5rem;
+    padding: 0.5rem 0.5em 0;
     box-sizing: border-box;
   `;
 
