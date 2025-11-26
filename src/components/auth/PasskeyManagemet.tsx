@@ -456,18 +456,16 @@ const PasskeyManagement: FC<{
                 </div>
 
                 <div class={actionSectionClass}>
-                  {debugMode && (
-                    <button
-                      id="view-passkey-history-btn"
-                      class={cx(iconButtonBaseClass, "view-passkey-history-btn")}
-                      aria-label="履歴"
-                      title="履歴"
-                      data-passkey-id={pData.passkey.id}
-                      type="button"
-                    >
-                      <span class="material-symbols-outlined">history</span>
-                    </button>
-                  )}
+                  <button
+                    id="view-passkey-history-btn"
+                    class={cx(iconButtonBaseClass, "view-passkey-history-btn")}
+                    aria-label="履歴"
+                    title="履歴"
+                    data-passkey-id={pData.passkey.id}
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined">history</span>
+                  </button>
 
                   <button
                     class={cx(iconButtonBaseClass, iconButtonTestClass, "test-passkey-btn")}
