@@ -112,6 +112,7 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
     border-radius: 8px;
     font-family: ui-monospace, SFMono-Regular, SFMono, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
+    user-select: none;
   `;
 
   const inputClass = cx(
