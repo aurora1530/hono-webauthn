@@ -7,6 +7,11 @@ import { openModalWithJSX } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
 import { handleRegistration } from "./lib/registration.js";
 import { webauthnClient } from "./lib/rpc/webauthnClient.js";
+import {
+  clearWebAuthnRequest,
+  handleWebAuthnAbort,
+  startWebAuthnRequest,
+} from "./lib/webauthnAbort.js";
 
 type PasskeyHistoryPage = {
   histories: PasskeyHistory[];
@@ -195,7 +200,21 @@ async function handleTestAuthentication(passkeyId: string) {
     return;
   }
   try {
-    const credential = await navigator.credentials.get({ publicKey: options });
+    const signal = startWebAuthnRequest();
+    const credential = await navigator.credentials.get({
+      publicKey: options,
+      signal,
+    });
+    clearWebAuthnRequest();
+    if (!credential) {
+      showStatusToast({
+        message: "認証情報の取得に失敗しました。",
+        variant: "error",
+        ariaLive: "assertive",
+      });
+      openMessageModal("認証テストに失敗しました。認証情報を取得できませんでした。");
+      return;
+    }
     const verifyRes = await webauthnClient["test-authentication"].verify.$post({
       json: { body: credential },
     });
@@ -206,7 +225,17 @@ async function handleTestAuthentication(passkeyId: string) {
     }
     openMessageModal("認証テストが成功しました。");
   } catch (e) {
+    clearWebAuthnRequest();
+    if (handleWebAuthnAbort(e, "認証テストを中断しました。")) {
+      openMessageModal("認証テストを中断しました。");
+      return;
+    }
     console.error(e);
+    showStatusToast({
+      message: "認証テストに失敗しました。時間をおいて再試行してください。",
+      variant: "error",
+      ariaLive: "assertive",
+    });
     openMessageModal("認証テストに失敗しました。キャンセルされたか、エラーが発生しました。");
   }
 }

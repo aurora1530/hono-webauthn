@@ -1,5 +1,10 @@
 import { showStatusToast } from "components/common/StatusToast.js";
 import { webauthnClient } from "./rpc/webauthnClient.js";
+import {
+  clearWebAuthnRequest,
+  handleWebAuthnAbort,
+  startWebAuthnRequest,
+} from "./webauthnAbort.js";
 
 async function handleReauthentication(): Promise<boolean> {
   const generateReauthenticationOptionsResponse =
@@ -19,7 +24,20 @@ async function handleReauthentication(): Promise<boolean> {
     );
     console.log(options);
 
-    const credential = await navigator.credentials.get({ publicKey: options });
+    const signal = startWebAuthnRequest();
+    const credential = await navigator.credentials.get({
+      publicKey: options,
+      signal,
+    });
+    clearWebAuthnRequest();
+    if (!credential) {
+      showStatusToast({
+        message: "認証情報の取得に失敗しました。",
+        variant: "error",
+        ariaLive: "assertive",
+      });
+      return false;
+    }
     const credentialResponse = await webauthnClient.reauthentication.verify.$post({
       json: {
         body: credential,
@@ -36,7 +54,14 @@ async function handleReauthentication(): Promise<boolean> {
     }
     return true;
   } catch (error) {
+    clearWebAuthnRequest();
+    if (handleWebAuthnAbort(error, "パスキーによる再認証を中断しました。")) return false;
     console.error("Reauthentication error:", error);
+    showStatusToast({
+      message: "パスキーによる再認証に失敗しました。",
+      variant: "error",
+      ariaLive: "assertive",
+    });
     return false;
   }
 }

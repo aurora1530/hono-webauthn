@@ -1,8 +1,14 @@
+import { showStatusToast } from "components/common/StatusToast.js";
 import { closeModal } from "./modal/base.js";
 import { openMessageModal } from "./modal/message.js";
 import { handleReauthentication } from "./reauthentication.js";
 import { authClient } from "./rpc/authClient.js";
 import { webauthnClient } from "./rpc/webauthnClient.js";
+import {
+  clearWebAuthnRequest,
+  handleWebAuthnAbort,
+  startWebAuthnRequest,
+} from "./webauthnAbort.js";
 
 function validateUsernameAndUpdateUI(): boolean {
   const usernameEle = document.getElementById("username");
@@ -89,7 +95,33 @@ async function handleRegistration(isNewAccount: boolean = true) {
   );
   console.log(options);
 
-  const credential = await navigator.credentials.create({ publicKey: options });
+  const signal = startWebAuthnRequest();
+  let credential: Credential | null;
+  try {
+    credential = await navigator.credentials.create({
+      publicKey: options,
+      signal,
+    });
+  } catch (error) {
+    clearWebAuthnRequest();
+    if (handleWebAuthnAbort(error, "パスキーの作成を中断しました。")) return;
+    console.error(error);
+    showStatusToast({
+      message: "パスキーの作成に失敗しました。時間をおいて再試行してください。",
+      variant: "error",
+      ariaLive: "assertive",
+    });
+    return;
+  }
+  clearWebAuthnRequest();
+  if (!credential) {
+    showStatusToast({
+      message: "認証情報の取得に失敗しました。",
+      variant: "error",
+      ariaLive: "assertive",
+    });
+    return;
+  }
   const credentialResponse = await webauthnClient.registration.verify.$post({
     json: {
       body: credential,

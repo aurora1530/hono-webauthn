@@ -9,6 +9,12 @@ import {
 } from "../../ui/theme.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
+import {
+  clearWebAuthnRequest,
+  handleWebAuthnAbort,
+  isAbortError,
+  startWebAuthnRequest,
+} from "../lib/webauthnAbort.js";
 import { LoadingIndicator } from "./common/LoadingIndicator.js";
 import { showStatusToast } from "./common/StatusToast.js";
 
@@ -168,9 +174,19 @@ const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: string) =
   }
   const generateJson = await generateRes.json();
   const options = PublicKeyCredential.parseRequestOptionsFromJSON(generateJson);
-  const credential = await navigator.credentials.get({
-    publicKey: options,
-  });
+  const signal = startWebAuthnRequest();
+  let credential: Credential | null = null;
+  try {
+    credential = await navigator.credentials.get({
+      publicKey: options,
+      signal,
+    });
+  } catch (error) {
+    clearWebAuthnRequest();
+    handleWebAuthnAbort(error, "認証を中断しました。");
+    throw error;
+  }
+  clearWebAuthnRequest();
   if (!(credential instanceof PublicKeyCredential)) {
     throw new Error("認証情報の取得に失敗しました");
   }
@@ -818,6 +834,9 @@ export const PrfPlaygroundApp = () => {
       });
       showStatus("暗号化と保存が完了しました。", false);
     } catch (error) {
+      if (isAbortError(error)) {
+        return;
+      }
       console.error(error);
       showStatus(error instanceof Error ? error.message : "暗号化中にエラーが発生しました", true);
     } finally {
@@ -882,6 +901,9 @@ export const PrfPlaygroundApp = () => {
       });
       showStatus("復号に成功しました。", false);
     } catch (error) {
+      if (isAbortError(error)) {
+        return;
+      }
       console.error(error);
       showStatus(error instanceof Error ? error.message : "復号に失敗しました", true);
     } finally {
