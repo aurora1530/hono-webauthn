@@ -57,7 +57,7 @@ export const showStatusToast = ({
   if (!message) {
     if (_toastTimer) clearTimeout(_toastTimer);
     toastRoot.hidePopover();
-    render(<></>, toastRoot);
+    render(null, toastRoot);
     return;
   }
 
@@ -79,6 +79,6 @@ export const showStatusToast = ({
   if (_toastTimer) clearTimeout(_toastTimer);
   _toastTimer = window.setTimeout(() => {
     toastRoot.hidePopover();
-    render(<></>, toastRoot);
+    render(null, toastRoot);
   }, duration);
 };
