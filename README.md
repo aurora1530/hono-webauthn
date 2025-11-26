@@ -8,27 +8,28 @@ We use Upstash for Redis and Supabase for Postgres.
 
 ## Setup
 
-You have to have Docker and Docker Compose installed.
+You have to have Docker and Docker Compose installed for Postgres/Redis, and Node (>=22.14) on your host for the app.
 
-Before running the container, make sure to set these environment variables in a `.env` file:
+Create a `.env` file on your host with:
 
 ```txt
 SIGNED_COOKIE_SECRET=your_secret_key_here
 POSTGRES_USER=postgres_user_here
 POSTGRES_PASSWORD=postgres_password_here
 POSTGRES_DB=postgres_db_name_here
-DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
-REDIS_URL="redis://redis:6379"
+POSTGRES_PORT=5432
+REDIS_PORT=6379
+DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public"
+REDIS_URL="redis://localhost:${REDIS_PORT}"
 ```
 
-then run:
+then start only the data services:
 
 ```bash
-docker compose up
-docker compose exec app bash
+docker compose up -d
 ```
 
-on the container, run:
+Back on your host shell:
 
 ```bash
 npm run build:db && npm run deploy:migrate
