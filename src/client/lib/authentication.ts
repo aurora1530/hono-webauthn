@@ -6,6 +6,25 @@ import {
   startWebAuthnRequest,
 } from "./webauthnAbort.js";
 
+const parsePostLoginRedirect = () => {
+  try {
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirect = searchParams.get("redirect");
+    if (!redirect) return "/";
+    if (!redirect.startsWith("/")) return "/";
+    if (redirect.startsWith("//")) return "/";
+
+    const resolved = new URL(redirect, window.location.origin);
+    if (resolved.origin !== window.location.origin) return "/";
+
+    return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+  } catch {
+    return "/";
+  }
+};
+
+const postLoginRedirect = parsePostLoginRedirect();
+
 async function handleAuthentication() {
   const generateAuthenticationOptionsResponse = await webauthnClient.authentication.generate.$get();
   if (!generateAuthenticationOptionsResponse.ok) {
@@ -65,7 +84,7 @@ async function handleAuthentication() {
     return;
   }
 
-  location.href = "/";
+  location.href = postLoginRedirect;
 }
 
 export { handleAuthentication };

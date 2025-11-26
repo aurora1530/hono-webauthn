@@ -5,6 +5,7 @@ import Profile from "../../components/profile/Profile.js";
 import { buildDeletionSummary } from "../../lib/auth/deleteAccount.js";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
 import { reauthSessionController } from "../../lib/auth/reauthSession.js";
+import { buildLoginRedirectUrl } from "../../lib/auth/redirect.js";
 import prisma from "../../prisma.js";
 import { rpID } from "../auth/webauthn/constant.js";
 
@@ -14,7 +15,7 @@ export const profileRoutes = profileApp
   .get("/", async (c) => {
     const isLoginedIn = !!(await loginSessionController.getUserData(c));
     if (!isLoginedIn) {
-      return c.redirect("/auth/login");
+      return c.redirect(buildLoginRedirectUrl(c.req.raw));
     }
 
     return c.render(<Profile />, {

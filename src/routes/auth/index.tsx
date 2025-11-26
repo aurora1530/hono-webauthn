@@ -8,6 +8,7 @@ import PasskeyManagement from "../../components/auth/PasskeyManagemet.js";
 import PrfPlayground from "../../components/auth/PrfPlayground.js";
 import { findHistories } from "../../lib/auth/history.js";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
+import { buildLoginRedirectUrl, extractRedirectPath } from "../../lib/auth/redirect.js";
 import { webauthnSessionController } from "../../lib/auth/webauthnSession.js";
 import prisma from "../../prisma.js";
 import authPageRenderer from "./renderer.js";
@@ -31,7 +32,8 @@ export const authAppRoutes = authApp
   .get("/login", async (c) => {
     const userData = await loginSessionController.getUserData(c);
     if (userData) {
-      return c.redirect("/");
+      const redirectPath = extractRedirectPath(c.req.raw);
+      return c.redirect(redirectPath ?? "/");
     }
 
     return c.render(<LoginForm />, {
@@ -92,7 +94,7 @@ export const authAppRoutes = authApp
   .get("/passkey-management", async (c) => {
     const userData = await loginSessionController.getUserData(c);
     if (!userData) {
-      return c.redirect("/auth/login");
+      return c.redirect(buildLoginRedirectUrl(c.req.raw));
     }
 
     const passkeys = await prisma.passkey.findMany({
@@ -130,7 +132,7 @@ export const authAppRoutes = authApp
   .get("/prf", async (c) => {
     const userData = await loginSessionController.getUserData(c);
     if (!userData) {
-      return c.redirect("/auth/login");
+      return c.redirect(buildLoginRedirectUrl(c.req.raw));
     }
     return c.render(<PrfPlayground />, {
       title: "WebAuthn PRF 暗号化",
