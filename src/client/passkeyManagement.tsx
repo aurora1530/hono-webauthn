@@ -1,5 +1,6 @@
 import type { PasskeyHistory } from "@prisma/client";
 import { showStatusToast } from "components/common/StatusToast.js";
+import { PasskeyExplanationModal } from "./components/common/PasskeyExplanationModal.js";
 import PasskeyHistories from "./components/PasskeyHistories.js";
 import { handleChangePasskeyName } from "./lib/changePasskeyName.js";
 import { handleDeletePasskey } from "./lib/deletePasskey.js";
@@ -46,7 +47,13 @@ const invalidatePasskeyHistoryCache = (passkeyId: string) => {
 };
 
 document.getElementById("add-passkey-button")?.addEventListener("click", () => {
-  handleRegistration(false);
+  openModalWithJSX(
+    <PasskeyExplanationModal
+      onContinue={() => {
+        handleRegistration(false);
+      }}
+    />,
+  );
 });
 
 const changePasskeyNameBtns = document.getElementsByClassName(
