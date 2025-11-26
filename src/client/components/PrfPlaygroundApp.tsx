@@ -541,7 +541,7 @@ const latestOutputHeadingClass = css`
   margin: 0 0 12px;
 `;
 
-export const PrfPlaygroundApp = () => {
+export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean }) => {
   const [passkeys, setPasskeys] = useState<PasskeyOption[]>([]);
   const [passkeysLoading, setPasskeysLoading] = useState(true);
   const [selectedPasskeyId, setSelectedPasskeyId] = useState<string | null>(null);
@@ -837,14 +837,16 @@ export const PrfPlaygroundApp = () => {
       setPlaintext("");
       setLatestOutput({
         title: "暗号化結果",
-        rows: [
-          { label: "Entry ID", value: storeJson.entry.id },
-          { label: "Ciphertext", value: storeJson.entry.ciphertext },
-          { label: "IV", value: storeJson.entry.iv },
-          { label: "Tag", value: storeJson.entry.tag },
-          { label: "Associated Data", value: storeJson.entry.associatedData ?? "" },
-          { label: "PRF Input", value: storeJson.entry.prfInput },
-        ],
+        rows: debugMode
+          ? [
+              { label: "Entry ID", value: storeJson.entry.id },
+              { label: "Ciphertext", value: storeJson.entry.ciphertext },
+              { label: "IV", value: storeJson.entry.iv },
+              { label: "Tag", value: storeJson.entry.tag },
+              { label: "Associated Data", value: storeJson.entry.associatedData ?? "" },
+              { label: "PRF Input", value: storeJson.entry.prfInput },
+            ]
+          : [{ label: "Ciphertext", value: storeJson.entry.ciphertext }],
       });
       await loadEntries({
         page: 1,
@@ -1207,32 +1209,38 @@ export const PrfPlaygroundApp = () => {
                 </div>
 
                 <div class={entryMetaClass}>
-                  <div>
-                    <span>Entry ID</span>
-                    <code>{entry.id}</code>
-                  </div>
+                  {debugMode && (
+                    <div>
+                      <span>Entry ID</span>
+                      <code>{entry.id}</code>
+                    </div>
+                  )}
                   <div>
                     <span>Ciphertext</span>
                     <code class={cypherTextClass}>{entry.ciphertext}</code>
                   </div>
-                  <div>
-                    <span>IV</span>
-                    <code>{entry.iv}</code>
-                  </div>
-                  <div>
-                    <span>Tag</span>
-                    <code>{entry.tag}</code>
-                  </div>
-                  {entry.associatedData && (
-                    <div>
-                      <span>Associated Data</span>
-                      <code>{entry.associatedData}</code>
-                    </div>
+                  {debugMode && (
+                    <>
+                      <div>
+                        <span>IV</span>
+                        <code>{entry.iv}</code>
+                      </div>
+                      <div>
+                        <span>Tag</span>
+                        <code>{entry.tag}</code>
+                      </div>
+                      {entry.associatedData && (
+                        <div>
+                          <span>Associated Data</span>
+                          <code>{entry.associatedData}</code>
+                        </div>
+                      )}
+                      <div>
+                        <span>PRF Input</span>
+                        <code>{entry.prfInput}</code>
+                      </div>
+                    </>
                   )}
-                  <div>
-                    <span>PRF Input</span>
-                    <code>{entry.prfInput}</code>
-                  </div>
                 </div>
 
                 <div class={entryActionsClass}>

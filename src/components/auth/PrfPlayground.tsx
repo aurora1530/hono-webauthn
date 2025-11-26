@@ -1,8 +1,14 @@
 import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
+import { useRequestContext } from "hono/jsx-renderer";
+import { loginSessionController } from "../../lib/auth/loginSession.js";
 import { pageTitleClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
 
-export const PrfPlayground: FC = () => {
+export const PrfPlayground: FC = async () => {
+  const c = useRequestContext();
+  const userData = await loginSessionController.getUserData(c);
+  const debugMode = !!userData?.debugMode;
+
   const wrapperClass = css`
     max-width: 920px;
   `;
@@ -18,7 +24,11 @@ export const PrfPlayground: FC = () => {
 
   return (
     <div class={wrapperClass}>
-      <div id="prf-playground-root" class={placeholderClass}>
+      <div
+        id="prf-playground-root"
+        class={placeholderClass}
+        data-debug-mode={debugMode ? "true" : "false"}
+      >
         <h2 class={pageTitleClass}>WebAuthn PRF 暗号化プレイグラウンド</h2>
         <p class={textMutedClass}>クライアントコンポーネントを読み込んでいます…</p>
         <p class={cx(textMutedClass, css`font-size: 13px;`)}>
