@@ -67,7 +67,7 @@ export const darkTokens = {
     warning: "#fbbf24",
     warningSurface: "#451a03",
     infoSurface: "#1e3a8a",
-    codeBg: "#334155",
+    codeBg: "#0f172a",
     codeText: "#f1f5f9",
   },
   shadow: {
