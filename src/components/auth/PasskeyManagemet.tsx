@@ -4,6 +4,7 @@ import type { FC } from "hono/jsx";
 import { aaguidToNameAndIcon, getIconsByName } from "../../lib/auth/aaguid.js";
 import { getPasskeyHistoryTypeLabel } from "../../lib/auth/passkeyHistoryType.js";
 import { isSynced } from "../../lib/auth/sync.js";
+import { formatUtcDateTime } from "../../lib/date.js";
 import { MAX_PASSKEYS_PER_USER } from "../../routes/auth/webauthn/constant.js";
 import { buttonClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
 
@@ -358,7 +359,7 @@ const PasskeyManagement: FC<{
             const iconLight = metadata.icon_light;
             const iconDark = metadata.icon_dark;
             const lastUsedLabel = pData.lastUsed
-              ? `${pData.lastUsed.usedAt.toLocaleString()} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
+              ? `${formatUtcDateTime(pData.lastUsed.usedAt, "Asia/Tokyo")} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
               : "未使用";
 
             const hasCiphertextLock = pData.prfCiphertextCount > 0;
@@ -450,7 +451,7 @@ const PasskeyManagement: FC<{
                         calendar_today
                       </span>
                       <span>
-                        作成日: {pData.passkey.createdAt.toLocaleDateString()}{" "}
+                        作成日: {formatUtcDateTime(pData.passkey.createdAt, "Asia/Tokyo")}{" "}
                         <span style="opacity: 0.7;">
                           by {browser} on {os}
                         </span>
