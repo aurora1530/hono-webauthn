@@ -5,7 +5,7 @@ import { aaguidToNameAndIcon, getIconsByName } from "../../lib/auth/aaguid.js";
 import { getPasskeyHistoryTypeLabel } from "../../lib/auth/passkeyHistoryType.js";
 import { isSynced } from "../../lib/auth/sync.js";
 import { MAX_PASSKEYS_PER_USER } from "../../routes/auth/webauthn/constant.js";
-import { badgeClass, buttonClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
+import { buttonClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
 
 type PasskeyData = {
   passkey: Passkey;
@@ -23,14 +23,32 @@ const PasskeyManagement: FC<{
   const containerClass = css`
     width: min(960px, 100%);
     margin: 0 auto;
-    display: grid;
-    gap: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  `;
+
+  const headerClass = css`
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  `;
+
+  const headerTopClass = css`
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 16px;
   `;
 
   const titleClass = css`
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 800;
-    margin: 8px 0 4px;
+    margin: 0;
+    line-height: 1.2;
   `;
 
   const listClass = css`
@@ -39,452 +57,462 @@ const PasskeyManagement: FC<{
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
     width: 100%;
   `;
 
   const itemClass = cx(
     surfaceClass(),
     css`
-      padding: 16px 18px;
+      padding: 20px;
       display: flex;
-      flex-direction: column;
-      gap: 0.6em;
-      box-sizing: border-box;
+      gap: 16px;
+      align-items: flex-start;
+      @media (max-width: 600px) {
+        flex-direction: column;
+      }
     `,
   );
 
-  const statusRowClass = css`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    min-height: 18px;
-  `;
-
-  const statusLeftClass = css`
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 18px;
-  `;
-
-  const cardHeaderClass = css`
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    column-gap: 14px;
+  const iconSectionClass = css`
+    flex-shrink: 0;
   `;
 
   const iconWrapperClass = css`
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     background: var(--color-surface-muted);
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--color-border);
+    color: var(--text-muted);
   `;
 
-  const cardTitleStackClass = css`
+  const iconClass = css`
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  `;
+
+  const contentSectionClass = css`
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    min-width: 0;
+    gap: 8px;
   `;
 
   const nameRowClass = css`
     display: flex;
     align-items: center;
     gap: 10px;
-    min-width: 0;
-  `;
-
-  const actionGroupClass = css`
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-  `;
-
-  const iconButtonBaseClass = css`
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    background: var(--color-surface-strong);
-    color: var(--text-color);
-    transition: background-color 0.15s ease-in-out, opacity 0.15s;
-    &:hover {
-      background: var(--color-surface-muted);
-    }
-  `;
-
-  const iconButtonDangerClass = css`
-    background: var(--color-danger-surface);
-    color: #991b1b;
-    border-color: color-mix(in srgb, var(--color-danger) 45%, white);
-    &:hover {
-      background: color-mix(in srgb, var(--color-danger-surface) 70%, white);
-    }
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-  `;
-
-  const iconButtonTestClass = css`
-    background: #dbeafe;
-    color: #1e3a8a;
-    border-color: #bfdbfe;
-    &:hover {
-      background: #bfdbfe;
-    }
-  `;
-
-  const iconClass = css`
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
+    flex-wrap: wrap;
   `;
 
   const nameClass = css`
     font-weight: 700;
-    text-align: left;
-    font-size: 16px;
+    font-size: 18px;
     color: var(--text-color);
     margin: 0;
-    flex: 1;
-    min-width: 0;
   `;
 
-  const currentSessionClass = css`
-    font-size: 12px;
-    color: var(--primary-color);
-    font-weight: 700;
-  `;
-
-  const metaClass = css`
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 10px 18px;
-    padding-top: 10px;
-    border-top: 1px solid var(--color-border);
-  `;
-
-  const metaLabelClass = cx(
-    textMutedClass,
-    css`
-      font-size: 11px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-      display: block;
-    `,
-  );
-
-  const metaValueClass = css`
-    font-size: 13px;
-    color: var(--text-color);
-    line-height: 1.4;
-  `;
-
-  const badgeGroupClass = css`
-    display: inline-flex;
-    gap: 8px;
-    align-items: center;
-  `;
-
-  const addButtonClass = buttonClass("primary", "md");
-  const prfLinkButtonClass = css`
-    cursor: pointer;
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    background: #0f172a;
-    color: #fff;
-    text-decoration: none;
-    &:hover {
-      opacity: 0.9;
-    }
-  `;
-
-  const badgeSyncedClass = cx(
-    badgeClass("neutral"),
-    css`
-      background: #ecfdf5;
-      color: #065f46;
-      border-color: #a7f3d0;
-    `,
-  );
-
-  const badgeUnsyncedClass = cx(
-    badgeClass("warning"),
-    css`
-      background: #fffbeb;
-      color: #92400e;
-      border-color: #fde68a;
-    `,
-  );
-
-  const badgeEncryptedClass = cx(
-    badgeClass("danger"),
-    css`
-      background: #fee2e2;
-      color: #991b1b;
-      border-color: #fecaca;
-    `,
-  );
-
-  const linkRowClass = css`
+  const badgeRowClass = css`
     display: flex;
-    justify-content: flex-end;
-    margin: 6px 0 12px;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   `;
 
-  const aaguidDesktopClass = css`
-    font-size: 11px;
-    color: #94a3b8;
-    word-break: break-all;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 260px;
-    flex-shrink: 0;
-    @media (max-width: 560px) {
-      display: none;
-    }
-  `;
+  const badgeBaseClass = css`
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      line-height: 1.4;
+      white-space: nowrap;
+      &[hidden] {
+        display: none !important;
+      }
+    `;
 
-  const aaguidMobileClass = css`
-    font-size: 11px;
-    color: #94a3b8;
-    word-break: break-all;
-    display: none;
-    @media (max-width: 560px) {
-      display: block;
-    }
-  `;
+  const badgeCurrentClass = css`
+      background: var(--color-primary-surface);
+      color: var(--primary-color);
+      border-color: color-mix(in srgb, var(--primary-color) 20%, transparent);
+    `;
 
-  const smallMarginClass = css`
-    margin: 0.4em 0;
-  `;
+  const badgeSyncedClass = css`
+      background: #ecfdf5;
+      color: #047857;
+      border-color: #a7f3d0;
+    `;
+
+  const badgeUnsyncedClass = css`
+      background: #fffbeb;
+      color: #b45309;
+      border-color: #fde68a;
+    `;
+
+  const badgeEncryptedClass = css`
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    `;
+
+  const metaSectionClass = css`
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    `;
 
   const metaItemClass = css`
-    display: flex;
-    flex-direction: column;
-  `;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.4;
+    `;
+
+  const actionSectionClass = css`
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      @media (max-width: 600px) {
+        width: 100%;
+        justify-content: flex-end;
+        border-top: 1px solid var(--color-border);
+        padding-top: 12px;
+      }
+    `;
+
+  const iconButtonBaseClass = css`
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      background: var(--color-surface-strong);
+      color: var(--text-color);
+      transition: all 0.2s ease;
+      &:hover {
+        background: var(--color-surface-muted);
+        border-color: var(--color-border-hover);
+      }
+      &:active {
+        transform: translateY(1px);
+      }
+    `;
+
+  const iconButtonDangerClass = css`
+      background: var(--color-danger-surface);
+      color: #dc2626;
+      border-color: #fecaca;
+      &:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+      }
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: var(--color-surface-muted);
+        color: var(--text-muted);
+        border-color: var(--color-border);
+      }
+    `;
+
+  const iconButtonTestClass = css`
+      background: #eff6ff;
+      color: #2563eb;
+      border-color: #bfdbfe;
+      &:hover {
+        background: #dbeafe;
+        border-color: #93c5fd;
+      }
+    `;
+
+  const addButtonClass = buttonClass("primary", "md");
+
+  const prfLinkButtonClass = css`
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      &:hover {
+        background: var(--color-surface-muted);
+        color: var(--text-color);
+      }
+    `;
 
   const lockMessageClass = css`
-    font-size: 12px;
-    color: #991b1b;
-    margin: 4px 0 0;
-    text-align: right;
-  `;
-
+      font-size: 12px;
+      color: #dc2626;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      &[hidden] {
+        display: none !important;
+      }
+    `;
   return (
     <div class={containerClass}>
-      <h2 class={titleClass}>パスキー管理</h2>
-      <div class={css`display:flex; align-items:center; gap:10px; flex-wrap:wrap;`}>
-        <button
-          class={addButtonClass}
-          id="add-passkey-button"
-          type="button"
-          disabled={passkeyData.length >= MAX_PASSKEYS_PER_USER}
-        >
-          パスキー作成
-        </button>
-        <span class={textMutedClass}>
-          パスキーの数: {passkeyData.length} / {MAX_PASSKEYS_PER_USER}
-        </span>
-      </div>
-      <div class={linkRowClass}>
-        <a class={prfLinkButtonClass} href="/auth/prf">
-          PRF暗号化ページを開く
-        </a>
-      </div>
-      {passkeyData.length === 0 ? (
-        <p class={textMutedClass}>作成されているパスキーはありません。</p>
-      ) : (
-        <>
-          {passkeyData.every((pData) => !isSynced(pData.passkey)) && (
-            <p
+      <header class={headerClass}>
+        <div class={headerTopClass}>
+          <div>
+            <h2 class={titleClass}>パスキー管理</h2>
+            <span class={textMutedClass} style="font-size: 13px; margin-top: 4px; display: block;">
+              作成済みのパスキー: {passkeyData.length} / {MAX_PASSKEYS_PER_USER}
+            </span>
+          </div>
+          <div class={css`display:flex; align-items:center; gap:12px;`}>
+            <a class={prfLinkButtonClass} href="/auth/prf">
+              <span class="material-symbols-outlined" style="font-size: 18px;">
+                lock
+              </span>
+              PRF暗号化設定
+            </a>
+            <button
+              class={addButtonClass}
+              id="add-passkey-button"
+              type="button"
+              disabled={passkeyData.length >= MAX_PASSKEYS_PER_USER}
+            >
+              <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">
+                add
+              </span>
+              パスキーを作成
+            </button>
+          </div>
+        </div>
+
+        {passkeyData.length === 0 ? (
+          <p class={textMutedClass}>作成されているパスキーはありません。</p>
+        ) : (
+          passkeyData.every((pData) => !isSynced(pData.passkey)) && (
+            <div
               class={cx(
                 textMutedClass,
                 css`
-                  color: #b45309;
-                  background: #fef3c7;
-                  padding: 10px 12px;
-                  border-radius: 10px;
+                  color: #92400e;
+                  background: #fffbeb;
+                  padding: 12px 16px;
+                  border-radius: 8px;
                   border: 1px solid #fcd34d;
-                  font-weight: 600;
+                  font-size: 14px;
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 10px;
                 `,
               )}
             >
-              注意:
-              同期されたパスキーがありません。パスキーを紛失した場合、認証できなくなる可能性があります。
-            </p>
-          )}
-          <ul class={listClass}>
-            {passkeyData.map((pData) => {
-              const browser = pData.passkey.createdBrowser;
-              const os = pData.passkey.createdOS;
-              const iconSrc =
-                aaguidToNameAndIcon(pData.passkey.aaguid)?.icon_light ??
-                getIconsByName(pData.passkey.name).icon_light;
-              const metaLastUsed = pData.lastUsed
-                ? `${pData.lastUsed.usedAt.toLocaleString()} by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
-                : "未使用";
-              const hasCiphertextLock = pData.prfCiphertextCount > 0;
-              return (
-                <li key={pData.passkey.id} class={itemClass} data-passkey-id={pData.passkey.id}>
-                  <div class={statusRowClass}>
-                    <div class={statusLeftClass}>
-                      {pData.passkey.id === currentPasskeyID && (
-                        <span class={currentSessionClass}>現在のセッションで使用中</span>
-                      )}
-                    </div>
-                    <div class={badgeGroupClass}>
-                      {isSynced(pData.passkey) ? (
-                        <span class={badgeSyncedClass}>Synced</span>
-                      ) : (
-                        <span class={badgeUnsyncedClass}>Unsynced</span>
-                      )}
+              <span class="material-symbols-outlined" style="font-size: 20px; color: #d97706;">
+                warning
+              </span>
+              <span>
+                <strong>注意:</strong>{" "}
+                同期されたパスキーがありません。デバイスを紛失した場合、アカウントにアクセスできなくなる可能性があります。
+              </span>
+            </div>
+          )
+        )}
+      </header>
+
+      {passkeyData.length > 0 && (
+        <ul class={listClass}>
+          {passkeyData.map((pData) => {
+            const browser = pData.passkey.createdBrowser;
+            const os = pData.passkey.createdOS;
+            const iconSrc =
+              aaguidToNameAndIcon(pData.passkey.aaguid)?.icon_light ??
+              getIconsByName(pData.passkey.name).icon_light;
+            const lastUsedLabel = pData.lastUsed
+              ? `${pData.lastUsed.usedAt.toLocaleString()} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
+              : "未使用";
+
+            const hasCiphertextLock = pData.prfCiphertextCount > 0;
+            const isCurrent = pData.passkey.id === currentPasskeyID;
+
+            return (
+              <li key={pData.passkey.id} class={itemClass} data-passkey-id={pData.passkey.id}>
+                <div class={iconSectionClass}>
+                  <div class={iconWrapperClass}>
+                    {iconSrc ? (
+                      <img decoding="async" class={iconClass} src={iconSrc} alt="" />
+                    ) : (
+                      <span class="material-symbols-outlined" style="font-size: 28px;">
+                        passkey
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div class={contentSectionClass}>
+                  <div class={nameRowClass}>
+                    <p class={nameClass}>{pData.passkey.name}</p>
+                  </div>
+
+                  <div class={badgeRowClass}>
+                    {isCurrent && (
+                      <span class={cx(badgeBaseClass, badgeCurrentClass)}>現在のセッション</span>
+                    )}
+                    {isSynced(pData.passkey) ? (
+                      <span class={cx(badgeBaseClass, badgeSyncedClass)}>
+                        <span
+                          class="material-symbols-outlined"
+                          style="font-size: 14px; margin-right: 2px;"
+                        >
+                          cloud_done
+                        </span>
+                        Synced
+                      </span>
+                    ) : (
+                      <span class={cx(badgeBaseClass, badgeUnsyncedClass)}>
+                        <span
+                          class="material-symbols-outlined"
+                          style="font-size: 14px; margin-right: 2px;"
+                        >
+                          cloud_off
+                        </span>
+                        Unsynced
+                      </span>
+                    )}
+                    {hasCiphertextLock && (
                       <span
-                        class={badgeEncryptedClass}
+                        class={cx(badgeBaseClass, badgeEncryptedClass)}
                         title="暗号化済みのデータがあります"
                         data-prf-badge=""
                         data-passkey-id={pData.passkey.id}
-                        hidden={!hasCiphertextLock}
                       >
-                        暗号化済み <span data-prf-badge-count>{pData.prfCiphertextCount}</span>
+                        <span
+                          class="material-symbols-outlined"
+                          style="font-size: 14px; margin-right: 2px;"
+                        >
+                          lock
+                        </span>
+                        暗号化済み{" "}
+                        <span data-prf-badge-count style="margin-left: 2px;">
+                          {pData.prfCiphertextCount}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div class={metaSectionClass}>
+                    <div class={metaItemClass}>
+                      <span class="material-symbols-outlined" style="font-size: 16px;">
+                        calendar_today
+                      </span>
+                      <span>
+                        作成日: {pData.passkey.createdAt.toLocaleDateString()}{" "}
+                        <span style="opacity: 0.7;">
+                          by {browser} on {os}
+                        </span>
                       </span>
                     </div>
-                  </div>
-                  <div class={cardHeaderClass}>
-                    <div class={iconWrapperClass}>
-                      {iconSrc ? (
-                        <img decoding="async" class={iconClass} src={iconSrc} alt="" />
-                      ) : (
-                        <span style="width:28px;height:28px;display:inline-block;">
-                          <span class="material-symbols-outlined">passkey</span>
-                        </span>
-                      )}
+                    <div class={metaItemClass}>
+                      <span class="material-symbols-outlined" style="font-size: 16px;">
+                        history
+                      </span>
+                      <span>最終利用: {lastUsedLabel}</span>
                     </div>
-
-                    <div class={cardTitleStackClass}>
-                      <div class={nameRowClass}>
-                        <p class={nameClass}>{pData.passkey.name}</p>
-                        {debugMode && (
-                          <span class={aaguidDesktopClass}>AAGUID: {pData.passkey.aaguid}</span>
-                        )}
+                    {debugMode && (
+                      <div class={metaItemClass} style="font-family: monospace; font-size: 11px;">
+                        AAGUID: {pData.passkey.aaguid}
                       </div>
-                    </div>
-
-                    <div class={actionGroupClass}>
-                      {
-                        /* history icon button */
-                        debugMode && (
-                          <button
-                            id="view-passkey-history-btn"
-                            class={cx(iconButtonBaseClass, "view-passkey-history-btn")}
-                            aria-label="パスキー利用履歴を見る"
-                            title="パスキー利用履歴を見る"
-                            data-passkey-id={pData.passkey.id}
-                            type="button"
-                          >
-                            <span class="material-symbols-outlined">history</span>
-                          </button>
-                        )
-                      }
-
-                      {/* Test authentication icon button */}
-                      <button
-                        class={cx(iconButtonBaseClass, iconButtonTestClass, "test-passkey-btn")}
-                        aria-label="このパスキーで認証テスト"
-                        title="このパスキーで認証テスト"
-                        data-passkey-id={pData.passkey.id}
-                        type="button"
-                      >
-                        <span class="material-symbols-outlined">experiment</span>
-                      </button>
-
-                      {/* Edit (change name) icon button */}
-                      <button
-                        id="change-passkey-name-btn"
-                        class={cx(iconButtonBaseClass, "change-passkey-name-btn")}
-                        aria-label="パスキー名を変更"
-                        title="パスキー名を変更"
-                        data-passkey-id={pData.passkey.id}
-                        data-passkey-name={pData.passkey.name}
-                        type="button"
-                      >
-                        <span class="material-symbols-outlined">edit</span>
-                      </button>
-                      {/* Delete icon button */}
-                      <button
-                        class={cx(iconButtonBaseClass, iconButtonDangerClass, "delete-passkey-btn")}
-                        aria-label="パスキーを削除"
-                        title="パスキーを削除"
-                        data-passkey-id={pData.passkey.id}
-                        // 同期されているパスキーがこのパスキーのみかどうかを表すフラグ。
-                        data-only-synced-passkey={
-                          isSynced(pData.passkey) &&
-                          passkeyData.filter((pd) => isSynced(pd.passkey)).length === 1
-                            ? "true"
-                            : "false"
-                        }
-                        data-initial-disabled={(
-                          !canDelete || pData.passkey.id === currentPasskeyID
-                        ).toString()}
-                        type="button"
-                        disabled={
-                          !canDelete || pData.passkey.id === currentPasskeyID || hasCiphertextLock
-                        }
-                      >
-                        <span class="material-symbols-outlined">delete</span>
-                      </button>
-                    </div>
+                    )}
                   </div>
 
-                  <p
+                  <div
                     class={lockMessageClass}
                     data-prf-lock-message=""
                     data-passkey-id={pData.passkey.id}
                     hidden={!hasCiphertextLock}
                   >
-                    暗号化されたデータが存在するため、削除できません。
-                  </p>
-
-                  {debugMode && (
-                    <span class={cx(aaguidMobileClass, smallMarginClass)}>
-                      AAGUID: {pData.passkey.aaguid}
+                    <span class="material-symbols-outlined" style="font-size: 16px;">
+                      info
                     </span>
+                    暗号化されたデータが存在するため、削除できません。
+                  </div>
+                </div>
+
+                <div class={actionSectionClass}>
+                  {debugMode && (
+                    <button
+                      id="view-passkey-history-btn"
+                      class={cx(iconButtonBaseClass, "view-passkey-history-btn")}
+                      aria-label="履歴"
+                      title="履歴"
+                      data-passkey-id={pData.passkey.id}
+                      type="button"
+                    >
+                      <span class="material-symbols-outlined">history</span>
+                    </button>
                   )}
 
-                  <div class={metaClass}>
-                    <div class={metaItemClass}>
-                      <span class={metaLabelClass}>作成日時</span>
-                      <span class={metaValueClass}>
-                        {pData.passkey.createdAt.toLocaleString()} by {browser} on {os}
-                      </span>
-                    </div>
-                    <div class={metaItemClass}>
-                      <span class={metaLabelClass}>最終使用日時</span>
-                      <span class={metaValueClass}>{metaLastUsed}</span>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </>
+                  <button
+                    class={cx(iconButtonBaseClass, iconButtonTestClass, "test-passkey-btn")}
+                    aria-label="認証テスト"
+                    title="認証テスト"
+                    data-passkey-id={pData.passkey.id}
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined">experiment</span>
+                  </button>
+
+                  <button
+                    id="change-passkey-name-btn"
+                    class={cx(iconButtonBaseClass, "change-passkey-name-btn")}
+                    aria-label="名前変更"
+                    title="名前変更"
+                    data-passkey-id={pData.passkey.id}
+                    data-passkey-name={pData.passkey.name}
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+
+                  <button
+                    class={cx(iconButtonBaseClass, iconButtonDangerClass, "delete-passkey-btn")}
+                    aria-label="削除"
+                    title="削除"
+                    data-passkey-id={pData.passkey.id}
+                    data-only-synced-passkey={
+                      isSynced(pData.passkey) &&
+                      passkeyData.filter((pd) => isSynced(pd.passkey)).length === 1
+                        ? "true"
+                        : "false"
+                    }
+                    data-initial-disabled={(!canDelete || isCurrent).toString()}
+                    type="button"
+                    disabled={!canDelete || isCurrent || hasCiphertextLock}
+                  >
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       )}
       <script src="/public/passkeyManagement.js" type="module"></script>
     </div>
