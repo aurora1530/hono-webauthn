@@ -34,6 +34,10 @@ const toastClass = css`
   justify-content: center;
 `;
 
+const toastIconClass = css`
+  margin-right: 8px;
+`;
+
 const errorClass = css`
   background: ${tokens.color.danger};
   border-color: ${tokens.color.danger};
@@ -60,7 +64,15 @@ export const showStatusToast = ({
   toastRoot.showPopover();
   render(
     <div class={containerClass} aria-live={ariaLive}>
-      <output class={cx(toastClass, variant === "error" && errorClass)}>{message}</output>
+      <output class={cx(toastClass, variant === "error" && errorClass)}>
+        {variant === "info" && (
+          <span class={cx("material-symbols-outlined", toastIconClass)}>info</span>
+        )}
+        {variant === "error" && (
+          <span class={cx("material-symbols-outlined", toastIconClass)}>error</span>
+        )}
+        {message}
+      </output>
     </div>,
     toastRoot,
   );
