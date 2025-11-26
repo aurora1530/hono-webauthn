@@ -312,7 +312,7 @@ const PasskeyManagement: FC<{
               <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">
                 add
               </span>
-              パスキーを作成
+              パスキー作成
             </button>
           </div>
         </div>
