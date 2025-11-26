@@ -239,6 +239,9 @@ const Header: FC = async () => {
                   <a href="/auth/passkey-management" class={menuLinkClass}>
                     パスキー管理
                   </a>
+                  <a href="/auth/prf" class={menuLinkClass}>
+                    PRFプレイグラウンド
+                  </a>
                   <a
                     href="/auth/logout"
                     class={cx(menuLinkClass, dangerLinkClass)}
