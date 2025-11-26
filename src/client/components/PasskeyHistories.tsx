@@ -31,7 +31,7 @@ const PasskeyHistories = ({
     if (!confirm("本当にこの利用履歴を削除しますか？")) {
       return;
     }
-    const res = await webauthnClient["passkey-histories"]["delete"].$post({
+    const res = await webauthnClient["passkey-histories"].delete.$post({
       json: {
         passkeyId,
         historyIds: [historyID],
@@ -65,7 +65,7 @@ const PasskeyHistories = ({
     if (!confirm("本当に全ての利用履歴を削除しますか？")) {
       return;
     }
-    const res = await webauthnClient["passkey-histories"]["delete"].$post({
+    const res = await webauthnClient["passkey-histories"].delete.$post({
       json: {
         passkeyId,
         deleteAll: true,
