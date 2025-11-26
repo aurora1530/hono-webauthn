@@ -22,7 +22,7 @@ Hono と WebAuthn を組み合わせたフルスタック認証デモ。Render �
 
 - 要件: Node >=22.14（ホストで実行）、Docker + Docker Compose（DB/Redis 用のみ）。  
 - サーバーが利用する DB/Redis はユーザー側が Docker Compose で起動。AIはこれらの起動をしない。
-- 依存解決：`npm install`
+- 依存解決：`npm install` (既に依存がインストールされている場合はスキップ)。
 - Lint/Format: `npm run biome:check` / `npm run biome:format`。
 - コミットはせず、コミットメッセージの提案とともに作業を完了する。
 
