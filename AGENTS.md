@@ -18,14 +18,13 @@ Hono と WebAuthn を組み合わせたフルスタック認証デモ。Render �
 - すべての外部入力は zod で検証し、Prisma 経由でパラメータ化して SQL インジェクションを防ぐ。  
 - 依存更新時は `npm audit` で既知脆弱性を確認し、不要な権限を持つサービスアカウントを作らない。
 
-## ビルド＆テスト手順（Build & Test）
+## セットアップ/ビルド/テスト手順（Build & Test）
 
 - 要件: Node >=22.14（ホストで実行）、Docker + Docker Compose（DB/Redis 用のみ）。  
-- セットアップ: `.env` を用意し、`docker compose up -d` で Postgres/Redis を起動。以降のコマンドはホストのシェルで実行する。  
-- DB & マイグレーション: `npm run build:db && npm run deploy:migrate`。  
-- 開発サーバー: `npm run dev`（client バンドル watch + Hono サーバー）。  
-- 本番ビルド: `npm run build`。品質チェック: `npm run biome:check`。自動テストは未整備のため、動作確認はブラウザ経由で行う。
-- 通常、開発環境で `npm run build` は実行しない。
+- サーバーが利用する DB/Redis はユーザー側が Docker Compose で起動。AIはこれらの起動をしない。
+- 依存解決：`npm install`
+- Lint/Format: `npm run biome:check` / `npm run biome:format`。
+- コミットはせず、コミットメッセージの提案とともに作業を完了する。
 
 ### エージェントの運用（Agent's Operation）
 
