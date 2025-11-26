@@ -231,7 +231,7 @@ const Header: FC = async () => {
     registerButtonClass,
     css`
       max-width: 100%;
-      justify-content: center;
+      justify-content: left;
       display: flex;
       align-items: center;
       gap: 8px;
