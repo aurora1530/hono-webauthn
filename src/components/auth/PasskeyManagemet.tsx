@@ -463,9 +463,14 @@ const PasskeyManagement: FC<{
                       <span>最終利用: {lastUsedLabel}</span>
                     </div>
                     {debugMode && (
-                      <div class={metaItemClass} style="font-family: monospace; font-size: 11px;">
-                        AAGUID: {pData.passkey.aaguid}
-                      </div>
+                      <>
+                        <div class={metaItemClass} style="font-family: monospace; font-size: 11px;">
+                          AAGUID: {pData.passkey.aaguid}
+                        </div>
+                        <div class={metaItemClass} style="font-family: monospace; font-size: 11px;">
+                          Counter: {pData.passkey.counter}
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
