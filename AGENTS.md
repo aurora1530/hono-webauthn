@@ -25,6 +25,11 @@ Hono と WebAuthn を組み合わせたフルスタック認証デモ。Render �
 - DB & マイグレーション: `npm run build:db && npm run deploy:migrate`。  
 - 開発サーバー: `npm run dev`（client バンドル watch + Hono サーバー）。  
 - 本番ビルド: `npm run build`。品質チェック: `npm run biome:check`。自動テストは未整備のため、動作確認はブラウザ経由で行う。
+- 通常、開発環境で `npm run build` は実行しない。
+
+### エージェントの運用（Agent's Operation）
+
+エージェントは、コード変更後、品質チェック（例: `npm run biome:check`）を実行しますが、`npm run build`のような時間のかかるビルドコマンドや、システム状態を大きく変更する可能性のあるコマンドは、ユーザーからの明示的な指示がない限り自動では実行しません。これらのコマンドの実行が必要な場合は、ユーザーにその旨を伝え、確認を求めます。
 
 ## メンテナンス_ポリシー（Maintenance policy）
 
