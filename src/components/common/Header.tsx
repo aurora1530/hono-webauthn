@@ -198,6 +198,9 @@ const Header: FC = async () => {
     css`
       max-width: 100%;
       justify-content: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     `,
   );
 
@@ -234,12 +237,15 @@ const Header: FC = async () => {
                   </div>
 
                   <a href="/profile" class={menuLinkClass}>
+                    <span class="material-symbols-outlined">account_circle</span>
                     プロフィール
                   </a>
                   <a href="/auth/passkey-management" class={menuLinkClass}>
+                    <span class="material-symbols-outlined">passkey</span>
                     パスキー管理
                   </a>
                   <a href="/auth/prf" class={menuLinkClass}>
+                    <span class="material-symbols-outlined">science</span>
                     PRFプレイグラウンド
                   </a>
                   <a
@@ -247,15 +253,18 @@ const Header: FC = async () => {
                     class={cx(menuLinkClass, dangerLinkClass)}
                     onclick="return confirm('ログアウトしますか？');"
                   >
+                    <span class="material-symbols-outlined">logout</span>
                     ログアウト
                   </a>
                 </>
               ) : (
                 <>
                   <a href="/auth/login" class={menuLinkClass}>
+                    <span class="material-symbols-outlined">login</span>
                     ログイン
                   </a>
                   <a href="/auth/register" class={registerMenuButtonClass}>
+                    <span class="material-symbols-outlined">person_add</span>
                     アカウント登録
                   </a>
                 </>
