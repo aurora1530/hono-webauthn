@@ -36,7 +36,7 @@ const AuthPage: FC = async () => {
               パスキー作成
             </button>
             <a class={secondary} href="/auth/prf">
-              PRF暗号化
+              PRF プレイグラウンド
             </a>
             <a
               class={primary}

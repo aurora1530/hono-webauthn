@@ -301,7 +301,7 @@ const PasskeyManagement: FC<{
               <span class="material-symbols-outlined" style="font-size: 18px;">
                 lock
               </span>
-              PRF暗号化設定
+              PRF プレイグラウンド
             </a>
             <button
               class={addButtonClass}
