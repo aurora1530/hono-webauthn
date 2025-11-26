@@ -451,7 +451,7 @@ const PasskeyManagement: FC<{
                     <span class="material-symbols-outlined" style="font-size: 16px;">
                       info
                     </span>
-                    暗号化されたデータが存在するため、削除できません。
+                    暗号化データが存在するため、削除できません。
                   </div>
                 </div>
 
