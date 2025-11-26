@@ -43,6 +43,14 @@ const Footer: FC = () => {
     }
   `;
 
+  const iconToggleLightClass = css`
+    display: var(--icon-light-display);
+  `;
+
+  const iconToggleDarkClass = css`
+    display: var(--icon-dark-display);
+  `;
+
   return (
     <footer class={footerClass}>
       <div class={innerClass}>
@@ -61,6 +69,16 @@ const Footer: FC = () => {
             fill="currentColor"
             src="/public/icons/github-mark.svg"
             alt="GitHub logo"
+            class={iconToggleLightClass}
+          ></img>
+          <img
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            src="/public/icons/github-mark-white.svg"
+            alt="GitHub logo"
+            class={iconToggleDarkClass}
           ></img>
         </a>
       </div>
