@@ -400,3 +400,14 @@ export const smallLabelClass = css`
   font-size: 13px;
   color: var(--color-text-subtle);
 `;
+
+export const activeMenuLinkClass = css`
+  color: var(--color-text-subtle);
+  cursor: default;
+  pointer-events: none;
+  &:hover {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text-subtle);
+  }
+`;

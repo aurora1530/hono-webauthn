@@ -1,13 +1,46 @@
 import { css, cx } from "hono/css";
 import { html } from "hono/html";
-import type { FC } from "hono/jsx";
+import type { FC, PropsWithChildren } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
-import { badgeClass, buttonClass, textMutedClass } from "../../ui/theme.js";
+import { activeMenuLinkClass, badgeClass, buttonClass, textMutedClass } from "../../ui/theme.js";
+
+type MenuLinkProps = PropsWithChildren<{
+  href: string;
+  currentPath: string;
+  icon: string;
+  className?: Promise<string> | string;
+  activeClassName: Promise<string> | string;
+  onclick?: string;
+}>;
+
+const MenuLink: FC<MenuLinkProps> = ({
+  href,
+  currentPath,
+  icon,
+  children,
+  className,
+  activeClassName,
+  onclick,
+}) => {
+  const isCurrent = currentPath === href;
+  return (
+    <a
+      href={isCurrent ? undefined : href}
+      class={cx(className, isCurrent && activeClassName)}
+      aria-disabled={isCurrent ? "true" : undefined}
+      onclick={isCurrent ? undefined : onclick}
+    >
+      <span class="material-symbols-outlined">{icon}</span>
+      {children}
+    </a>
+  );
+};
 
 const Header: FC = async () => {
   const c = useRequestContext();
   const userdata = await loginSessionController.getUserData(c);
+  const currentPath = c.req.path;
 
   const headerClass = css`
     background-color: var(--header-bg);
@@ -237,37 +270,64 @@ const Header: FC = async () => {
                     </span>
                   </div>
 
-                  <a href="/profile" class={menuLinkClass}>
-                    <span class="material-symbols-outlined">account_circle</span>
+                  <MenuLink
+                    href="/profile"
+                    currentPath={currentPath}
+                    icon="account_circle"
+                    className={menuLinkClass}
+                    activeClassName={activeMenuLinkClass}
+                  >
                     プロフィール
-                  </a>
-                  <a href="/auth/passkey-management" class={menuLinkClass}>
-                    <span class="material-symbols-outlined">passkey</span>
+                  </MenuLink>
+                  <MenuLink
+                    href="/auth/passkey-management"
+                    currentPath={currentPath}
+                    icon="passkey"
+                    className={menuLinkClass}
+                    activeClassName={activeMenuLinkClass}
+                  >
                     パスキー管理
-                  </a>
-                  <a href="/auth/prf" class={menuLinkClass}>
-                    <span class="material-symbols-outlined">science</span>
+                  </MenuLink>
+                  <MenuLink
+                    href="/auth/prf"
+                    currentPath={currentPath}
+                    icon="science"
+                    className={menuLinkClass}
+                    activeClassName={activeMenuLinkClass}
+                  >
                     PRFプレイグラウンド
-                  </a>
-                  <a
+                  </MenuLink>
+                  <MenuLink
                     href="/auth/logout"
-                    class={cx(menuLinkClass, dangerLinkClass)}
+                    currentPath={currentPath}
+                    icon="logout"
+                    className={cx(menuLinkClass, dangerLinkClass)}
+                    activeClassName={activeMenuLinkClass}
                     onclick="return confirm('ログアウトしますか？');"
                   >
-                    <span class="material-symbols-outlined">logout</span>
                     ログアウト
-                  </a>
+                  </MenuLink>
                 </>
               ) : (
                 <>
-                  <a href="/auth/login" class={menuLinkClass}>
-                    <span class="material-symbols-outlined">login</span>
+                  <MenuLink
+                    href="/auth/login"
+                    currentPath={currentPath}
+                    icon="login"
+                    className={menuLinkClass}
+                    activeClassName={activeMenuLinkClass}
+                  >
                     ログイン
-                  </a>
-                  <a href="/auth/register" class={registerMenuButtonClass}>
-                    <span class="material-symbols-outlined">person_add</span>
+                  </MenuLink>
+                  <MenuLink
+                    href="/auth/register"
+                    currentPath={currentPath}
+                    icon="person_add"
+                    className={registerMenuButtonClass}
+                    activeClassName={activeMenuLinkClass}
+                  >
                     アカウント登録
-                  </a>
+                  </MenuLink>
                 </>
               )}
 
