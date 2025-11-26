@@ -15,6 +15,13 @@ export const tokens = {
     danger: "#ef4444",
     dangerSurface: "#fff1f2",
     warningBorder: "#f59e0b",
+    success: "#10b981",
+    successSurface: "#ecfdf5",
+    warning: "#f59e0b",
+    warningSurface: "#fffbeb",
+    infoSurface: "#eff6ff",
+    codeBg: "#0f172a",
+    codeText: "#e2e8f0",
   },
   spacing: {
     xs: "4px",
@@ -40,6 +47,35 @@ export const tokens = {
   },
 };
 
+export const darkTokens = {
+  color: {
+    primary: "#3b82f6", // lighter blue for dark mode
+    primaryStrong: "#60a5fa",
+    surface: "#1e293b", // Slate 800
+    surfaceMuted: "#334155", // Slate 700
+    surfaceStrong: "#0f172a", // Slate 900
+    border: "#334155", // Slate 700
+    borderStrong: "#475569", // Slate 600
+    text: "#f8fafc", // Slate 50
+    textSubtle: "#94a3b8", // Slate 400
+    bg: "#020617", // Slate 950
+    danger: "#f87171",
+    dangerSurface: "#450a0a",
+    warningBorder: "#b45309",
+    success: "#34d399",
+    successSurface: "#064e3b",
+    warning: "#fbbf24",
+    warningSurface: "#451a03",
+    infoSurface: "#1e3a8a",
+    codeBg: "#334155",
+    codeText: "#f1f5f9",
+  },
+  shadow: {
+    sm: "0 4px 14px rgba(0, 0, 0, 0.2)",
+    md: "0 10px 30px rgba(0, 0, 0, 0.4)",
+  },
+};
+
 export const themeClass = css`
   --color-primary: ${tokens.color.primary};
   --primary-color: var(--color-primary);
@@ -58,6 +94,13 @@ export const themeClass = css`
   --color-text-subtle: ${tokens.color.textSubtle};
   --color-danger: ${tokens.color.danger};
   --color-danger-surface: ${tokens.color.dangerSurface};
+  --color-success: ${tokens.color.success};
+  --color-success-surface: ${tokens.color.successSurface};
+  --color-warning: ${tokens.color.warning};
+  --color-warning-surface: ${tokens.color.warningSurface};
+  --color-info-surface: ${tokens.color.infoSurface};
+  --color-code-bg: ${tokens.color.codeBg};
+  --color-code-text: ${tokens.color.codeText};
   --shadow-sm: ${tokens.shadow.sm};
   --shadow-md: ${tokens.shadow.md};
   --radius-sm: ${tokens.radius.sm};
@@ -66,9 +109,38 @@ export const themeClass = css`
   --radius-pill: ${tokens.radius.pill};
   --font-body: ${tokens.font.body};
   --font-mono: ${tokens.font.mono};
+  --icon-light-display: block;
+  --icon-dark-display: none;
   color: var(--color-text);
   background: var(--color-bg);
   font-family: var(--font-body);
+
+  &.dark {
+    color-scheme: dark;
+    --color-primary: ${darkTokens.color.primary};
+    --primary-hover: ${darkTokens.color.primaryStrong};
+    --color-bg: ${darkTokens.color.bg};
+    --color-surface: ${darkTokens.color.surface};
+    --color-surface-muted: ${darkTokens.color.surfaceMuted};
+    --color-surface-strong: ${darkTokens.color.surfaceStrong};
+    --color-border: ${darkTokens.color.border};
+    --color-border-strong: ${darkTokens.color.borderStrong};
+    --color-text: ${darkTokens.color.text};
+    --color-text-subtle: ${darkTokens.color.textSubtle};
+    --color-danger: ${darkTokens.color.danger};
+    --color-danger-surface: ${darkTokens.color.dangerSurface};
+    --color-success: ${darkTokens.color.success};
+    --color-success-surface: ${darkTokens.color.successSurface};
+    --color-warning: ${darkTokens.color.warning};
+    --color-warning-surface: ${darkTokens.color.warningSurface};
+    --color-info-surface: ${darkTokens.color.infoSurface};
+    --color-code-bg: ${darkTokens.color.codeBg};
+    --color-code-text: ${darkTokens.color.codeText};
+    --shadow-sm: ${darkTokens.shadow.sm};
+    --shadow-md: ${darkTokens.shadow.md};
+    --icon-light-display: none;
+    --icon-dark-display: block;
+  }
 `;
 
 export const bodyClass = css`

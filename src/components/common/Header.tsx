@@ -1,4 +1,5 @@
 import { css, cx } from "hono/css";
+import { html } from "hono/html";
 import type { FC } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
@@ -269,10 +270,34 @@ const Header: FC = async () => {
                   </a>
                 </>
               )}
+
+              <button
+                id="theme-toggle"
+                class={menuLinkClass}
+                type="button"
+                style="width: 100%; cursor: pointer; font-size: inherit;"
+              >
+                <span class="material-symbols-outlined">contrast</span>
+                テーマ切り替え
+              </button>
             </div>
           </details>
         </div>
       </nav>
+      {html`
+      <script>
+          document.getElementById('theme-toggle')?.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+              html.classList.remove('dark');
+              localStorage.setItem('theme', 'light');
+            } else {
+              html.classList.add('dark');
+              localStorage.setItem('theme', 'dark');
+            }
+          });
+      </script>
+        `}
     </header>
   );
 };

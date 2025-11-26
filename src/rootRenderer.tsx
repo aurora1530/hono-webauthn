@@ -1,4 +1,5 @@
-import { cx, Style } from "hono/css";
+import { Style } from "hono/css";
+import { html } from "hono/html";
 import { jsxRenderer } from "hono/jsx-renderer";
 import Footer from "./components/common/Footer.js";
 import Header from "./components/common/Header.js";
@@ -23,9 +24,26 @@ const rootRenderer = jsxRenderer(({ children, title }) => {
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
           rel="stylesheet"
         />
+        {html`
+          <script>
+            (function () {
+              try {
+                const localTheme = localStorage.getItem('theme');
+                const supportDarkMode = window.matchMedia(
+                  '(prefers-color-scheme: dark)'
+                ).matches;
+                if (localTheme === 'dark' || (!localTheme && supportDarkMode)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+            })();
+          </script>
+        `}
         <Style />
       </head>
-      <body class={cx(themeClass, bodyClass)}>
+      <body class={bodyClass}>
         <Header />
         <StatusToast />
         <Modal />

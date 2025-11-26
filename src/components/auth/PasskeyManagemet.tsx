@@ -96,6 +96,14 @@ const PasskeyManagement: FC<{
     object-fit: contain;
   `;
 
+  const iconToggleLightClass = css`
+    display: var(--icon-light-display);
+  `;
+
+  const iconToggleDarkClass = css`
+    display: var(--icon-dark-display);
+  `;
+
   const contentSectionClass = css`
     flex: 1;
     min-width: 0;
@@ -141,139 +149,141 @@ const PasskeyManagement: FC<{
     `;
 
   const badgeCurrentClass = css`
-      background: var(--color-primary-surface);
-      color: var(--primary-color);
-      border-color: color-mix(in srgb, var(--primary-color) 20%, transparent);
-    `;
+    background: var(--color-info-surface);
+    color: var(--primary-color);
+    border-color: color-mix(in srgb, var(--primary-color) 20%, transparent);
+  `;
 
   const badgeSyncedClass = css`
-      background: #ecfdf5;
-      color: #047857;
-      border-color: #a7f3d0;
-    `;
+    background: var(--color-success-surface);
+    color: var(--color-success);
+    border-color: color-mix(in srgb, var(--color-success) 30%, transparent);
+  `;
 
   const badgeUnsyncedClass = css`
-      background: #fffbeb;
-      color: #b45309;
-      border-color: #fde68a;
-    `;
+    background: var(--color-warning-surface);
+    color: var(--color-warning);
+    border-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
+  `;
 
   const badgeEncryptedClass = css`
-      background: #fee2e2;
-      color: #b91c1c;
-      border-color: #fecaca;
-    `;
+    background: var(--color-danger-surface);
+    color: var(--color-danger);
+    border-color: color-mix(in srgb, var(--color-danger) 30%, transparent);
+  `;
 
   const metaSectionClass = css`
-      margin-top: 4px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    `;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  `;
 
   const metaItemClass = css`
-      font-size: 13px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      line-height: 1.4;
-    `;
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.4;
+  `;
 
   const actionSectionClass = css`
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      @media (max-width: 600px) {
-        width: 100%;
-        justify-content: flex-end;
-        border-top: 1px solid var(--color-border);
-        padding-top: 12px;
-      }
-    `;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    @media (max-width: 600px) {
+      width: 100%;
+      justify-content: flex-end;
+      border-top: 1px solid var(--color-border);
+      padding-top: 12px;
+    }
+  `;
 
   const iconButtonBaseClass = css`
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      background: var(--color-surface-strong);
-      color: var(--text-color);
-      transition: all 0.2s ease;
-      &:hover {
-        background: var(--color-surface-muted);
-        border-color: var(--color-border-hover);
-      }
-      &:active {
-        transform: translateY(1px);
-      }
-    `;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    background: var(--color-surface-strong);
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    &:hover {
+      background: var(--color-surface-muted);
+      border-color: var(--color-border-hover);
+    }
+    &:active {
+      transform: translateY(1px);
+    }
+  `;
 
   const iconButtonDangerClass = css`
-      background: var(--color-danger-surface);
-      color: #dc2626;
-      border-color: #fecaca;
-      &:hover {
-        background: #fee2e2;
-        border-color: #fca5a5;
-      }
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        background: var(--color-surface-muted);
-        color: var(--text-muted);
-        border-color: var(--color-border);
-      }
-    `;
+    background: var(--color-danger-surface);
+    color: var(--color-danger);
+    border-color: color-mix(in srgb, var(--color-danger) 30%, transparent);
+    &:hover {
+      background: color-mix(in srgb, var(--color-danger-surface) 80%, var(--color-danger));
+      border-color: var(--color-danger);
+      color: white;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--color-surface-muted);
+      color: var(--text-muted);
+      border-color: var(--color-border);
+    }
+  `;
 
   const iconButtonTestClass = css`
-      background: #eff6ff;
-      color: #2563eb;
-      border-color: #bfdbfe;
-      &:hover {
-        background: #dbeafe;
-        border-color: #93c5fd;
-      }
-    `;
+    background: var(--color-info-surface);
+    color: var(--primary-color);
+    border-color: color-mix(in srgb, var(--primary-color) 30%, transparent);
+    &:hover {
+      background: color-mix(in srgb, var(--color-info-surface) 80%, var(--primary-color));
+      border-color: var(--primary-color);
+      color: white;
+    }
+  `;
 
   const addButtonClass = buttonClass("primary", "md");
 
   const prfLinkButtonClass = css`
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-decoration: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      &:hover {
-        background: var(--color-surface-muted);
-        color: var(--text-color);
-      }
-    `;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    &:hover {
+      background: var(--color-surface-muted);
+      color: var(--text-color);
+    }
+  `;
 
   const lockMessageClass = css`
-      font-size: 12px;
-      color: #dc2626;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      line-height: 1.2;
-      text-align: left;
-      &[hidden] {
-        display: none !important;
-      }
-      @media (max-width: 600px) {
-        font-size: 10px;
-      }
-    `;
+    font-size: 12px;
+    color: var(--color-danger);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.2;
+    text-align: left;
+    &[hidden] {
+      display: none !important;
+    }
+    @media (max-width: 600px) {
+      font-size: 10px;
+    }
+  `;
 
   return (
     <div class={containerClass}>
@@ -343,9 +353,10 @@ const PasskeyManagement: FC<{
           {passkeyData.map((pData) => {
             const browser = pData.passkey.createdBrowser;
             const os = pData.passkey.createdOS;
-            const iconSrc =
-              aaguidToNameAndIcon(pData.passkey.aaguid)?.icon_light ??
-              getIconsByName(pData.passkey.name).icon_light;
+            const metadata =
+              aaguidToNameAndIcon(pData.passkey.aaguid) ?? getIconsByName(pData.passkey.name);
+            const iconLight = metadata.icon_light;
+            const iconDark = metadata.icon_dark;
             const lastUsedLabel = pData.lastUsed
               ? `${pData.lastUsed.usedAt.toLocaleString()} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
               : "未使用";
@@ -357,8 +368,23 @@ const PasskeyManagement: FC<{
               <li key={pData.passkey.id} class={itemClass} data-passkey-id={pData.passkey.id}>
                 <div class={iconSectionClass}>
                   <div class={iconWrapperClass}>
-                    {iconSrc ? (
-                      <img decoding="async" class={iconClass} src={iconSrc} alt="" />
+                    {iconLight && iconDark ? (
+                      <>
+                        <img
+                          decoding="async"
+                          class={cx(iconClass, iconToggleLightClass)}
+                          src={iconLight}
+                          alt=""
+                        />
+                        <img
+                          decoding="async"
+                          class={cx(iconClass, iconToggleDarkClass)}
+                          src={iconDark}
+                          alt=""
+                        />
+                      </>
+                    ) : iconLight || iconDark ? (
+                      <img decoding="async" class={iconClass} src={iconLight ?? iconDark} alt="" />
                     ) : (
                       <span class="material-symbols-outlined" style="font-size: 28px;">
                         passkey

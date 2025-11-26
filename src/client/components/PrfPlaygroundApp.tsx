@@ -236,19 +236,7 @@ const headerClass = css`
   }
 `;
 
-const navButtonClass = css`
-  cursor: pointer;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 13px;
-  background: #0f172a;
-  color: #fff;
-  text-decoration: none;
-  &:hover {
-    opacity: 0.9;
-  }
-`;
+const navButtonClass = buttonClass("secondary", "sm");
 
 const sectionClass = css`
     display: flex;
@@ -270,19 +258,14 @@ const fieldClass = css`
 
   label {
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-color);
   }
 
   select,
   input,
   textarea {
-    border: 1px solid #cbd5f5;
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 14px;
     width: 100%;
     box-sizing: border-box;
-    background: #fff;
   }
 `;
 
@@ -323,8 +306,8 @@ const outputGridClass = css`
 
   code {
     display: block;
-    background: #0f172a;
-    color: #e2e8f0;
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
     padding: 6px 8px;
     border-radius: 6px;
     word-break: break-all;
@@ -353,7 +336,7 @@ const copyIconButtonClass = css`
   background: transparent;
   padding: 2px;
   border-radius: 4px;
-  color: #0f172a;
+  color: var(--text-color);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -361,7 +344,7 @@ const copyIconButtonClass = css`
   transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: rgba(15, 23, 42, 0.08);
+    background: var(--color-surface-muted);
   }
 
   &:disabled {
@@ -440,20 +423,20 @@ const entriesPaginationButtonClass = css`
   border: none;
   border-radius: 999px;
   padding: 6px 14px;
-  background: #e2e8f0;
-  color: #0f172a;
+  background: var(--color-surface-strong);
+  color: var(--text-color);
   cursor: pointer;
   transition: background 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #cbd5f5;
+    background: var(--color-surface-muted);
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
-    background: #e2e8f0;
-    color: #0f172a;
+    background: var(--color-surface-strong);
+    color: var(--text-muted);
   }
 `;
 
@@ -506,8 +489,8 @@ const entryMetaClass = cx(
       display: block;
       padding: 6px 8px;
       border-radius: 6px;
-      background: #0f172a;
-      color: #e2e8f0;
+      background: var(--color-code-bg);
+      color: var(--color-code-text);
       word-break: break-all;
       white-space: pre-wrap;
     }
@@ -537,8 +520,8 @@ const infoMessageClass = cx(
     margin: 0;
     padding: 12px 16px;
     border-radius: 8px;
-    background: #fff8eb;
-    color: #92400e;
+    background: var(--color-warning-surface);
+    color: var(--color-warning);
     font-size: 13px;
   `,
 );
@@ -1005,6 +988,7 @@ export const PrfPlaygroundApp = () => {
             <label htmlFor="prf-passkey-select">使用するパスキー</label>
             <select
               id="prf-passkey-select"
+              class={inputFieldClass}
               value={selectedPasskeyId ?? ""}
               onChange={handleSelectChange}
               disabled={controlsDisabled}
@@ -1023,6 +1007,7 @@ export const PrfPlaygroundApp = () => {
             <input
               id="prf-label-input"
               type="text"
+              class={inputFieldClass}
               maxLength={MAX_PRF_LABEL_LENGTH}
               placeholder="例: 家計簿バックアップ"
               value={label}
@@ -1041,6 +1026,7 @@ export const PrfPlaygroundApp = () => {
             <textarea
               id="prf-plaintext-input"
               rows={4}
+              class={inputFieldClass}
               value={plaintext}
               onInput={handlePlaintextInput}
               placeholder="暗号化したいテキストを入力してください"
