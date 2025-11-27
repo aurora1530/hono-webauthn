@@ -45,9 +45,15 @@ const errorClass = css`
 `;
 
 const successClass = css`
-  background: ${tokens.color.success};
-  border-color: color-mix(in srgb, ${tokens.color.success} 88%, #0f172a);
+  background: color-mix(in srgb, ${tokens.color.success} 70%, white);
+  border-color: color-mix(in srgb, ${tokens.color.success} 55%, white);
   color: #0f172a;
+
+  @media (prefers-color-scheme: dark) {
+    background: color-mix(in srgb, ${tokens.color.success} 75%, #0b172a);
+    border-color: color-mix(in srgb, ${tokens.color.success} 60%, #0b172a);
+    color: #f8fafc;
+  }
 `;
 
 let _toastTimer: number | undefined;
