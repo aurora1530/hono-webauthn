@@ -4,7 +4,7 @@ import { tokens } from "../../../ui/theme.js";
 
 type StatusToastProps = {
   message?: string | null;
-  variant?: "info" | "error";
+  variant?: "info" | "error" | "success";
   ariaLive?: "polite" | "assertive";
 };
 
@@ -44,6 +44,12 @@ const errorClass = css`
   color: #fff;
 `;
 
+const successClass = css`
+  background: ${tokens.color.success};
+  border-color: color-mix(in srgb, ${tokens.color.success} 88%, #0f172a);
+  color: #0f172a;
+`;
+
 let _toastTimer: number | undefined;
 
 export const showStatusToast = ({
@@ -64,12 +70,15 @@ export const showStatusToast = ({
   toastRoot.showPopover();
   render(
     <div class={containerClass} aria-live={ariaLive}>
-      <output class={cx(toastClass, variant === "error" && errorClass)}>
+      <output class={cx(toastClass, variant === "error" && errorClass, variant === "success" && successClass)}>
         {variant === "info" && (
           <span class={cx("material-symbols-outlined", toastIconClass)}>info</span>
         )}
         {variant === "error" && (
           <span class={cx("material-symbols-outlined", toastIconClass)}>error</span>
+        )}
+        {variant === "success" && (
+          <span class={cx("material-symbols-outlined", toastIconClass)}>check_circle</span>
         )}
         {message}
       </output>
