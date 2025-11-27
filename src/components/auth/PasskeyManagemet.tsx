@@ -356,6 +356,7 @@ const PasskeyManagement: FC<{
             const os = pData.passkey.createdOS;
             const metadata =
               aaguidToNameAndIcon(pData.passkey.aaguid) ?? getIconsByName(pData.passkey.name);
+            const defaultName = metadata?.name ?? "パスキー";
             const iconLight = metadata.icon_light;
             const iconDark = metadata.icon_dark;
             const lastUsedLabel = pData.lastUsed
@@ -519,6 +520,7 @@ const PasskeyManagement: FC<{
                     title="名前変更"
                     data-passkey-id={pData.passkey.id}
                     data-passkey-name={pData.passkey.name}
+                    data-passkey-default-name={defaultName}
                     type="button"
                   >
                     <span class="material-symbols-outlined">edit</span>

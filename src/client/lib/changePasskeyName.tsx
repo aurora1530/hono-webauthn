@@ -14,7 +14,11 @@ const updateDomPasskeyName = (passkeyId: string, newName: string) => {
   if (renameBtn) renameBtn.dataset.passkeyName = newName;
 };
 
-async function handleChangePasskeyName(passkeyId: string, currentName: string) {
+async function handleChangePasskeyName(
+  passkeyId: string,
+  currentName: string,
+  defaultName: string,
+) {
   const submit = async (newName: string): Promise<SubmitResult> => {
     try {
       const res = await webauthnClient["change-passkey-name"].$post({
@@ -40,7 +44,20 @@ async function handleChangePasskeyName(passkeyId: string, currentName: string) {
     }
   };
 
-  openModalWithJSX(<PasskeyRenameModal currentName={currentName} onSubmit={submit} />);
+  const handleReset = async (): Promise<SubmitResult> => {
+    const ok = confirm("パスキー名をデフォルトに戻しますか？");
+    if (!ok) return { success: false };
+    return submit(defaultName);
+  };
+
+  openModalWithJSX(
+    <PasskeyRenameModal
+      currentName={currentName}
+      onSubmit={submit}
+      defaultName={defaultName}
+      onReset={handleReset}
+    />,
+  );
 }
 
 export { handleChangePasskeyName };

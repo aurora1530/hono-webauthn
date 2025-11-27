@@ -9,11 +9,19 @@ type Props = {
   currentName: string;
   onSubmit: (newName: string) => Promise<SubmitResult>;
   onCancel?: () => void;
+  defaultName: string;
+  onReset: () => Promise<SubmitResult>;
 };
 
 const NAME_MAX_LENGTH = 60;
 
-export const PasskeyRenameModal: FC<Props> = ({ currentName, onSubmit, onCancel }) => {
+export const PasskeyRenameModal: FC<Props> = ({
+  currentName,
+  onSubmit,
+  onCancel,
+  defaultName,
+  onReset,
+}) => {
   const container = css`
     position: relative;
     padding: 22px 22px 18px;
@@ -101,7 +109,7 @@ export const PasskeyRenameModal: FC<Props> = ({ currentName, onSubmit, onCancel 
   const actions = css`
     margin-top: 4px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 10px;
     flex-wrap: wrap;
   `;
@@ -171,6 +179,33 @@ export const PasskeyRenameModal: FC<Props> = ({ currentName, onSubmit, onCancel 
     closeModal();
   };
 
+  const handleReset = async () => {
+    if (isSubmitting) return;
+    const resetBtn = document.querySelector<HTMLButtonElement>("[data-reset-btn]");
+    const submitBtn = document.querySelector<HTMLButtonElement>("[data-submit-btn]");
+    const wrapper = resetBtn?.closest<HTMLElement>("[data-rename-form]");
+    const error = wrapper?.querySelector<HTMLElement>("[data-error-message]");
+
+    const ok = confirm("パスキー名をデフォルトに戻しますか？");
+    if (!ok) return;
+
+    isSubmitting = true;
+    if (resetBtn) resetBtn.disabled = true;
+    if (submitBtn) submitBtn.disabled = true;
+
+    const result = await onReset();
+
+    if (!result.success) {
+      isSubmitting = false;
+      if (resetBtn) resetBtn.disabled = false;
+      if (submitBtn) submitBtn.disabled = false;
+      if (error) error.textContent = result.error ?? "リセットに失敗しました。";
+      return;
+    }
+
+    closeModal();
+  };
+
   return (
     <form class={container} data-rename-form onSubmit={handleSubmit}>
       <span class={accentBar} aria-hidden="true"></span>
@@ -203,16 +238,27 @@ export const PasskeyRenameModal: FC<Props> = ({ currentName, onSubmit, onCancel 
       </div>
 
       <div class={actions}>
-        <button
-          type="button"
-          class={buttonClass("ghost", "md")}
-          onClick={() => {
-            onCancel?.();
-            closeModal();
-          }}
-        >
-          キャンセル
-        </button>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button
+            type="button"
+            class={buttonClass("ghost", "md")}
+            onClick={() => {
+              onCancel?.();
+              closeModal();
+            }}
+          >
+            キャンセル
+          </button>
+          <button
+            type="button"
+            class={buttonClass("secondary", "md")}
+            data-reset-btn
+            onClick={handleReset}
+            title={`デフォルト名（${defaultName}）に戻す`}
+          >
+            デフォルトに戻す
+          </button>
+        </div>
         <button type="submit" class={buttonClass("primary", "md")} data-submit-btn>
           保存する
         </button>

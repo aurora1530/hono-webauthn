@@ -63,7 +63,10 @@ Array.from(changePasskeyNameBtns).forEach((btn) => {
   btn.addEventListener("click", () => {
     const passkeyId = btn.dataset.passkeyId;
     const passkeyName = btn.dataset.passkeyName;
-    if (passkeyId && passkeyName) handleChangePasskeyName(passkeyId, passkeyName);
+    const defaultName = btn.dataset.passkeyDefaultName;
+    if (passkeyId && passkeyName) {
+      handleChangePasskeyName(passkeyId, passkeyName, defaultName ?? "パスキー");
+    }
   });
 });
 
