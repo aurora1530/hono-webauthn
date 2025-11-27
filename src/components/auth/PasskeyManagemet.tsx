@@ -354,8 +354,10 @@ const PasskeyManagement: FC<{
           {passkeyData.map((pData) => {
             const browser = pData.passkey.createdBrowser;
             const os = pData.passkey.createdOS;
-            const metadata =
-              aaguidToNameAndIcon(pData.passkey.aaguid) ?? getIconsByName(pData.passkey.name);
+            const metadata = aaguidToNameAndIcon(pData.passkey.aaguid) ?? {
+              ...getIconsByName(pData.passkey.name),
+              name: undefined,
+            };
             const defaultName = metadata?.name ?? "パスキー";
             const iconLight = metadata.icon_light;
             const iconDark = metadata.icon_dark;
