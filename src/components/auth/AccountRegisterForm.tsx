@@ -1,6 +1,6 @@
+import { buttonClass, inputFieldClass, smallLabelClass, textMutedClass } from "@ui/theme.js";
 import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
-import { buttonClass, inputFieldClass, smallLabelClass, textMutedClass } from "../../ui/theme.js";
 
 const AccountRegisterForm: FC = () => {
   const container = css`

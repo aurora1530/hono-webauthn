@@ -1,9 +1,9 @@
+import { activeMenuLinkClass, badgeClass, buttonClass, textMutedClass } from "@ui/theme.js";
 import { css, cx } from "hono/css";
 import { html } from "hono/html";
 import type { FC, PropsWithChildren } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
-import { activeMenuLinkClass, badgeClass, buttonClass, textMutedClass } from "../../ui/theme.js";
 
 type MenuLinkProps = PropsWithChildren<{
   href: string;
