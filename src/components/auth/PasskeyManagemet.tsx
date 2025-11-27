@@ -396,7 +396,9 @@ const PasskeyManagement: FC<{
 
                 <div class={contentSectionClass}>
                   <div class={nameRowClass}>
-                    <p class={nameClass}>{pData.passkey.name}</p>
+                    <p class={nameClass} data-passkey-name-label>
+                      {pData.passkey.name}
+                    </p>
                   </div>
 
                   <div class={badgeRowClass}>
