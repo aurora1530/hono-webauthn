@@ -5,7 +5,7 @@ import path from 'path';
 const isWatch = process.argv.includes('--watch');
 const isProd = process.env.NODE_ENV === 'production';
 
-const entryPoints = globSync('src/client/*.{ts,tsx}');
+const entryPoints = globSync('src/features/*/client/entries/*.{ts,tsx}');
 const options = {
   entryPoints,
   bundle: true,
@@ -16,7 +16,7 @@ const options = {
   target: ['es2022'],
   sourcemap: !isProd,
   minify: isProd,
-  tsconfig: './src/client/tsconfig.json',
+  tsconfig: './tsconfig.client.json',
   absWorkingDir: path.resolve('.'), // クライアント外のimportを防ぐ補助
 };
 
