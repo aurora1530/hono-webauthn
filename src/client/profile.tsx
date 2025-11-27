@@ -1,6 +1,6 @@
-import { showStatusToast } from "components/common/StatusToast.js";
 import { css, cx } from "hono/css";
 import { badgeClass, buttonClass, inputFieldClass } from "../ui/theme.js";
+import { showStatusToast } from "./components/common/StatusToast.js";
 import { changeDebugMode } from "./lib/changeDebugMode.js";
 import {
   type AccountDeletionSummary,

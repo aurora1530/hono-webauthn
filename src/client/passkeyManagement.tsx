@@ -1,6 +1,6 @@
 import type { PasskeyHistory } from "@prisma/client";
-import { showStatusToast } from "components/common/StatusToast.js";
 import { PasskeyExplanationModal } from "./components/common/PasskeyExplanationModal.js";
+import { showStatusToast } from "./components/common/StatusToast.js";
 import PasskeyHistories from "./components/PasskeyHistories.js";
 import { handleChangePasskeyName } from "./lib/changePasskeyName.js";
 import { handleDeletePasskey } from "./lib/deletePasskey.js";

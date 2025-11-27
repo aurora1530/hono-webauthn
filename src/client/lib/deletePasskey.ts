@@ -1,4 +1,4 @@
-import { showStatusToast } from "components/common/StatusToast.js";
+import { showStatusToast } from "../components/common/StatusToast.js";
 import { closeModal } from "./modal/base.js";
 import { openMessageModal } from "./modal/message.js";
 import { handleReauthentication } from "./reauthentication.js";

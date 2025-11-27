@@ -1,4 +1,4 @@
-import { showStatusToast } from "components/common/StatusToast.js";
+import { showStatusToast } from "../components/common/StatusToast.js";
 import { webauthnClient } from "./rpc/webauthnClient.js";
 
 async function handleChangePasskeyName(passkeyId: string, currentName: string) {

@@ -16,7 +16,7 @@ const options = {
   target: ['es2022'],
   sourcemap: !isProd,
   minify: isProd,
-  tsconfig: './src/client/tsconfig.json',
+  tsconfig: './tsconfig.client.json',
   absWorkingDir: path.resolve('.'), // クライアント外のimportを防ぐ補助
 };
 

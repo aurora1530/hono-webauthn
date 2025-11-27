@@ -15,9 +15,9 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@ui/*": ["../ui/*"]
+      "@ui/*": ["./src/ui/*"]
     }
   },
   "compileOnSave": false,
-  "include": ["./**/*", "../rpc.ts", "../ui/**/*"]
+  "include": ["./src/client/**/*", "./src/rpc.ts", "./src/ui/**/*"]
 }
