@@ -1,11 +1,11 @@
+import StatusToast from "@components/common/StatusToast.js";
+import { bodyClass, mainContainerClass, themeClass } from "@ui/theme.js";
 import { Style } from "hono/css";
 import { html } from "hono/html";
 import { jsxRenderer } from "hono/jsx-renderer";
 import Footer from "./components/common/Footer.js";
 import Header from "./components/common/Header.js";
 import Modal from "./components/common/Modal.js";
-import StatusToast from "./components/common/StatusToast.js";
-import { bodyClass, mainContainerClass, themeClass } from "./ui/theme.js";
 
 const rootRenderer = jsxRenderer(({ children, title }) => {
   return (

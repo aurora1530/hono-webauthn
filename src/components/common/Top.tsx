@@ -1,8 +1,8 @@
+import { buttonClass, textMutedClass } from "@ui/theme.js";
 import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
-import { buttonClass, textMutedClass } from "../../ui/theme.js";
 
 const Top: FC = async () => {
   const c = useRequestContext();

@@ -38,6 +38,20 @@ npm run dev
 
 Then open `http://localhost:3000` in your browser.
 
+## Project layout (excerpt)
+
+- `src/features/<name>/server` — Hono routes & server-side logic (e.g., auth, profile)
+- `src/features/<name>/client` — Browser entrypoints/components (bundled by esbuild)
+- `src/shared` — Cross-cutting contract/UI/infra (prisma client, design tokens, RPC types)
+- `src/components` — SSR UI components used by server routes (existing structure)
+
+## Build & watch
+
+- Server: `npm run build:server` / `npm run dev:server`
+- Client: `npm run build:client` / `npm run watch:client`
+
+Client entrypoints live in `src/features/*/client/entries/*.ts(x)` and use `tsconfig.client.json`.
+
 ## LICENSE
 
 MIT License

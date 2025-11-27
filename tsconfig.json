@@ -1,22 +1,7 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
-    "strict": true,
-    "verbatimModuleSyntax": true,
-    "skipLibCheck": true,
-    "types": [
-      "node"
-    ],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "baseUrl": ".",
-    "paths": {
-      "@ui/*": ["src/ui/*"]
-    }
-  },
-  "include": ["src/**/*"],
-  "exclude": ["./src/client/**/*"]
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.server.json" },
+    { "path": "./tsconfig.client.json" }
+  ]
 }

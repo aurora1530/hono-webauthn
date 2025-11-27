@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "rootDir": ".",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@shared/*": ["src/shared/*"],
+      "@feature/*": ["src/features/*"],
+      "@ui/*": ["src/shared/ui/*"]
+    }
+  },
+  "compileOnSave": false,
+  "include": [
+    "src/features/*/client/**/*",
+    "src/features/*/contract/**/*",
+    "src/shared/**/*"
+  ],
+  "exclude": ["src/infra/**/*", "dist/**/*"]
+}

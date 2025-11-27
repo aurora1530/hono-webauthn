@@ -1,7 +1,3 @@
-import { css, cx } from "hono/css";
-import type { FC } from "hono/jsx";
-import { useRequestContext } from "hono/jsx-renderer";
-import { loginSessionController } from "../../lib/auth/loginSession.js";
 import {
   badgeClass,
   buttonClass,
@@ -9,7 +5,11 @@ import {
   sectionStackClass,
   surfaceClass,
   textMutedClass,
-} from "../../ui/theme.js";
+} from "@ui/theme.js";
+import { css, cx } from "hono/css";
+import type { FC } from "hono/jsx";
+import { useRequestContext } from "hono/jsx-renderer";
+import { loginSessionController } from "../../lib/auth/loginSession.js";
 
 const Profile: FC = async () => {
   const c = useRequestContext();

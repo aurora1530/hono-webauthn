@@ -1,5 +1,5 @@
+import prisma from "@infra/prisma.js";
 import type { PasskeyHistoryType } from "@prisma/client";
-import prisma from "../../prisma.js";
 import { addHistory } from "./history.js";
 import inferClientPlatform from "./inferClientPlatform.js";
 

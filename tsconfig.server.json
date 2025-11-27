@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "dist",
+    "paths": {
+      "@shared/*": ["src/shared/*"],
+      "@feature/*": ["src/features/*"],
+      "@components/*": ["src/components/*"],
+      "@lib/*": ["src/lib/*"],
+      "@ui/*": ["src/shared/ui/*"],
+      "@infra/*": ["src/infra/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/client/**/*", "src/features/*/client/**/*"]
+}
