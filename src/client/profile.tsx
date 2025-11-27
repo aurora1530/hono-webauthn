@@ -188,11 +188,11 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
     }
 
     if (PublicKeyCredential.signalUnknownCredential) {
-      for (const credentialId of result.credentialIds) {
+      for (const credentialId of result.value.credentialIds) {
         try {
           await PublicKeyCredential.signalUnknownCredential({
             credentialId,
-            rpId: result.rpId,
+            rpId: result.value.rpId,
           });
         } catch (err) {
           console.error("Failed to signal unknown credential:", credentialId, err);
@@ -241,5 +241,5 @@ deleteAccountBtn?.addEventListener("click", async () => {
     openMessageModal(`削除の準備に失敗しました: ${summaryResult.error}`);
     return;
   }
-  openConfirmModal(summaryResult.summary);
+  openConfirmModal(summaryResult.value);
 });

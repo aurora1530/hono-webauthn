@@ -1,9 +1,10 @@
+import type { Result } from "@shared/type.js";
 import { PasskeyRenameModal } from "../components/common/PasskeyRenameModal.js";
 import { showStatusToast } from "../components/common/StatusToast.js";
 import { openModalWithJSX } from "./modal/base.js";
 import { webauthnClient } from "./rpc/webauthnClient.js";
 
-type SubmitResult = { success: true } | { success: false; error?: string };
+type SubmitResult = Result<never, string>;
 
 const updateDomPasskeyName = (passkeyId: string, newName: string) => {
   const card = document.querySelector<HTMLElement>(`[data-passkey-id="${passkeyId}"]`);
@@ -46,7 +47,7 @@ async function handleChangePasskeyName(
 
   const handleReset = async (): Promise<SubmitResult> => {
     const ok = confirm("パスキー名をデフォルトに戻しますか？");
-    if (!ok) return { success: false };
+    if (!ok) return { success: false, error: "ユーザーが操作をキャンセルしました。" };
     return submit(defaultName);
   };
 

@@ -1,3 +1,4 @@
+import type { Result } from "@shared/type.js";
 import { profileClient } from "./rpc/profileClient.js";
 
 export type AccountDeletionSummary = {
@@ -10,7 +11,7 @@ export type AccountDeletionSummary = {
 };
 
 export const fetchAccountDeletionSummary = async (): Promise<
-  { success: true; summary: AccountDeletionSummary } | { success: false; error: string }
+  Result<AccountDeletionSummary, string>
 > => {
   try {
     const res = await profileClient["account-deletion"].summary.$get();
@@ -18,7 +19,7 @@ export const fetchAccountDeletionSummary = async (): Promise<
       return { success: false, error: (await res.json()).error || "Unknown error" };
     }
     const data = await res.json();
-    return { success: true, summary: data };
+    return { success: true, value: data };
   } catch (error) {
     console.error(error);
     return { success: false, error: "Failed to fetch deletion summary" };
@@ -27,9 +28,7 @@ export const fetchAccountDeletionSummary = async (): Promise<
 
 export const deleteAccount = async (
   confirmationText: string,
-): Promise<
-  { success: true; rpId: string; credentialIds: string[] } | { success: false; error: string }
-> => {
+): Promise<Result<{ rpId: string; credentialIds: string[] }, string>> => {
   try {
     const res = await profileClient["delete-account"].$post({
       json: { confirmationText },
@@ -38,7 +37,7 @@ export const deleteAccount = async (
       return { success: false, error: (await res.json()).error || "Unknown error" };
     }
     const { rpId, credentialIds } = await res.json();
-    return { success: true, rpId, credentialIds };
+    return { success: true, value: { rpId, credentialIds } };
   } catch (error) {
     console.error(error);
     return { success: false, error: "Failed to delete account" };

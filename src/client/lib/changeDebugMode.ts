@@ -1,17 +1,7 @@
+import type { Result } from "@shared/type";
 import { profileClient } from "./rpc/profileClient";
 
-const changeDebugMode = async (
-  to: boolean,
-): Promise<
-  | {
-      success: true;
-      mode: boolean;
-    }
-  | {
-      success: false;
-      error: string;
-    }
-> => {
+const changeDebugMode = async (to: boolean): Promise<Result<boolean, string>> => {
   const res = await profileClient["change-debug-mode"].$post({
     json: {
       debugMode: to,
@@ -26,7 +16,7 @@ const changeDebugMode = async (
   }
   return {
     success: true,
-    mode: to,
+    value: to,
   };
 };
 

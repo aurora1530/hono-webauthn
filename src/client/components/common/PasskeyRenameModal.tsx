@@ -1,9 +1,10 @@
+import type { Result } from "@shared/type.js";
 import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
 import { buttonClass, inputFieldClass, textMutedClass } from "../../../ui/theme.js";
 import { closeModal } from "../../lib/modal/base.js";
 
-type SubmitResult = { success: true } | { success: false; error?: string };
+type SubmitResult = Result<never, string>;
 
 type Props = {
   currentName: string;
@@ -200,7 +201,9 @@ export const PasskeyRenameModal: FC<Props> = ({
       <span class={accentBar} aria-hidden="true"></span>
       <div class={titleRow}>
         <h3 class={title}>パスキー名を変更</h3>
-        <span class={badge} title="現在の名前">{currentName}</span>
+        <span class={badge} title="現在の名前">
+          {currentName}
+        </span>
       </div>
 
       <p class={hint}>
@@ -210,7 +213,10 @@ export const PasskeyRenameModal: FC<Props> = ({
       <div class={inputWrap}>
         <div class={labelRow}>
           <label for="new-passkey-name">新しい名前</label>
-          <span class={hint} data-char-count>{`${currentName.trim().length}/${NAME_MAX_LENGTH}`}</span>
+          <span
+            class={hint}
+            data-char-count
+          >{`${currentName.trim().length}/${NAME_MAX_LENGTH}`}</span>
         </div>
         <input
           id="new-passkey-name"
