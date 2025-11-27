@@ -27,11 +27,7 @@ export const PasskeyRenameModal: FC<Props> = ({
     padding: 22px 22px 18px;
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
-    background: linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--color-primary) 6%, #fff),
-      var(--color-surface)
-    );
+    background: var(--color-surface);
     box-shadow: var(--shadow-sm);
     display: grid;
     gap: 14px;
@@ -41,11 +37,7 @@ export const PasskeyRenameModal: FC<Props> = ({
     width: 68px;
     height: 6px;
     border-radius: 999px;
-    background: linear-gradient(
-      120deg,
-      var(--color-primary),
-      color-mix(in srgb, var(--color-primary) 25%, #10b981)
-    );
+    background: var(--color-primary);
   `;
 
   const titleRow = css`
