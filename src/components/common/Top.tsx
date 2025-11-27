@@ -61,7 +61,8 @@ const Top: FC = async () => {
         ) : (
           <>
             <p class={cx(subtitle, textMutedClass)}>
-              パスキー対応のデモアプリ。数クリックで安全に認証。
+              パスキー対応のデモアプリ。数クリックで安全に認証。 PRF
+              拡張を利用したデータの暗号化プレイグラウンドも提供。
             </p>
             <div class={actions}>
               <a class={primary} href="/auth/register">
