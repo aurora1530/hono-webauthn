@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
@@ -6,14 +7,12 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "rootDir": ".",
-    "strict": true,
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
     "paths": {
       "@shared/*": ["src/shared/*"],
       "@feature/*": ["src/features/*"],
@@ -25,5 +24,6 @@
     "src/features/*/client/**/*",
     "src/features/*/contract/**/*",
     "src/shared/**/*"
-  ]
+  ],
+  "exclude": ["src/infra/**/*", "dist/**/*"]
 }
