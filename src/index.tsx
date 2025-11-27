@@ -1,3 +1,4 @@
+import featureRoutes from "@feature/routes.js";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
@@ -8,7 +9,6 @@ import { trimTrailingSlash } from "hono/trailing-slash";
 import { typedEnv } from "./env.js";
 import { loginSessionMiddleware } from "./lib/auth/loginSession.js";
 import rootRenderer from "./rootRenderer.js";
-import routerRootApp from "./routes/index.js";
 
 const app = new Hono();
 
@@ -42,7 +42,7 @@ app.get("/public/*", serveStatic({ root: "./" }));
 app.use(rootRenderer);
 app.use(loginSessionMiddleware);
 
-app.route("/", routerRootApp);
+app.route("/", featureRoutes);
 
 app
   .onError((err, c) => {
