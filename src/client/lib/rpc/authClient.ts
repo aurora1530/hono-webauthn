@@ -1,4 +1,4 @@
+import type { AuthAppType } from "@shared/rpc.js";
 import { hc } from "hono/client";
-import type { AuthAppType } from "../../../rpc";
 
 export const authClient = hc<AuthAppType>("/auth");
