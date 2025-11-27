@@ -10,7 +10,7 @@ const options = {
   entryPoints,
   bundle: true,
   outdir: 'public',
-  outbase: 'src/client',
+  entryNames: '[name]',
   platform: 'browser',
   format: 'esm',
   target: ['es2022'],
