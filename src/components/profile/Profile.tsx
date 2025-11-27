@@ -106,7 +106,7 @@ const Profile: FC = async () => {
       <section class={defaultCardClass}>
         <h2 class={css`margin:0 0 8px; font-size:18px; font-weight:700;`}>デバッグモード</h2>
         <p class={textMutedClass}>
-          ログの詳細を確認するための内部モードです。必要な場合のみオンにしてください。
+          デバッグモードを有効化すると、通常は表示されない追加の情報が表示されます。
         </p>
         <label class={toggleRowClass}>
           <input
