@@ -1,0 +1,35 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Dependency / debug artifacts
+node_modules
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs & caches
+/dist
+/coverage
+/.cache
+/tmp
+/temp
+
+# Environment files (handled via Render env vars)
+.env
+.env.*
+!.env.example
+
+# Editor/OS
+.vscode
+.idea
+.DS_Store
+
+# Local-only docker/compose files
+Dockerfile*
+!Dockerfile.app.prod
+docker-compose*.yml
+docker-compose*.yaml
+compose.yaml
+compose.yml
