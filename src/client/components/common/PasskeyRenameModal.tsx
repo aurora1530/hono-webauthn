@@ -186,9 +186,6 @@ export const PasskeyRenameModal: FC<Props> = ({
     const wrapper = resetBtn?.closest<HTMLElement>("[data-rename-form]");
     const error = wrapper?.querySelector<HTMLElement>("[data-error-message]");
 
-    const ok = confirm("パスキー名をデフォルトに戻しますか？");
-    if (!ok) return;
-
     isSubmitting = true;
     if (resetBtn) resetBtn.disabled = true;
     if (submitBtn) submitBtn.disabled = true;
