@@ -18,7 +18,8 @@
       "@feature/*": ["src/features/*"],
       "@components/*": ["src/components/*"],
       "@lib/*": ["src/lib/*"],
-      "@ui/*": ["src/shared/ui/*"]
+      "@ui/*": ["src/shared/ui/*"],
+      "@infra/*": ["src/infra/*"]
     }
   },
   "include": ["src/**/*"],

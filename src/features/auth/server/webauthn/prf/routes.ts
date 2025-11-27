@@ -1,3 +1,4 @@
+import prisma from "@infra/prisma.js";
 import { loginSessionController } from "@lib/auth/loginSession.js";
 import handlePostAuthentication from "@lib/auth/postAuthentication.js";
 import {
@@ -9,7 +10,6 @@ import { isAuthenticatorTransportFuture } from "@lib/auth/transport.js";
 import { webauthnSessionController } from "@lib/auth/webauthnSession.js";
 import { BASE64_REGEX } from "@lib/base64.js";
 import { PasskeyHistoryType } from "@prisma/client";
-import prisma from "@shared/infra/prisma.js";
 import {
   generateAuthenticationOptions,
   type VerifiedAuthenticationResponse,

@@ -1,4 +1,4 @@
-import prisma from "../../prisma.js";
+import prisma from "@infra/prisma.js";
 
 const buildConfirmationText = (username: string) => `delete ${username}`;
 

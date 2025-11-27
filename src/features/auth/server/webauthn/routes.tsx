@@ -1,3 +1,4 @@
+import prisma from "@infra/prisma.js";
 import { aaguidToNameAndIcon } from "@lib/auth/aaguid.js";
 import inferClientPlatform from "@lib/auth/inferClientPlatform.js";
 import { loginSessionController } from "@lib/auth/loginSession.js";
@@ -6,7 +7,6 @@ import { reauthSessionController } from "@lib/auth/reauthSession.js";
 import { isAuthenticatorTransportFuture } from "@lib/auth/transport.js";
 import { webauthnSessionController } from "@lib/auth/webauthnSession.js";
 import { type Passkey, PasskeyHistoryType } from "@prisma/client";
-import prisma from "@shared/infra/prisma.js";
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
