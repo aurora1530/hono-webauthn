@@ -6,7 +6,7 @@ import handlePostAuthentication from "@lib/auth/postAuthentication.js";
 import { reauthSessionController } from "@lib/auth/reauthSession.js";
 import { isAuthenticatorTransportFuture } from "@lib/auth/transport.js";
 import { webauthnSessionController } from "@lib/auth/webauthnSession.js";
-import { type Passkey, PasskeyHistoryType } from "@prisma/client";
+import { type Passkey, type PasskeyHistory, PasskeyHistoryType } from "@prisma/client";
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
@@ -867,7 +867,7 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      const histories = await prisma.passkeyHistory.findMany({
+      const histories: PasskeyHistory[] = await prisma.passkeyHistory.findMany({
         where: {
           passkeyID: passkeyId,
         },
@@ -878,7 +878,7 @@ export const webAuthnRoutes = webauthnApp
         skip: (page - 1) * limit,
       });
 
-      const total = await prisma.passkeyHistory.count({
+      const total: number = await prisma.passkeyHistory.count({
         where: {
           passkeyID: passkeyId,
         },
