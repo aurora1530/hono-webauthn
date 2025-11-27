@@ -1,4 +1,15 @@
+import { loginSessionController } from "@lib/auth/loginSession.js";
+import handlePostAuthentication from "@lib/auth/postAuthentication.js";
+import {
+  buildPrfExtensions,
+  decodeBase64ToBytesWithBounds,
+  PRF_CONSTRAINTS,
+} from "@lib/auth/prfHelpers.js";
+import { isAuthenticatorTransportFuture } from "@lib/auth/transport.js";
+import { webauthnSessionController } from "@lib/auth/webauthnSession.js";
+import { BASE64_REGEX } from "@lib/base64.js";
 import { PasskeyHistoryType } from "@prisma/client";
+import prisma from "@shared/infra/prisma.js";
 import {
   generateAuthenticationOptions,
   type VerifiedAuthenticationResponse,
@@ -7,17 +18,6 @@ import {
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import z from "zod";
-import { loginSessionController } from "../../../../lib/auth/loginSession.js";
-import handlePostAuthentication from "../../../../lib/auth/postAuthentication.js";
-import {
-  buildPrfExtensions,
-  decodeBase64ToBytesWithBounds,
-  PRF_CONSTRAINTS,
-} from "../../../../lib/auth/prfHelpers.js";
-import { isAuthenticatorTransportFuture } from "../../../../lib/auth/transport.js";
-import { webauthnSessionController } from "../../../../lib/auth/webauthnSession.js";
-import { BASE64_REGEX } from "../../../../lib/base64.js";
-import prisma from "../../../../prisma.js";
 import { ORIGIN, rpID } from "../constant.js";
 import {
   DEFAULT_PRF_ENTRIES_LIMIT,

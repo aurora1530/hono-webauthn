@@ -1,18 +1,18 @@
+import AccountRegisterForm from "@components/auth/AccountRegisterForm.js";
+import AuthPage from "@components/auth/AuthPage.js";
+import LoginForm from "@components/auth/LoginForm.js";
+import PasskeyManagement from "@components/auth/PasskeyManagemet.js";
+import PrfPlayground from "@components/auth/PrfPlayground.js";
+import { findHistories } from "@lib/auth/history.js";
+import { loginSessionController } from "@lib/auth/loginSession.js";
+import { buildLoginRedirectUrl, extractRedirectPath } from "@lib/auth/redirect.js";
+import { webauthnSessionController } from "@lib/auth/webauthnSession.js";
+import prisma from "@shared/infra/prisma.js";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import z from "zod";
-import AccountRegisterForm from "../../components/auth/AccountRegisterForm.js";
-import AuthPage from "../../components/auth/AuthPage.js";
-import LoginForm from "../../components/auth/LoginForm.js";
-import PasskeyManagement from "../../components/auth/PasskeyManagemet.js";
-import PrfPlayground from "../../components/auth/PrfPlayground.js";
-import { findHistories } from "../../lib/auth/history.js";
-import { loginSessionController } from "../../lib/auth/loginSession.js";
-import { buildLoginRedirectUrl, extractRedirectPath } from "../../lib/auth/redirect.js";
-import { webauthnSessionController } from "../../lib/auth/webauthnSession.js";
-import prisma from "../../prisma.js";
 import authPageRenderer from "./renderer.js";
-import webauthnApp from "./webauthn/index.js";
+import webauthnApp from "./webauthn/routes.js";
 
 const authApp = new Hono();
 

@@ -1,13 +1,13 @@
+import Profile from "@components/profile/Profile.js";
+import { rpID } from "@feature/auth/server/webauthn/constant.js";
+import { buildDeletionSummary } from "@lib/auth/deleteAccount.js";
+import { loginSessionController } from "@lib/auth/loginSession.js";
+import { reauthSessionController } from "@lib/auth/reauthSession.js";
+import { buildLoginRedirectUrl } from "@lib/auth/redirect.js";
+import prisma from "@shared/infra/prisma.js";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import z from "zod";
-import Profile from "../../components/profile/Profile.js";
-import { buildDeletionSummary } from "../../lib/auth/deleteAccount.js";
-import { loginSessionController } from "../../lib/auth/loginSession.js";
-import { reauthSessionController } from "../../lib/auth/reauthSession.js";
-import { buildLoginRedirectUrl } from "../../lib/auth/redirect.js";
-import prisma from "../../prisma.js";
-import { rpID } from "../auth/webauthn/constant.js";
 
 const profileApp = new Hono();
 

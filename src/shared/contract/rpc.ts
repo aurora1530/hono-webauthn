@@ -1,4 +1,5 @@
-export type AuthAppType = typeof import("./routes/auth/index.js").authAppRoutes;
-export type WebAuthnAppType = typeof import("./routes/auth/webauthn/index.js").webAuthnRoutes;
-export type ProfileAppType = typeof import("./routes/profile/index.js").profileRoutes;
-export type PrfAppType = typeof import("./routes/auth/webauthn/prf/index.js").prfRoutes;
+export type AuthAppType = typeof import("@feature/auth/server/routes.js").authAppRoutes;
+export type WebAuthnAppType =
+  typeof import("@feature/auth/server/webauthn/routes.js").webAuthnRoutes;
+export type ProfileAppType = typeof import("@feature/profile/server/routes.js").profileRoutes;
+export type PrfAppType = typeof import("@feature/auth/server/webauthn/prf/routes.js").prfRoutes;

@@ -1,7 +1,7 @@
+import Top from "@components/common/Top.js";
+import authApp from "@feature/auth/server/routes.js";
+import profileApp from "@feature/profile/server/routes.js";
 import { Hono } from "hono";
-import Top from "../components/common/Top.js";
-import authApp from "./auth/index.js";
-import profileApp from "./profile/index.js";
 
 const routerRootApp = new Hono();
 

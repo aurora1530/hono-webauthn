@@ -1,4 +1,12 @@
+import { aaguidToNameAndIcon } from "@lib/auth/aaguid.js";
+import inferClientPlatform from "@lib/auth/inferClientPlatform.js";
+import { loginSessionController } from "@lib/auth/loginSession.js";
+import handlePostAuthentication from "@lib/auth/postAuthentication.js";
+import { reauthSessionController } from "@lib/auth/reauthSession.js";
+import { isAuthenticatorTransportFuture } from "@lib/auth/transport.js";
+import { webauthnSessionController } from "@lib/auth/webauthnSession.js";
 import { type Passkey, PasskeyHistoryType } from "@prisma/client";
+import prisma from "@shared/infra/prisma.js";
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
@@ -13,16 +21,8 @@ import { isoUint8Array } from "@simplewebauthn/server/helpers";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import z from "zod";
-import { aaguidToNameAndIcon } from "../../../lib/auth/aaguid.js";
-import inferClientPlatform from "../../../lib/auth/inferClientPlatform.js";
-import { loginSessionController } from "../../../lib/auth/loginSession.js";
-import handlePostAuthentication from "../../../lib/auth/postAuthentication.js";
-import { reauthSessionController } from "../../../lib/auth/reauthSession.js";
-import { isAuthenticatorTransportFuture } from "../../../lib/auth/transport.js";
-import { webauthnSessionController } from "../../../lib/auth/webauthnSession.js";
-import prisma from "../../../prisma.js";
 import { MAX_PASSKEYS_PER_USER, ORIGIN, rpID, rpName } from "./constant.js";
-import prfApp from "./prf/index.js";
+import prfApp from "./prf/routes.js";
 
 const webauthnApp = new Hono();
 webauthnApp.route("/prf", prfApp);

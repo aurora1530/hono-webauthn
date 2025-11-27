@@ -1,4 +1,4 @@
-import StatusToast from "@shared/ui/components/StatusToast.js";
+import StatusToast from "@components/common/StatusToast.js";
 import { bodyClass, mainContainerClass, themeClass } from "@ui/theme.js";
 import { Style } from "hono/css";
 import { html } from "hono/html";
