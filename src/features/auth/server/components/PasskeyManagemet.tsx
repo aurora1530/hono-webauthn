@@ -1,12 +1,12 @@
 import { MAX_PASSKEYS_PER_USER } from "@feature/auth/server/webauthn/constant.js";
+import { aaguidToNameAndIcon, getIconsByName } from "@lib/auth/aaguid.js";
+import { getPasskeyHistoryTypeLabel } from "@lib/auth/passkeyHistoryType.js";
+import { isSynced } from "@lib/auth/sync.js";
+import { formatUtcDateTime } from "@lib/date.js";
 import type { Passkey, PasskeyHistory } from "@prisma/client";
 import { buttonClass, surfaceClass, textMutedClass } from "@ui/theme.js";
 import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
-import { aaguidToNameAndIcon, getIconsByName } from "../../lib/auth/aaguid.js";
-import { getPasskeyHistoryTypeLabel } from "../../lib/auth/passkeyHistoryType.js";
-import { isSynced } from "../../lib/auth/sync.js";
-import { formatUtcDateTime } from "../../lib/date.js";
 
 type PasskeyData = {
   passkey: Passkey;

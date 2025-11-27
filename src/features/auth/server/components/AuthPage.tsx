@@ -1,8 +1,8 @@
+import { loginSessionController } from "@lib/auth/loginSession.js";
 import { buttonClass, textMutedClass } from "@ui/theme.js";
 import { css } from "hono/css";
 import type { FC } from "hono/jsx";
 import { useRequestContext } from "hono/jsx-renderer";
-import { loginSessionController } from "../../lib/auth/loginSession.js";
 
 const AuthPage: FC = async () => {
   const c = useRequestContext();

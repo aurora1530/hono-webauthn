@@ -1,8 +1,3 @@
-import AccountRegisterForm from "@components/auth/AccountRegisterForm.js";
-import AuthPage from "@components/auth/AuthPage.js";
-import LoginForm from "@components/auth/LoginForm.js";
-import PasskeyManagement from "@components/auth/PasskeyManagemet.js";
-import PrfPlayground from "@components/auth/PrfPlayground.js";
 import prisma from "@infra/prisma.js";
 import { findHistories } from "@lib/auth/history.js";
 import { loginSessionController } from "@lib/auth/loginSession.js";
@@ -11,6 +6,11 @@ import { webauthnSessionController } from "@lib/auth/webauthnSession.js";
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import z from "zod";
+import AccountRegisterForm from "./components/AccountRegisterForm.js";
+import AuthPage from "./components/AuthPage.js";
+import LoginForm from "./components/LoginForm.js";
+import PasskeyManagement from "./components/PasskeyManagemet.js";
+import PrfPlayground from "./components/PrfPlayground.js";
 import authPageRenderer from "./renderer.js";
 import webauthnApp from "./webauthn/routes.js";
 
