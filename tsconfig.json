@@ -14,9 +14,11 @@
     "noUnusedParameters": true,
     "baseUrl": ".",
     "paths": {
-      "@ui/*": ["src/ui/*"]
+      "@shared/*": ["src/shared/*"],
+      "@feature/*": ["src/features/*"],
+      "@ui/*": ["src/shared/ui/*"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["./src/client/**/*"]
+  "exclude": ["src/client/**/*", "src/features/*/client/**/*"]
 }

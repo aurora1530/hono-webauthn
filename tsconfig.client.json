@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "rootDir": ".",
+    "strict": true,
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["src/shared/*"],
+      "@feature/*": ["src/features/*"],
+      "@ui/*": ["src/shared/ui/*"]
+    }
+  },
+  "compileOnSave": false,
+  "include": [
+    "src/features/*/client/**/*",
+    "src/features/*/contract/**/*",
+    "src/shared/**/*"
+  ]
+}
