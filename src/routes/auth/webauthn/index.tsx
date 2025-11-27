@@ -997,20 +997,29 @@ export const webAuthnRoutes = webauthnApp
       return c.json({ error: "ログインが必要です" }, 401);
     }
 
-    const passkeys = await prisma.passkey.findMany({
-      where: {
-        userID: userData.userID,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    });
-
-    return c.json({ passkeys }, 200);
+    try {
+      const passkeys = await prisma.passkey.findMany({
+        where: {
+          userID: userData.userID,
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+      return c.json({ passkeys }, 200);
+    } catch (e) {
+      console.error(e);
+      return c.json(
+        {
+          error: "パスキーの取得に失敗しました。",
+        },
+        500,
+      );
+    }
   });
 
 export default webauthnApp;
