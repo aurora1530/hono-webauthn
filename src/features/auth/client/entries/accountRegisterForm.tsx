@@ -1,4 +1,4 @@
-import { PasskeyExplanationModal } from "@feature/passkey/client/components/PasskeyExplanationModal.js";
+import { PasskeyExplanationModal } from "@feature/auth/client/components/PasskeyExplanationModal.js";
 import { openModalWithJSX } from "@shared/lib/modal/base.js";
 import { handleRegistration, setupUsernameValidation } from "../lib/registration.js";
 
