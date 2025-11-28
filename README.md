@@ -21,7 +21,11 @@ POSTGRES_PORT=5432
 REDIS_PORT=6379
 DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public"
 REDIS_URL="redis://localhost:${REDIS_PORT}"
+RATE_LIMIT_WINDOW_SEC=60
+RATE_LIMIT_MAX_REQUESTS=120
 ```
+
+`RATE_LIMIT_WINDOW_SEC` と `RATE_LIMIT_MAX_REQUESTS` は省略可能で、未指定時はそれぞれ 60 秒・120 リクエストの上限になります。
 
 then start only the data services:
 

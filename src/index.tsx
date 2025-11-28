@@ -7,10 +7,16 @@ import { secureHeaders } from "hono/secure-headers";
 import { trimTrailingSlash } from "hono/trailing-slash";
 import { typedEnv } from "./env.js";
 import { loginSessionMiddleware } from "./lib/auth/loginSession.js";
+import { createRateLimitMiddleware } from "./lib/middleware/rateLimit.js";
 import rootRenderer from "./rootRenderer.js";
 import routerRootApp from "./routes/index.js";
 
 const app = new Hono();
+const authRateLimit = createRateLimitMiddleware({
+  windowSec: typedEnv.RATE_LIMIT_WINDOW_SEC,
+  maxRequests: typedEnv.RATE_LIMIT_MAX_REQUESTS,
+  prefix: "auth",
+});
 
 app.use(logger());
 app.use(trimTrailingSlash());
@@ -39,6 +45,8 @@ if (typedEnv.NODE_ENV === "production") {
   });
 }
 app.get("/public/*", serveStatic({ root: "./" }));
+app.use("/auth/*", authRateLimit);
+app.use("/profile/*", authRateLimit);
 app.use(rootRenderer);
 app.use(loginSessionMiddleware);
 
