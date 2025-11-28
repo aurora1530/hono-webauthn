@@ -237,6 +237,11 @@ async function handleTestAuthentication(passkeyId: string) {
   } catch (e) {
     clearWebAuthnRequest();
     if (handleWebAuthnAbort(e, "認証テストを中断しました。")) {
+      showStatusToast({
+        message: "認証テストを中断しました。",
+        variant: "warning",
+        ariaLive: "polite",
+      });
       openMessageModal("認証テストを中断しました。");
       return;
     }
