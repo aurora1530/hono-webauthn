@@ -10,6 +10,8 @@ const envSchema = z.object({
     .string()
     .transform((val) => parseInt(val, 10))
     .default(3000),
+  RATE_LIMIT_WINDOW_SEC: z.coerce.number().int().min(1).default(60),
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().min(1).default(120),
   RP_ID: z.string(),
   ORIGIN: z.string(),
 });
