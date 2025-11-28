@@ -2,26 +2,26 @@ import { css, cx } from "hono/css";
 
 export const tokens = {
   color: {
-    primary: "#2563eb",
-    primaryStrong: "#1d4ed8",
-    surface: "#ffffff",
-    surfaceMuted: "#f1f5f9",
-    surfaceStrong: "#e2e8f0",
-    border: "#e2e8f0",
-    borderStrong: "#cbd5e1",
-    text: "#0f172a",
-    textSubtle: "#64748b",
-    bg: "#f8fafc",
-    danger: "#ef4444",
-    dangerSurface: "#fff1f2",
-    warningBorder: "#f59e0b",
-    success: "#10b981",
-    successSurface: "#ecfdf5",
-    warning: "#f59e0b",
-    warningSurface: "#fffbeb",
-    infoSurface: "#eff6ff",
-    codeBg: "#0f172a",
-    codeText: "#e2e8f0",
+    primary: "#0031d8", // Blue 800
+    primaryStrong: "#0017c1", // Blue 900
+    surface: "#ffffff", // White
+    surfaceMuted: "#f2f2f2", // Gray 50
+    surfaceStrong: "#e6e6e6", // Gray 100
+    border: "#e6e6e6", // Gray 100
+    borderStrong: "#cccccc", // Gray 200
+    text: "#1a1a1a", // Gray 900
+    textSubtle: "#666666", // Gray 600
+    bg: "#f2f2f2", // Gray 50
+    danger: "#ec0000", // Red 800
+    dangerSurface: "#fdeeee", // Red 50
+    warningBorder: "#b78f00", // Yellow 700
+    success: "#259d63", // Green 600
+    successSurface: "#e6f5ec", // Green 50
+    warning: "#b78f00", // Yellow 700
+    warningSurface: "#fbf5e0", // Yellow 50
+    infoSurface: "#e8f1fe", // Blue 50
+    codeBg: "#1a1a1a", // Gray 900
+    codeText: "#f2f2f2", // Gray 50
   },
   spacing: {
     xs: "4px",
@@ -38,8 +38,8 @@ export const tokens = {
     pill: "999px",
   },
   shadow: {
-    sm: "0 4px 14px rgba(15, 23, 42, 0.08)",
-    md: "0 10px 30px rgba(15, 23, 42, 0.12)",
+    sm: "0 4px 14px rgba(26, 26, 26, 0.08)",
+    md: "0 10px 30px rgba(26, 26, 26, 0.12)",
   },
   font: {
     body: "Inter, 'Noto Sans JP', system-ui, -apple-system, 'Segoe UI', sans-serif",
@@ -49,26 +49,26 @@ export const tokens = {
 
 export const darkTokens = {
   color: {
-    primary: "#3b82f6", // lighter blue for dark mode
-    primaryStrong: "#60a5fa",
-    surface: "#1e293b", // Slate 800
-    surfaceMuted: "#334155", // Slate 700
-    surfaceStrong: "#0f172a", // Slate 900
-    border: "#334155", // Slate 700
-    borderStrong: "#475569", // Slate 600
-    text: "#f8fafc", // Slate 50
-    textSubtle: "#94a3b8", // Slate 400
-    bg: "#020617", // Slate 950
-    danger: "#f87171",
-    dangerSurface: "#450a0a",
-    warningBorder: "#b45309",
-    success: "#34d399",
-    successSurface: "#064e3b",
-    warning: "#fbbf24",
-    warningSurface: "#451a03",
-    infoSurface: "#1e3a8a",
-    codeBg: "#0f172a",
-    codeText: "#f1f5f9",
+    primary: "#4979f5", // Blue 500
+    primaryStrong: "#7096f8", // Blue 400
+    surface: "#333333", // Gray 800
+    surfaceMuted: "#4d4d4d", // Gray 700
+    surfaceStrong: "#1a1a1a", // Gray 900
+    border: "#4d4d4d", // Gray 700
+    borderStrong: "#666666", // Gray 600
+    text: "#f2f2f2", // Gray 50
+    textSubtle: "#999999", // Gray 400
+    bg: "#1a1a1a", // Gray 900
+    danger: "#ff7171", // Red 400
+    dangerSurface: "#620000", // Red 1200
+    warningBorder: "#d2a400", // Yellow 600
+    success: "#51b883", // Green 400
+    successSurface: "#032213", // Green 1200
+    warning: "#ffc700", // Yellow 400
+    warningSurface: "#604b00", // Yellow 1200
+    infoSurface: "#000060", // Blue 1200
+    codeBg: "#000000", // Black
+    codeText: "#f2f2f2", // Gray 50
   },
   shadow: {
     sm: "0 4px 14px rgba(0, 0, 0, 0.2)",
