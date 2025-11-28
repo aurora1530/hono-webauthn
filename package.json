@@ -5,6 +5,9 @@
     "node": ">=22.14.x"
   },
   "scripts": {
+    "typecheck": "npm-run-all typecheck:server typecheck:client",
+    "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
+    "typecheck:client": "tsc -p tsconfig.client.json --noEmit",
     "build": "npm-run-all build:db build:server build:client",
     "build:server": "tsc -p tsconfig.server.json",
     "build:db": "prisma generate",
