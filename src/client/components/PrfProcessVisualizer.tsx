@@ -48,9 +48,9 @@ const stepItemWrapperClass = css`
 `;
 
 const pulseAnimation = keyframes`
-  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary), transparent 60%); }
+  70% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-primary), transparent 100%); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary), transparent 100%); }
 `;
 
 const stepIconWrapperClass = css`

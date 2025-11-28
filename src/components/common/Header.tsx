@@ -49,7 +49,7 @@ const Header: FC = async () => {
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+    box-shadow: var(--shadow-sm);
 
     @media (max-width: 640px) {
       padding: 0.8rem 1rem;

@@ -338,13 +338,13 @@ const badgeVariant = {
     border: 1px solid var(--color-border);
   `,
   warning: css`
-    background: #fffbeb;
-    color: #b45309;
-    border: 1px solid ${tokens.color.warningBorder};
+    background: var(--color-warning-surface);
+    color: var(--color-warning);
+    border: 1px solid var(--color-warning);
   `,
   danger: css`
     background: var(--color-danger-surface);
-    color: #991b1b;
+    color: var(--color-danger);
     border: 1px solid color-mix(in srgb, var(--color-danger) 55%, white);
   `,
 };

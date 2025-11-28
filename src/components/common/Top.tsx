@@ -27,7 +27,7 @@ const Top: FC = async () => {
   `;
 
   const subtitle = css`
-    color: #64748b;
+    color: var(--color-text-subtle);
     font-size: 1rem;
   `;
 

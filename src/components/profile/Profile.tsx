@@ -67,7 +67,7 @@ const Profile: FC = async () => {
     align-items: center;
     padding: 4px;
     border-radius: 999px;
-    background: #cbd5e1;
+    background: var(--color-border-strong);
     transition: background 0.2s ease;
 
     &::after {
@@ -78,12 +78,12 @@ const Profile: FC = async () => {
       height: 22px;
       border-radius: 50%;
       background: #fff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      box-shadow: var(--shadow-sm);
       transition: left 0.2s ease;
     }
 
     &[data-enabled="true"] {
-      background: #22c55e;
+      background: var(--color-success);
 
       &::after {
         left: 26px;

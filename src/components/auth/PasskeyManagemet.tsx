@@ -325,11 +325,11 @@ const PasskeyManagement: FC<{
               class={cx(
                 textMutedClass,
                 css`
-                  color: #92400e;
-                  background: #fffbeb;
+                  color: var(--color-warning-border);
+                  background: var(--color-warning-surface);
                   padding: 12px 16px;
                   border-radius: 8px;
-                  border: 1px solid #fcd34d;
+                  border: 1px solid var(--color-warning-border);
                   font-size: 14px;
                   display: flex;
                   align-items: flex-start;
@@ -337,7 +337,10 @@ const PasskeyManagement: FC<{
                 `,
               )}
             >
-              <span class="material-symbols-outlined" style="font-size: 20px; color: #d97706;">
+              <span
+                class="material-symbols-outlined"
+                style="font-size: 20px; color: var(--color-warning-border);"
+              >
                 warning
               </span>
               <span>

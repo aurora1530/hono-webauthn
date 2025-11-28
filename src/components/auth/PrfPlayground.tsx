@@ -36,7 +36,7 @@ export const PrfPlayground: FC = async () => {
         </p>
       </div>
       <noscript>
-        <p style="margin-top: 16px; color: #b91c1c;">
+        <p style="margin-top: 16px; color: var(--color-danger);">
           このページを利用するには JavaScript を有効にしてください。
         </p>
       </noscript>

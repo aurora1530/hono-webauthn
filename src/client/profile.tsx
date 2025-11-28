@@ -138,12 +138,11 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
 
   const codeClass = css`
     display: inline-block;
-    background: #0f172a;
-    color: #e2e8f0;
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
     padding: 6px 10px;
     border-radius: 8px;
-    font-family: ui-monospace, SFMono-Regular, SFMono, Menlo, Monaco, Consolas, "Liberation Mono",
-      "Courier New", monospace;
+    font-family: var(--font-mono);
     user-select: none;
   `;
 

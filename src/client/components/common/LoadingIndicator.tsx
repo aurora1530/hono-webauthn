@@ -11,7 +11,7 @@ const wrapperClass = css`
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  color: #475569;
+  color: var(--color-text-subtle);
   font-size: 0.95rem;
 `;
 
@@ -31,8 +31,8 @@ const spinnerClass = css`
   height: 1.5rem;
   display: inline-block;
   border-radius: 9999px;
-  border: 3px solid rgba(148, 163, 184, 0.4);
-  border-top-color: var(--primary-color, #2563eb);
+  border: 3px solid var(--color-border-strong);
+  border-top-color: var(--color-primary);
   animation: ${spin} 0.8s linear infinite;
 `;
 

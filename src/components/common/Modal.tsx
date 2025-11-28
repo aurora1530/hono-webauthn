@@ -14,7 +14,7 @@ const Modal: FC = async () => {
     width: min(88vw, 520px);
     max-height: 85vh;
     overflow: auto;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-md);
     background: var(--header-bg);
     color: var(--text-color);
   `;
@@ -32,14 +32,14 @@ const Modal: FC = async () => {
     border: none;
     border-radius: 8px;
     background: transparent;
-    color: #64748b;
+    color: var(--color-text-subtle);
     cursor: pointer;
     font-size: 18px;
     line-height: 1;
     transition: background 0.15s, color 0.15s;
 
     &:hover {
-      background: #f1f5f9;
+      background: var(--color-surface-muted);
       color: var(--text-color);
     }
     &:focus {

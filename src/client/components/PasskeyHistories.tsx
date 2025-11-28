@@ -228,20 +228,20 @@ const PasskeyHistories = ({
     border-radius: 999px;
     padding: 6px 14px;
     min-width: 86px;
-    background: #e2e8f0;
-    color: #0f172a;
+    background: var(--color-surface-strong);
+    color: var(--color-text);
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
 
     &:hover:not(:disabled) {
-      background: #cbd5e1;
+      background: var(--color-border-strong);
     }
 
     &:disabled {
       cursor: not-allowed;
       opacity: 0.45;
-      background: #e2e8f0;
-      color: #0f172a;
+      background: var(--color-surface-strong);
+      color: var(--color-text);
     }
   `;
 

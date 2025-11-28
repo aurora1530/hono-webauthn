@@ -1,6 +1,5 @@
 import { css, cx } from "hono/css";
 import { render } from "hono/jsx/dom";
-import { tokens } from "../../../ui/theme.js";
 
 type StatusToastProps = {
   message?: string | null;
@@ -23,12 +22,12 @@ const toastClass = css`
   align-items: center;
   padding: 14px 18px;
   border-radius: 14px;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: ${tokens.color.surface};
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-code-text);
   font-size: 14px;
   letter-spacing: 0.01em;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-md);
   pointer-events: auto;
   min-width: 260px;
   justify-content: center;
@@ -39,27 +38,21 @@ const toastIconClass = css`
 `;
 
 const errorClass = css`
-  background: ${tokens.color.danger};
-  border-color: ${tokens.color.danger};
+  background: var(--color-danger);
+  border-color: var(--color-danger);
   color: #fff;
 `;
 
 const successClass = css`
-  background: color-mix(in srgb, ${tokens.color.success} 70%, white);
-  border-color: color-mix(in srgb, ${tokens.color.success} 55%, white);
-  color: #0f172a;
-
-  @media (prefers-color-scheme: dark) {
-    background: color-mix(in srgb, ${tokens.color.success} 75%, #0b172a);
-    border-color: color-mix(in srgb, ${tokens.color.success} 60%, #0b172a);
-    color: #f8fafc;
-  }
+  background: var(--color-success-surface);
+  border-color: var(--color-success);
+  color: var(--color-text);
 `;
 
 const warnClass = css`
-  background: ${tokens.color.warning};
-  border-color: ${tokens.color.warning};
-  color: ${tokens.color.text};
+  background: var(--color-warning-surface);
+  border-color: var(--color-warning);
+  color: var(--color-text);
 `;
 
 let _toastTimer: number | undefined;
