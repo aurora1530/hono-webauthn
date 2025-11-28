@@ -50,6 +50,11 @@ const PasskeyHistories = ({
 
     const data = await res.json();
     if (data.deletedCount > 0) {
+      showStatusToast({
+        message: "利用履歴を削除しました。",
+        variant: "success",
+        ariaLive: "polite",
+      });
       // 親側でモーダルを開き直し（最新取得）か、単に再オープン関数で更新
       reload?.();
     } else {
