@@ -11,7 +11,7 @@ import { closeModal, openModalWithJSX } from "../lib/modal/base.js";
 import {
   getPrfAnimationEnabled,
   PRF_ANIMATION_STORAGE_KEY,
-} from "../lib/prfAnimationPreference.js";
+} from "../lib/prf/prfAnimationPreference.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
 import {

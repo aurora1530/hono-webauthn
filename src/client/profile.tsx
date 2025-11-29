@@ -9,7 +9,10 @@ import {
 } from "./lib/deleteAccount.js";
 import { closeModal, openModalWithJSX } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
-import { getPrfAnimationEnabled, setPrfAnimationEnabled } from "./lib/prfAnimationPreference.js";
+import {
+  getPrfAnimationEnabled,
+  setPrfAnimationEnabled,
+} from "./lib/prf/prfAnimationPreference.js";
 import { handleReauthentication } from "./lib/reauthentication.js";
 
 // --- debug mode toggle ---
