@@ -8,6 +8,7 @@ import {
   textMutedClass,
 } from "../../ui/theme.js";
 import { closeModal, openModalWithJSX } from "../lib/modal/base.js";
+import { decryptWithAesGcm, encryptWithAesGcm } from "../lib/prf/cryptoHandler.js";
 import {
   getPrfAnimationEnabled,
   PRF_ANIMATION_STORAGE_KEY,
@@ -61,8 +62,6 @@ export type StatusMessage = {
 } | null;
 
 const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder();
-const AES_GCM_TAG_BYTE_LENGTH = 16;
 const PRF_INPUT_BYTE_LENGTH = 32;
 const PRF_ENTRIES_PAGE_SIZE = 5;
 
@@ -85,51 +84,10 @@ const fromBase64 = (value: string): Uint8Array => {
   return bytes;
 };
 
-const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
-  const total = arrays.reduce((sum, arr) => sum + arr.length, 0);
-  const combined = new Uint8Array(total);
-  let offset = 0;
-  for (const arr of arrays) {
-    combined.set(arr, offset);
-    offset += arr.length;
-  }
-  return combined;
-};
-
 const randomBase64 = (byteLength: number): { bytes: Uint8Array; base64: string } => {
   const bytes = new Uint8Array(byteLength);
   crypto.getRandomValues(bytes);
   return { bytes, base64: toBase64(bytes) };
-};
-
-const deriveAesArtifacts = async (prfBytes: Uint8Array, salt: Uint8Array) => {
-  const hkdfKey = await crypto.subtle.importKey("raw", prfBytes as BufferSource, "HKDF", false, [
-    "deriveBits",
-  ]);
-  const deriveBits = async (infoLabel: string, bitLength: number) =>
-    crypto.subtle.deriveBits(
-      {
-        name: "HKDF",
-        hash: "SHA-256",
-        salt: salt as BufferSource,
-        info: textEncoder.encode(infoLabel),
-      },
-      hkdfKey,
-      bitLength,
-    );
-  const keyBits = await deriveBits("prf-demo-aes-key-v1", 128);
-  const ivBits = await deriveBits("prf-demo-aes-iv-v1", 96);
-  const aesKey = await crypto.subtle.importKey(
-    "raw",
-    keyBits,
-    { name: "AES-GCM", length: 128 },
-    false,
-    ["encrypt", "decrypt"],
-  );
-  return {
-    aesKey,
-    iv: new Uint8Array(ivBits),
-  };
 };
 
 const containerClass = css`
@@ -763,36 +721,36 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       const { bytes: prfInputBytes, base64: prfInputBase64 } = randomBase64(PRF_INPUT_BYTE_LENGTH);
       const prfBytes = await requestPrfEvaluation(selectedPasskeyId, prfInputBase64);
 
-      setProcessStep("derive");
-      await maybeWait(600);
-
-      const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
       const associatedData = `${selectedPasskeyId}:${crypto.randomUUID()}`;
-
-      setProcessStep("encrypt");
-      await maybeWait(600);
-
-      const ciphertextBuffer = await crypto.subtle.encrypt(
-        {
-          name: "AES-GCM",
-          iv,
-          additionalData: textEncoder.encode(associatedData),
+      const encryptResult = await encryptWithAesGcm({
+        plaintext,
+        keyData: prfBytes,
+        salt: prfInputBytes,
+        associatedData,
+        onStartDerivationKey: async () => {
+          setProcessStep("derive");
         },
-        aesKey,
-        plaintextBytesEncoded,
-      );
-      const ciphertextBytes = new Uint8Array(ciphertextBuffer);
-      const tagStart = ciphertextBytes.length - AES_GCM_TAG_BYTE_LENGTH;
-      const ciphertext = ciphertextBytes.slice(0, tagStart);
-      const tag = ciphertextBytes.slice(tagStart);
+        onFinishDerivationKey: async () => {
+          await maybeWait(600);
+        },
+        onStartEncryption: async () => {
+          setProcessStep("encrypt");
+        },
+        onFinishEncryption: async () => {
+          await maybeWait(600);
+        },
+      });
+      if (!encryptResult.success) {
+        throw new Error(encryptResult.error);
+      }
 
       const normalizedLabel = label.trim();
       const payload = {
         passkeyId: selectedPasskeyId,
         label: normalizedLabel || undefined,
-        ciphertext: toBase64(ciphertext),
-        iv: toBase64(iv),
-        tag: toBase64(tag),
+        ciphertext: toBase64(encryptResult.value.cyphertext),
+        iv: toBase64(encryptResult.value.iv),
+        tag: toBase64(encryptResult.value.tag),
         associatedData,
         version: 1,
         prfInput: prfInputBase64,
@@ -871,29 +829,32 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     try {
       const prfBytes = await requestPrfEvaluation(entry.passkeyId, entry.prfInput);
 
-      setProcessStep("derive");
-      await maybeWait(600);
-
-      const prfInputBytes = fromBase64(entry.prfInput);
-      const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
-      const cipherBytes = concatBytes(fromBase64(entry.ciphertext), fromBase64(entry.tag));
-
-      setProcessStep("decrypt");
-      await maybeWait(600);
-
-      const decrypted = await crypto.subtle.decrypt(
-        {
-          name: "AES-GCM",
-          iv,
-          additionalData: entry.associatedData
-            ? textEncoder.encode(entry.associatedData)
-            : undefined,
+      const decryptedResult = await decryptWithAesGcm({
+        cyphertext: fromBase64(entry.ciphertext),
+        tag: fromBase64(entry.tag),
+        iv: fromBase64(entry.iv),
+        keyData: prfBytes,
+        salt: fromBase64(entry.prfInput),
+        associatedData: entry.associatedData ?? undefined,
+        onStartDerivationKey: async () => {
+          setProcessStep("derive");
         },
-        aesKey,
-        cipherBytes.buffer as ArrayBuffer,
-      );
-      const plaintextResult = textDecoder.decode(decrypted);
+        onFinishDerivationKey: async () => {
+          await maybeWait(600);
+        },
+        onStartDecryption: async () => {
+          setProcessStep("decrypt");
+        },
+        onFinishDecryption: async () => {
+          await maybeWait(600);
+        },
+      });
 
+      if (!decryptedResult.success) {
+        throw new Error(decryptedResult.error);
+      }
+
+      const plaintextResult = decryptedResult.value;
       setProcessStep("complete");
       await maybeWait(600);
 
