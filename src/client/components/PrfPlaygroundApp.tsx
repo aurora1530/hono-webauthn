@@ -469,7 +469,6 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
   const [entriesLoading, setEntriesLoading] = useState(false);
   const entriesRequestIdRef = useRef<number>(0);
   const [latestOutput, setLatestOutput] = useState<LatestOutput>(null);
-  const [status, setStatus] = useState<StatusMessage>(null);
   const [busy, setBusy] = useState(false);
   const [processStep, setProcessStep] = useState<ProcessStep>("idle");
   const [processMode, setProcessMode] = useState<"encrypt" | "decrypt">("encrypt");
@@ -488,17 +487,6 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     : "暗号化済みのデータはまだありません。";
 
   const maybeWait = (ms: number) => (animationEnabled ? wait(ms) : Promise.resolve());
-
-  const showStatus = (message: string, variant: "error" | "info" | "success") =>
-    setStatus({ text: message, variant });
-
-  useEffect(() => {
-    showStatusToast({
-      message: status?.text ?? null,
-      variant: status?.variant ?? "info",
-      ariaLive: "polite",
-    });
-  }, [status]);
 
   useEffect(() => {
     setAnimationEnabled(getPrfAnimationEnabled());
@@ -560,7 +548,11 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       });
     } catch (error) {
       console.error(error);
-      showStatus(error instanceof Error ? error.message : "パスキーの取得に失敗しました", "error");
+      showStatusToast({
+        message: error instanceof Error ? error.message : "パスキーの取得に失敗しました",
+        variant: "error",
+        ariaLive: "polite",
+      });
       setPasskeys([]);
       setSelectedPasskeyId(null);
     } finally {
@@ -597,7 +589,11 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
 
     setEntriesLoading(true);
     if (!silent) {
-      showStatus("暗号化済みデータを取得しています...", "info");
+      showStatusToast({
+        message: "暗号化済みデータを取得しています...",
+        variant: "info",
+        ariaLive: "polite",
+      });
     }
 
     try {
@@ -634,17 +630,22 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       );
 
       if (!silent) {
-        showStatus("暗号化済みデータの取得が完了しました。", "success");
+        showStatusToast({
+          message: "暗号化済みデータの取得が完了しました。",
+          variant: "success",
+          ariaLive: "polite",
+        });
       }
     } catch (error) {
       console.error(error);
       if ((entriesRequestIdRef.current ?? 0) !== requestId) {
         return;
       }
-      showStatus(
-        error instanceof Error ? error.message : "一覧の取得中にエラーが発生しました",
-        "error",
-      );
+      showStatusToast({
+        message: error instanceof Error ? error.message : "一覧の取得中にエラーが発生しました",
+        variant: "error",
+        ariaLive: "polite",
+      });
     } finally {
       if ((entriesRequestIdRef.current ?? 0) === requestId) {
         setEntriesLoading(false);
@@ -700,23 +701,39 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       return;
     }
     if (!selectedPasskeyId) {
-      showStatus("使用するパスキーを選択してください。", "info");
+      showStatusToast({
+        message: "使用するパスキーを選択してください。",
+        variant: "info",
+        ariaLive: "polite",
+      });
       return;
     }
     const plaintextBytesEncoded = textEncoder.encode(plaintext);
     if (plaintextBytesEncoded.length === 0) {
-      showStatus("平文を入力してください。", "error");
+      showStatusToast({
+        message: "平文を入力してください。",
+        variant: "error",
+        ariaLive: "polite",
+      });
       return;
     }
     if (plaintextBytesEncoded.length > MAX_PRF_PLAINTEXT_CHARS) {
-      showStatus(`平文が長すぎます (最大 ${MAX_PRF_PLAINTEXT_CHARS} バイト)`, "error");
+      showStatusToast({
+        message: `平文が長すぎます (最大 ${MAX_PRF_PLAINTEXT_CHARS} バイト)`,
+        variant: "error",
+        ariaLive: "polite",
+      });
       return;
     }
 
     setBusy(true);
     setProcessMode("encrypt");
     setProcessStep("prf");
-    showStatus("PRFを利用して暗号化しています...", "info");
+    showStatusToast({
+      message: "PRFを利用して暗号化しています...",
+      variant: "info",
+      ariaLive: "polite",
+    });
     try {
       const { bytes: prfInputBytes, base64: prfInputBase64 } = randomBase64(PRF_INPUT_BYTE_LENGTH);
       const prfBytes = await requestPrfEvaluation(selectedPasskeyId, prfInputBase64);
@@ -790,16 +807,21 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
         silent: true,
         force: true,
       });
-      showStatus("暗号化と保存が完了しました。", "success");
+      showStatusToast({
+        message: "暗号化と保存が完了しました。",
+        variant: "success",
+        ariaLive: "polite",
+      });
     } catch (error) {
       if (isAbortError(error)) {
         return;
       }
       console.error(error);
-      showStatus(
-        error instanceof Error ? error.message : "暗号化中にエラーが発生しました",
-        "error",
-      );
+      showStatusToast({
+        message: error instanceof Error ? error.message : "暗号化中にエラーが発生しました",
+        variant: "error",
+        ariaLive: "polite",
+      });
     } finally {
       setBusy(false);
       setProcessStep("idle");
@@ -825,7 +847,11 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     setBusy(true);
     setProcessMode("decrypt");
     setProcessStep("prf");
-    showStatus("PRFを利用して復号しています...", "info");
+    showStatusToast({
+      message: "PRFを利用して復号しています...",
+      variant: "info",
+      ariaLive: "polite",
+    });
     try {
       const prfBytes = await requestPrfEvaluation(entry.passkeyId, entry.prfInput);
 
@@ -878,13 +904,17 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
           },
         ],
       });
-      showStatus("復号に成功しました。", "success");
+      showStatusToast({ message: "復号に成功しました。", variant: "success", ariaLive: "polite" });
     } catch (error) {
       if (isAbortError(error)) {
         return;
       }
       console.error(error);
-      showStatus(error instanceof Error ? error.message : "復号に失敗しました", "error");
+      showStatusToast({
+        message: error instanceof Error ? error.message : "復号に失敗しました",
+        variant: "error",
+        ariaLive: "polite",
+      });
     } finally {
       setBusy(false);
       setProcessStep("idle");
@@ -899,7 +929,11 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       return;
     }
     setBusy(true);
-    showStatus("暗号化データを削除しています...", "info");
+    showStatusToast({
+      message: "暗号化データを削除しています...",
+      variant: "info",
+      ariaLive: "polite",
+    });
     try {
       const res = await prfClient.entries[":id"].$delete({ param: { id: entryId } });
       if (!res.ok) {
@@ -912,10 +946,18 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
         silent: true,
         force: true,
       });
-      showStatus("暗号化データを削除しました。", "success");
+      showStatusToast({
+        message: "暗号化データを削除しました。",
+        variant: "success",
+        ariaLive: "polite",
+      });
     } catch (error) {
       console.error(error);
-      showStatus(error instanceof Error ? error.message : "削除に失敗しました", "error");
+      showStatusToast({
+        message: error instanceof Error ? error.message : "削除に失敗しました",
+        variant: "error",
+        ariaLive: "polite",
+      });
     } finally {
       setBusy(false);
     }
@@ -927,29 +969,53 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       return;
     }
     if (!navigator.clipboard) {
-      showStatus("クリップボードAPIがサポートされていません。", "error");
+      showStatusToast({
+        message: "クリップボードAPIがサポートされていません。",
+        variant: "error",
+        ariaLive: "polite",
+      });
       return;
     }
     try {
       await navigator.clipboard.writeText(JSON.stringify(entry, null, 2));
-      showStatus("暗号化データをクリップボードにコピーしました。", "success");
+      showStatusToast({
+        message: "暗号化データをクリップボードにコピーしました。",
+        variant: "success",
+        ariaLive: "polite",
+      });
     } catch (error) {
       console.error(error);
-      showStatus(error instanceof Error ? error.message : "コピーに失敗しました", "error");
+      showStatusToast({
+        message: error instanceof Error ? error.message : "コピーに失敗しました",
+        variant: "error",
+        ariaLive: "polite",
+      });
     }
   };
 
   const handleCopyLatestOutputValue = async (value: string, description: string) => {
     if (!navigator.clipboard) {
-      showStatus("クリップボードAPIがサポートされていません。", "error");
+      showStatusToast({
+        message: "クリップボードAPIがサポートされていません。",
+        variant: "error",
+        ariaLive: "polite",
+      });
       return;
     }
     try {
       await navigator.clipboard.writeText(value);
-      showStatus(`${description}をクリップボードにコピーしました。`, "success");
+      showStatusToast({
+        message: `${description}をクリップボードにコピーしました。`,
+        variant: "success",
+        ariaLive: "polite",
+      });
     } catch (error) {
       console.error(error);
-      showStatus(error instanceof Error ? error.message : "コピーに失敗しました", "error");
+      showStatusToast({
+        message: error instanceof Error ? error.message : "コピーに失敗しました",
+        variant: "error",
+        ariaLive: "polite",
+      });
     }
   };
 
