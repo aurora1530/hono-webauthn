@@ -19,7 +19,11 @@ import { webauthnClient } from "../lib/rpc/webauthnClient";
 import { isAbortError } from "../lib/webauthnAbort.js";
 import { LoadingIndicator } from "./common/LoadingIndicator.js";
 import { showStatusToast } from "./common/StatusToast.js";
-import { PrfProcessVisualizer, type ProcessStep } from "./PrfProcessVisualizer.js";
+import {
+  PrfProcessVisualizer,
+  type ProcessMode,
+  type ProcessStep,
+} from "./PrfProcessVisualizer.js";
 
 export const MAX_PRF_LABEL_LENGTH = 120;
 export const MAX_PRF_PLAINTEXT_CHARS = 3500;
@@ -470,8 +474,6 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
   const entriesRequestIdRef = useRef<number>(0);
   const [latestOutput, setLatestOutput] = useState<LatestOutput>(null);
   const [busy, setBusy] = useState(false);
-  const [processStep, setProcessStep] = useState<ProcessStep>("idle");
-  const [processMode, setProcessMode] = useState<"encrypt" | "decrypt">("encrypt");
   const [animationEnabled, setAnimationEnabled] = useState(true);
   const latestOutputRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollToLatestOutputRef = useRef(false);
@@ -501,30 +503,36 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  useEffect(() => {
-    if (processStep === "idle") {
-      closeModal();
-      isModalDismissedRef.current = false;
-      if (shouldScrollToLatestOutputRef.current && latestOutputRef.current) {
-        latestOutputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-        shouldScrollToLatestOutputRef.current = false;
-      }
-      return;
-    }
+  const createPRFVisualizerModal = <T extends ProcessMode>(mode: T) => {
+    return {
+      show: (step: ProcessStep<T>) => {
+        if (step === "idle") {
+          closeModal();
+          // closeModalが完全にクローズしてからcurrent=trueにされているので、それを待ってからリセットする
+          setTimeout(() => {
+            isModalDismissedRef.current = false;
+          }, 500);
+          if (shouldScrollToLatestOutputRef.current && latestOutputRef.current) {
+            latestOutputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+            shouldScrollToLatestOutputRef.current = false;
+          }
+          return;
+        }
 
-    if (!animationEnabled) {
-      closeModal();
-      return;
-    }
+        if (!animationEnabled) {
+          return;
+        }
 
-    if (isModalDismissedRef.current) {
-      return;
-    }
+        if (isModalDismissedRef.current) {
+          return;
+        }
 
-    openModalWithJSX(<PrfProcessVisualizer step={processStep} mode={processMode} />, () => {
-      isModalDismissedRef.current = true;
-    });
-  }, [processStep, processMode, animationEnabled]);
+        openModalWithJSX(<PrfProcessVisualizer step={step} mode={mode} />, () => {
+          isModalDismissedRef.current = true;
+        });
+      },
+    };
+  };
 
   /**
    * Load registered passkeys from the server
@@ -727,8 +735,8 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     }
 
     setBusy(true);
-    setProcessMode("encrypt");
-    setProcessStep("prf");
+    const prfVisualizer = createPRFVisualizerModal("encrypt");
+    prfVisualizer.show("prf");
     showStatusToast({
       message: "PRFを利用して暗号化しています...",
       variant: "info",
@@ -745,13 +753,13 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
         salt: prfInputBytes,
         associatedData,
         onStartDerivationKey: async () => {
-          setProcessStep("derive");
+          prfVisualizer.show("derive");
         },
         onFinishDerivationKey: async () => {
           await maybeWait(600);
         },
         onStartEncryption: async () => {
-          setProcessStep("encrypt");
+          prfVisualizer.show("encrypt");
         },
         onFinishEncryption: async () => {
           await maybeWait(600);
@@ -773,7 +781,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
         prfInput: prfInputBase64,
       };
 
-      setProcessStep("save");
+      prfVisualizer.show("save");
       await maybeWait(600);
 
       const storeRes = await prfClient.encrypt.$post({ json: payload });
@@ -783,7 +791,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       }
       const storeJson = await storeRes.json();
 
-      setProcessStep("complete");
+      prfVisualizer.show("complete");
       await maybeWait(600);
 
       setLabel("");
@@ -824,7 +832,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       });
     } finally {
       setBusy(false);
-      setProcessStep("idle");
+      prfVisualizer.show("idle");
     }
   };
 
@@ -845,8 +853,8 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     }
 
     setBusy(true);
-    setProcessMode("decrypt");
-    setProcessStep("prf");
+    const prfVisualizer = createPRFVisualizerModal("decrypt");
+    prfVisualizer.show("prf");
     showStatusToast({
       message: "PRFを利用して復号しています...",
       variant: "info",
@@ -863,13 +871,13 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
         salt: fromBase64(entry.prfInput),
         associatedData: entry.associatedData ?? undefined,
         onStartDerivationKey: async () => {
-          setProcessStep("derive");
+          prfVisualizer.show("derive");
         },
         onFinishDerivationKey: async () => {
           await maybeWait(600);
         },
         onStartDecryption: async () => {
-          setProcessStep("decrypt");
+          prfVisualizer.show("decrypt");
         },
         onFinishDecryption: async () => {
           await maybeWait(600);
@@ -881,7 +889,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       }
 
       const plaintextResult = decryptedResult.value;
-      setProcessStep("complete");
+      prfVisualizer.show("complete");
       await maybeWait(600);
 
       shouldScrollToLatestOutputRef.current = true;
@@ -917,7 +925,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       });
     } finally {
       setBusy(false);
-      setProcessStep("idle");
+      prfVisualizer.show("idle");
     }
   };
 

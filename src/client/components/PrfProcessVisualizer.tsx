@@ -1,10 +1,28 @@
 import { css, cx, keyframes } from "hono/css";
 
-export type ProcessStep = "idle" | "prf" | "derive" | "encrypt" | "decrypt" | "save" | "complete";
+const STEP_DEFINITIONS = {
+  encrypt: [
+    { id: "prf", label: "PRF評価", icon: "fingerprint" },
+    { id: "derive", label: "鍵導出", icon: "vpn_key" },
+    { id: "encrypt", label: "暗号化", icon: "lock" },
+    { id: "save", label: "保存", icon: "cloud_upload" },
+  ],
+  decrypt: [
+    { id: "prf", label: "PRF評価", icon: "fingerprint" },
+    { id: "derive", label: "鍵導出", icon: "vpn_key" },
+    { id: "decrypt", label: "復号", icon: "lock_open" },
+  ],
+} as const;
 
-type Props = {
-  step: ProcessStep;
-  mode: "encrypt" | "decrypt";
+export type ProcessMode = keyof typeof STEP_DEFINITIONS;
+type CommonStep = "idle" | "complete";
+export type ProcessStep<T extends ProcessMode> =
+  | CommonStep
+  | (typeof STEP_DEFINITIONS)[T][number]["id"];
+
+type Props<T extends ProcessMode> = {
+  mode: T;
+  step: ProcessStep<T>;
 };
 
 const fadeIn = keyframes`
@@ -179,21 +197,7 @@ const stepLineVerticalClass = css`
   }
 `;
 
-const STEP_DEFINITIONS = {
-  encrypt: [
-    { id: "prf", label: "PRF評価", icon: "fingerprint" },
-    { id: "derive", label: "鍵導出", icon: "vpn_key" },
-    { id: "encrypt", label: "暗号化", icon: "lock" },
-    { id: "save", label: "保存", icon: "cloud_upload" },
-  ],
-  decrypt: [
-    { id: "prf", label: "PRF評価", icon: "fingerprint" },
-    { id: "derive", label: "鍵導出", icon: "vpn_key" },
-    { id: "decrypt", label: "復号", icon: "lock_open" },
-  ],
-} as const;
-
-export const PrfProcessVisualizer = ({ step, mode }: Props) => {
+export const PrfProcessVisualizer = <T extends ProcessMode>({ step, mode }: Props<T>) => {
   if (step === "idle") return null;
 
   const steps = STEP_DEFINITIONS[mode];
