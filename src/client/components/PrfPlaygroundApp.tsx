@@ -296,6 +296,19 @@ const buttonRowClass = css`
   align-items: center;
 `;
 
+const modalActionRowClass = css`
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+`;
+
+const modalBodyClass = css`
+  display: grid;
+  gap: 12px;
+  max-width: 520px;
+`;
+
 const primaryButtonClass = buttonClass("primary", "md");
 const secondaryButtonClass = buttonClass("secondary", "md");
 
@@ -940,6 +953,32 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     void loadEntries();
   };
 
+  const decryptEntryPlaintext = async (entry: PrfEntry) => {
+    const prfBytes = await requestPrfEvaluation(entry.passkeyId, entry.prfInput);
+
+    setProcessStep("derive");
+    await maybeWait(600);
+
+    const prfInputBytes = fromBase64(entry.prfInput);
+    const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
+    const cipherBytes = concatBytes(fromBase64(entry.ciphertext), fromBase64(entry.tag));
+
+    setProcessStep("decrypt");
+    await maybeWait(600);
+
+    const decrypted = await crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv,
+        additionalData: entry.associatedData ? textEncoder.encode(entry.associatedData) : undefined,
+      },
+      aesKey,
+      cipherBytes.buffer as ArrayBuffer,
+    );
+
+    return textDecoder.decode(decrypted);
+  };
+
   const handleDecrypt = async (entryId: string) => {
     if (busy) {
       return;
@@ -954,30 +993,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     setProcessStep("prf");
     showStatus("PRFを利用して復号しています...", "info");
     try {
-      const prfBytes = await requestPrfEvaluation(entry.passkeyId, entry.prfInput);
-
-      setProcessStep("derive");
-      await maybeWait(600);
-
-      const prfInputBytes = fromBase64(entry.prfInput);
-      const { aesKey, iv } = await deriveAesArtifacts(prfBytes, prfInputBytes);
-      const cipherBytes = concatBytes(fromBase64(entry.ciphertext), fromBase64(entry.tag));
-
-      setProcessStep("decrypt");
-      await maybeWait(600);
-
-      const decrypted = await crypto.subtle.decrypt(
-        {
-          name: "AES-GCM",
-          iv,
-          additionalData: entry.associatedData
-            ? textEncoder.encode(entry.associatedData)
-            : undefined,
-        },
-        aesKey,
-        cipherBytes.buffer as ArrayBuffer,
-      );
-      const plaintextResult = textDecoder.decode(decrypted);
+      const plaintextResult = await decryptEntryPlaintext(entry);
 
       setProcessStep("complete");
       await maybeWait(600);
@@ -1015,13 +1031,26 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     }
   };
 
-  const handleDeleteEntry = async (entryId: string) => {
-    if (busy) {
-      return;
-    }
-    if (!confirm("この暗号化データを削除しますか？")) {
-      return;
-    }
+  const downloadDecryptedEntry = (entry: PrfEntry, plaintext: string) => {
+    const createdAt = new Date(entry.createdAt).toLocaleString();
+    const content = [
+      "PRF 暗号化データの復号結果",
+      `Label: ${entry.label ?? "(ラベル未設定)"}`,
+      `Passkey: ${entry.passkeyName}`,
+      `Created At: ${createdAt}`,
+      "",
+      plaintext,
+    ].join("\n");
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `prf-entry-${entry.id}.txt`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const deleteEntry = async (entryId: string) => {
     setBusy(true);
     showStatus("暗号化データを削除しています...", "info");
     try {
@@ -1043,6 +1072,116 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleDownloadEntry = async (entry: PrfEntry) => {
+    if (busy) {
+      return;
+    }
+    setBusy(true);
+    setProcessMode("decrypt");
+    setProcessStep("prf");
+    showStatus("復号してダウンロードしています...", "info");
+    try {
+      const plaintextResult = await decryptEntryPlaintext(entry);
+
+      setProcessStep("complete");
+      await maybeWait(600);
+
+      downloadDecryptedEntry(entry, plaintextResult);
+      showStatus("復号済みデータをダウンロードしました。", "success");
+      openDeleteEntryConfirmationModal(entry);
+    } catch (error) {
+      if (isAbortError(error)) {
+        return;
+      }
+      console.error(error);
+      showStatus(error instanceof Error ? error.message : "復号に失敗しました", "error");
+    } finally {
+      setBusy(false);
+      setProcessStep("idle");
+    }
+  };
+
+  const openDeleteEntryConfirmationModal = (entry: PrfEntry) => {
+    const secondaryBtn = buttonClass("secondary", "md");
+    const dangerBtn = buttonClass("danger", "md");
+
+    const handleConfirmDelete = () => {
+      closeModal();
+      void deleteEntry(entry.id);
+    };
+
+    openModalWithJSX(
+      <div class={modalBodyClass}>
+        <h3>暗号化データを削除しますか？</h3>
+        <p>
+          「{entry.label ?? "(ラベル未設定)"}
+          」の暗号化データを削除します。この操作は取り消せません。
+        </p>
+        <div class={modalActionRowClass}>
+          <button type="button" class={secondaryBtn} onClick={closeModal} disabled={busy}>
+            キャンセル
+          </button>
+          <button type="button" class={dangerBtn} onClick={handleConfirmDelete} disabled={busy}>
+            削除する
+          </button>
+        </div>
+      </div>,
+    );
+  };
+
+  const openDeleteEntryPreparationModal = (entry: PrfEntry) => {
+    const ghostBtn = buttonClass("ghost", "md");
+
+    const handleSkipDownload = () => {
+      closeModal();
+      openDeleteEntryConfirmationModal(entry);
+    };
+
+    const handleDownload = () => {
+      closeModal();
+      void handleDownloadEntry(entry);
+    };
+
+    openModalWithJSX(
+      <div class={modalBodyClass}>
+        <h3>削除前に復号してダウンロードできます</h3>
+        <p>
+          暗号化済みデータは削除すると復元できません。必要であれば削除前に復号してテキストとして保存しておくことをおすすめします。
+        </p>
+        <p class={textMutedClass}>
+          ダウンロードが完了した後、またはスキップした場合は改めて削除を確認します。
+        </p>
+        <div class={modalActionRowClass}>
+          <button type="button" class={ghostBtn} onClick={closeModal} disabled={busy}>
+            キャンセル
+          </button>
+          <button
+            type="button"
+            class={secondaryButtonClass}
+            onClick={handleSkipDownload}
+            disabled={busy}
+          >
+            ダウンロードせずに削除へ進む
+          </button>
+          <button type="button" class={primaryButtonClass} onClick={handleDownload} disabled={busy}>
+            復号してダウンロードする
+          </button>
+        </div>
+      </div>,
+    );
+  };
+
+  const handleDeleteEntry = (entryId: string) => {
+    if (busy) {
+      return;
+    }
+    const entry = entries.find((item) => item.id === entryId);
+    if (!entry) {
+      return;
+    }
+    openDeleteEntryPreparationModal(entry);
   };
 
   const handleCopyEntry = async (entryId: string) => {
