@@ -490,6 +490,9 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
 
   const maybeWait = (ms: number) => (animationEnabled ? wait(ms) : Promise.resolve());
 
+  /**
+   * localStorage に設定されたPRF Visualizerアニメーション設定を反映する。
+   */
   useEffect(() => {
     setAnimationEnabled(getPrfAnimationEnabled());
 
