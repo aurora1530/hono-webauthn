@@ -12,14 +12,10 @@ import {
   getPrfAnimationEnabled,
   PRF_ANIMATION_STORAGE_KEY,
 } from "../lib/prf/prfAnimationPreference.js";
+import { requestPrfEvaluation } from "../lib/prf/prfEvaluation.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
-import {
-  clearWebAuthnRequest,
-  handleWebAuthnAbort,
-  isAbortError,
-  startWebAuthnRequest,
-} from "../lib/webauthnAbort.js";
+import { isAbortError } from "../lib/webauthnAbort.js";
 import { LoadingIndicator } from "./common/LoadingIndicator.js";
 import { showStatusToast } from "./common/StatusToast.js";
 import { PrfProcessVisualizer, type ProcessStep } from "./PrfProcessVisualizer.js";
@@ -71,42 +67,6 @@ const PRF_INPUT_BYTE_LENGTH = 32;
 const PRF_ENTRIES_PAGE_SIZE = 5;
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string | null => {
-  if (!bytes) return null;
-  const view = bytes instanceof ArrayBuffer ? new Uint8Array(bytes) : new Uint8Array(bytes);
-  let binary = "";
-  for (let i = 0; i < view.length; i++) {
-    binary += String.fromCharCode(view[i]);
-  }
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-};
-
-const serializeAssertionForServer = (credential: PublicKeyCredential) => {
-  const response = credential.response as AuthenticatorAssertionResponse;
-  const sanitizedExtensions = (() => {
-    const ext = credential.getClientExtensionResults?.();
-    if (!ext) return undefined;
-    // PRF の結果は送らない
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { prf, ...rest } = ext as Record<string, unknown>;
-    return Object.keys(rest).length > 0 ? rest : undefined;
-  })();
-
-  return {
-    id: credential.id,
-    rawId: toBase64Url(credential.rawId),
-    type: credential.type,
-    authenticatorAttachment: credential.authenticatorAttachment,
-    response: {
-      authenticatorData: toBase64Url(response.authenticatorData),
-      clientDataJSON: toBase64Url(response.clientDataJSON),
-      signature: toBase64Url(response.signature),
-      userHandle: toBase64Url(response.userHandle),
-    },
-    clientExtensionResults: sanitizedExtensions,
-  };
-};
 
 const toBase64 = (bytes: Uint8Array): string => {
   let binary = "";
@@ -170,51 +130,6 @@ const deriveAesArtifacts = async (prfBytes: Uint8Array, salt: Uint8Array) => {
     aesKey,
     iv: new Uint8Array(ivBits),
   };
-};
-
-const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: string) => {
-  const generateRes = await prfClient.assertion.generate.$post({
-    json: { passkeyId, prfInput: prfInputBase64 },
-  });
-  if (!generateRes.ok) {
-    const error = (await generateRes.json()).error;
-    throw new Error(error ?? "PRFオプションの取得に失敗しました");
-  }
-  const generateJson = await generateRes.json();
-  const options = PublicKeyCredential.parseRequestOptionsFromJSON(generateJson);
-  const signal = startWebAuthnRequest();
-  let credential: Credential | null = null;
-  try {
-    credential = await navigator.credentials.get({
-      publicKey: options,
-      signal,
-    });
-  } catch (error) {
-    clearWebAuthnRequest();
-    handleWebAuthnAbort(error, "認証を中断しました。");
-    throw error;
-  }
-  clearWebAuthnRequest();
-  if (!(credential instanceof PublicKeyCredential)) {
-    throw new Error("認証情報の取得に失敗しました");
-  }
-
-  const credentialJson = serializeAssertionForServer(credential);
-
-  const verifyRes = await prfClient.assertion.verify.$post({
-    json: { body: credentialJson },
-  });
-  if (!verifyRes.ok) {
-    const error = (await verifyRes.json()).error;
-    throw new Error(error ?? "PRF認証の検証に失敗しました");
-  }
-  const prfResult = credential.getClientExtensionResults().prf?.results?.first as
-    | ArrayBuffer
-    | undefined;
-  if (!prfResult) {
-    throw new Error("この環境ではPRF拡張を利用できません");
-  }
-  return new Uint8Array(prfResult);
 };
 
 const containerClass = css`
