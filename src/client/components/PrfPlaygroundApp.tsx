@@ -488,8 +488,6 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     ? "選択したパスキーの暗号化データはありません。"
     : "暗号化済みのデータはまだありません。";
 
-  const maybeWait = (ms: number) => (animationEnabled ? wait(ms) : Promise.resolve());
-
   /**
    * localStorage に設定されたPRF Visualizerアニメーション設定を反映する。
    */
@@ -506,7 +504,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  const createPRFVisualizerModal = <T extends ProcessMode>(mode: T) => {
+  const createPRFVisualizerModal = <T extends ProcessMode>(mode: T, intervalMS: number) => {
     return {
       show: (step: ProcessStep<T>) => {
         if (step === "idle") {
@@ -533,6 +531,9 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
         openModalWithJSX(<PrfProcessVisualizer step={step} mode={mode} />, () => {
           isModalDismissedRef.current = true;
         });
+      },
+      waitInterval: async () => {
+        return animationEnabled ? wait(intervalMS) : Promise.resolve();
       },
     };
   };
@@ -738,7 +739,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     }
 
     setBusy(true);
-    const prfVisualizer = createPRFVisualizerModal("encrypt");
+    const prfVisualizer = createPRFVisualizerModal("encrypt", 600);
     prfVisualizer.show("prf");
     showStatusToast({
       message: "PRFを利用して暗号化しています...",
@@ -759,13 +760,13 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
           prfVisualizer.show("derive");
         },
         onFinishDerivationKey: async () => {
-          await maybeWait(600);
+          await prfVisualizer.waitInterval();
         },
         onStartEncryption: async () => {
           prfVisualizer.show("encrypt");
         },
         onFinishEncryption: async () => {
-          await maybeWait(600);
+          await prfVisualizer.waitInterval();
         },
       });
       if (!encryptResult.success) {
@@ -785,7 +786,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       };
 
       prfVisualizer.show("save");
-      await maybeWait(600);
+      await prfVisualizer.waitInterval();
 
       const storeRes = await prfClient.encrypt.$post({ json: payload });
       if (!storeRes.ok) {
@@ -795,7 +796,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
       const storeJson = await storeRes.json();
 
       prfVisualizer.show("complete");
-      await maybeWait(600);
+      await prfVisualizer.waitInterval();
 
       setLabel("");
       setPlaintext("");
@@ -856,7 +857,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
     }
 
     setBusy(true);
-    const prfVisualizer = createPRFVisualizerModal("decrypt");
+    const prfVisualizer = createPRFVisualizerModal("decrypt", 600);
     prfVisualizer.show("prf");
     showStatusToast({
       message: "PRFを利用して復号しています...",
@@ -877,13 +878,13 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
           prfVisualizer.show("derive");
         },
         onFinishDerivationKey: async () => {
-          await maybeWait(600);
+          await prfVisualizer.waitInterval();
         },
         onStartDecryption: async () => {
           prfVisualizer.show("decrypt");
         },
         onFinishDecryption: async () => {
-          await maybeWait(600);
+          await prfVisualizer.waitInterval();
         },
       });
 
@@ -893,7 +894,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
 
       const plaintextResult = decryptedResult.value;
       prfVisualizer.show("complete");
-      await maybeWait(600);
+      await prfVisualizer.waitInterval();
 
       shouldScrollToLatestOutputRef.current = true;
       setLatestOutput({
