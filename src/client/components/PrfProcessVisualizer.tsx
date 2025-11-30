@@ -3,13 +3,13 @@ import { css, cx, keyframes } from "hono/css";
 const STEP_DEFINITIONS = {
   encrypt: [
     { id: "prf", label: "PRF評価", icon: "fingerprint" },
-    { id: "derive", label: "鍵導出", icon: "vpn_key" },
+    { id: "derive", label: "鍵導出", icon: "key" },
     { id: "encrypt", label: "暗号化", icon: "lock" },
     { id: "save", label: "保存", icon: "cloud_upload" },
   ],
   decrypt: [
     { id: "prf", label: "PRF評価", icon: "fingerprint" },
-    { id: "derive", label: "鍵導出", icon: "vpn_key" },
+    { id: "derive", label: "鍵導出", icon: "key" },
     { id: "decrypt", label: "復号", icon: "lock_open" },
   ],
 } as const;
@@ -131,7 +131,7 @@ const stepItemClass = css`
     min-width: auto;
     width: 100%;
     padding-bottom: 0;
-    
+
     span.label {
       font-size: 14px;
       text-align: left;
