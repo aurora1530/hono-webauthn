@@ -7,6 +7,11 @@ import { isSynced } from "../../lib/auth/sync.js";
 import { formatUtcDateTime } from "../../lib/date.js";
 import { MAX_PASSKEYS_PER_USER } from "../../routes/auth/webauthn/constant.js";
 import { buttonClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
+import {
+  type DeletionReason,
+  genPasskeyDeletionReasonModalID,
+  PasskeyDeletionReasonModal,
+} from "./PasskeyDeletionReasonModal.js";
 
 type PasskeyData = {
   passkey: Passkey;
@@ -292,6 +297,19 @@ const PasskeyManagement: FC<{
     white-space: nowrap;
   `;
 
+  const viewDeletionReasonBtnClass = css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0;
+  `;
+
   return (
     <div class={containerClass}>
       <header class={headerClass}>
@@ -377,11 +395,13 @@ const PasskeyManagement: FC<{
             const hasCiphertextLock = pData.prfCiphertextCount > 0;
             const isCurrent = pData.passkey.id === currentPasskeyID;
 
-            const deleteDisabledReasons: string[] = [];
+            const deleteDisabledReasons: DeletionReason[] = [];
             if (!canDelete) deleteDisabledReasons.push("LAST_ONE");
             if (isCurrent) deleteDisabledReasons.push("CURRENT_SESSION");
             if (hasCiphertextLock) deleteDisabledReasons.push("HAS_LOCK");
             const isDeleteDisabled = deleteDisabledReasons.length > 0;
+
+            const dialogID = genPasskeyDeletionReasonModalID();
 
             return (
               <li key={pData.passkey.id} class={itemClass} data-passkey-id={pData.passkey.id}>
@@ -501,28 +521,20 @@ const PasskeyManagement: FC<{
                     <div class={disabledReasonContainerClass}>
                       <span class={disabledLabelClass}>削除不可</span>
                       <button
-                        class="view-deletion-reason-btn"
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: "24px",
-                          height: "24px",
-                          border: "none",
-                          background: "transparent",
-                          cursor: "pointer",
-                          color: "var(--text-muted)",
-                          padding: 0,
-                        }}
+                        class={cx("view-deletion-reason-btn", viewDeletionReasonBtnClass)}
                         aria-label="削除できない理由"
                         title="削除できない理由"
                         type="button"
-                        data-reasons={JSON.stringify(deleteDisabledReasons)}
+                        data-dialog-id={dialogID}
                       >
                         <span class="material-symbols-outlined" style="font-size: 20px;">
                           help
                         </span>
                       </button>
+                      <PasskeyDeletionReasonModal
+                        reasons={deleteDisabledReasons}
+                        dialogID={dialogID}
+                      />
                     </div>
                   )}
 

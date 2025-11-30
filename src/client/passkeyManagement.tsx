@@ -1,8 +1,4 @@
 import type { PasskeyHistory } from "@prisma/client";
-import {
-  type DeletionReason,
-  PasskeyDeletionReasonModal,
-} from "./components/common/PasskeyDeletionReasonModal.js";
 import { PasskeyExplanationModal } from "./components/common/PasskeyExplanationModal.js";
 import { showStatusToast } from "./components/common/StatusToast.js";
 import PasskeyHistories from "./components/PasskeyHistories.js";
@@ -274,13 +270,11 @@ const viewDeletionReasonBtns = document.getElementsByClassName(
 
 Array.from(viewDeletionReasonBtns).forEach((btn) => {
   btn.addEventListener("click", () => {
-    const reasonsJson = btn.dataset.reasons;
-    if (reasonsJson) {
-      try {
-        const reasons = JSON.parse(reasonsJson) as DeletionReason[];
-        openModal(<PasskeyDeletionReasonModal reasons={reasons} />);
-      } catch (e) {
-        console.error("Failed to parse deletion reasons", e);
+    const dialogID = btn.dataset.dialogId;
+    if (dialogID) {
+      const dialog = document.getElementById(dialogID) as HTMLDialogElement | null;
+      if (dialog) {
+        dialog.showModal();
       }
     }
   });
