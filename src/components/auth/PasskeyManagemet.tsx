@@ -194,6 +194,14 @@ const PasskeyManagement: FC<{
     line-height: 1.4;
   `;
 
+  const creationDateClass = css`
+  @media (max-width: 800px) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  `;
+
   const actionSectionClass = css`
     flex-shrink: 0;
     display: flex;
@@ -490,8 +498,9 @@ const PasskeyManagement: FC<{
                       <span class="material-symbols-outlined" style="font-size: 16px;">
                         calendar_today
                       </span>
-                      <span>
-                        作成日: {formatUtcDateTime(pData.passkey.createdAt, "Asia/Tokyo")}{" "}
+                      <span>作成日:</span>
+                      <span class={creationDateClass}>
+                        <span>{formatUtcDateTime(pData.passkey.createdAt, "Asia/Tokyo")} </span>
                         <span style="opacity: 0.7;">
                           by {browser} on {os}
                         </span>
