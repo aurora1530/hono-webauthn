@@ -294,7 +294,7 @@ const PasskeyManagement: FC<{
     margin-right: auto;
     @media (max-width: 600px) {
       margin-right: 0;
-      margin-bottom: 8px;
+      margin-bottom: 0px;
     }
   `;
 
