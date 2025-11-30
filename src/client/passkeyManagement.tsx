@@ -1,4 +1,8 @@
 import type { PasskeyHistory } from "@prisma/client";
+import {
+  type DeletionReason,
+  PasskeyDeletionReasonModal,
+} from "./components/common/PasskeyDeletionReasonModal.js";
 import { PasskeyExplanationModal } from "./components/common/PasskeyExplanationModal.js";
 import { showStatusToast } from "./components/common/StatusToast.js";
 import PasskeyHistories from "./components/PasskeyHistories.js";
@@ -260,6 +264,24 @@ Array.from(testPasskeyBtns).forEach((btn) => {
     const passkeyId = btn.dataset.passkeyId;
     if (passkeyId) {
       await handleTestAuthentication(passkeyId);
+    }
+  });
+});
+
+const viewDeletionReasonBtns = document.getElementsByClassName(
+  "view-deletion-reason-btn",
+) as HTMLCollectionOf<HTMLButtonElement>;
+
+Array.from(viewDeletionReasonBtns).forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const reasonsJson = btn.dataset.reasons;
+    if (reasonsJson) {
+      try {
+        const reasons = JSON.parse(reasonsJson) as DeletionReason[];
+        openModal(<PasskeyDeletionReasonModal reasons={reasons} />);
+      } catch (e) {
+        console.error("Failed to parse deletion reasons", e);
+      }
     }
   });
 });

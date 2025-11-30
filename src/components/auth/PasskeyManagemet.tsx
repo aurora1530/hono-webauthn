@@ -270,21 +270,7 @@ const PasskeyManagement: FC<{
     }
   `;
 
-  const lockMessageClass = css`
-    font-size: 12px;
-    color: var(--color-danger);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    line-height: 1.2;
-    text-align: left;
-    &[hidden] {
-      display: none !important;
-    }
-    @media (max-width: 600px) {
-      font-size: 10px;
-    }
-  `;
+
 
   return (
     <div class={containerClass}>
@@ -370,6 +356,12 @@ const PasskeyManagement: FC<{
 
             const hasCiphertextLock = pData.prfCiphertextCount > 0;
             const isCurrent = pData.passkey.id === currentPasskeyID;
+
+            const deleteDisabledReasons: string[] = [];
+            if (!canDelete) deleteDisabledReasons.push("LAST_ONE");
+            if (isCurrent) deleteDisabledReasons.push("CURRENT_SESSION");
+            if (hasCiphertextLock) deleteDisabledReasons.push("HAS_LOCK");
+            const isDeleteDisabled = deleteDisabledReasons.length > 0;
 
             return (
               <li key={pData.passkey.id} class={itemClass} data-passkey-id={pData.passkey.id}>
@@ -485,18 +477,6 @@ const PasskeyManagement: FC<{
                 </div>
 
                 <div class={actionSectionClass}>
-                  <div
-                    class={lockMessageClass}
-                    data-prf-lock-message=""
-                    data-passkey-id={pData.passkey.id}
-                    hidden={!hasCiphertextLock}
-                  >
-                    <span class="material-symbols-outlined" style="font-size: 14px;">
-                      lock
-                    </span>
-                    暗号化データが存在するため削除不可
-                  </div>
-
                   <button
                     id="view-passkey-history-btn"
                     class={cx(iconButtonBaseClass, "view-passkey-history-btn")}
@@ -531,23 +511,40 @@ const PasskeyManagement: FC<{
                     <span class="material-symbols-outlined">edit</span>
                   </button>
 
-                  <button
-                    class={cx(iconButtonBaseClass, iconButtonDangerClass, "delete-passkey-btn")}
-                    aria-label="削除"
-                    title="削除"
-                    data-passkey-id={pData.passkey.id}
-                    data-only-synced-passkey={
-                      isSynced(pData.passkey) &&
-                      passkeyData.filter((pd) => isSynced(pd.passkey)).length === 1
-                        ? "true"
-                        : "false"
-                    }
-                    data-initial-disabled={(!canDelete || isCurrent).toString()}
-                    type="button"
-                    disabled={!canDelete || isCurrent || hasCiphertextLock}
-                  >
-                    <span class="material-symbols-outlined">delete</span>
-                  </button>
+                  {isDeleteDisabled ? (
+                    <>
+                      <span
+                        class={css`font-size: 12px; font-weight: bold; color: var(--color-danger); margin-right: 4px; white-space: nowrap;`}
+                      >
+                        削除不可
+                      </span>
+                      <button
+                        class={cx(iconButtonBaseClass, "view-deletion-reason-btn")}
+                        aria-label="削除できない理由"
+                        title="削除できない理由"
+                        type="button"
+                        data-reasons={JSON.stringify(deleteDisabledReasons)}
+                      >
+                        <span class="material-symbols-outlined">help</span>
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      class={cx(iconButtonBaseClass, iconButtonDangerClass, "delete-passkey-btn")}
+                      aria-label="削除"
+                      title="削除"
+                      data-passkey-id={pData.passkey.id}
+                      data-only-synced-passkey={
+                        isSynced(pData.passkey) &&
+                        passkeyData.filter((pd) => isSynced(pd.passkey)).length === 1
+                          ? "true"
+                          : "false"
+                      }
+                      type="button"
+                    >
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  )}
                 </div>
               </li>
             );
