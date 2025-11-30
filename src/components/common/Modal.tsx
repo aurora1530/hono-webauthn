@@ -1,7 +1,13 @@
 import { css, Style } from "hono/css";
-import type { FC } from "hono/jsx";
+import type { Child, FC } from "hono/jsx";
 
-const Modal: FC = async () => {
+type Props = {
+  dialogID: string;
+  contentWrapperID: string;
+  children?: Child;
+};
+
+const Modal: FC<Props> = async ({ dialogID, contentWrapperID, children }) => {
   const dialogClass = css`
     position: fixed;
     inset: 0;
@@ -58,13 +64,13 @@ const Modal: FC = async () => {
           }
         `}
       </Style>
-      <dialog id="main-modal" class={dialogClass} aria-modal="true" closedby="any">
+      <dialog id={dialogID} class={dialogClass} aria-modal="true" closedby="any">
         <form method="dialog">
           <button type="submit" class={closeBtnClass} aria-label="Close modal" title="Close">
             ×
           </button>
         </form>
-        <div id="main-modal-content"></div>
+        <div id={contentWrapperID}>{children}</div>
       </dialog>
     </>
   );

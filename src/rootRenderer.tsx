@@ -46,7 +46,7 @@ const rootRenderer = jsxRenderer(({ children, title }) => {
       <body class={bodyClass}>
         <Header />
         <StatusToast />
-        <Modal />
+        <Modal dialogID="main-modal" contentWrapperID="main-modal-content" />
         <main class={mainContainerClass}>{children}</main>
         <Footer />
       </body>
