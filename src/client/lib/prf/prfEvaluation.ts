@@ -11,6 +11,10 @@ const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 };
 
+const base64ToBase64Url = (base64: string): string => {
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+};
+
 const serializeAssertionForServer = (credential: PublicKeyCredential) => {
   const response = credential.response;
   if (!(response instanceof AuthenticatorAssertionResponse)) {
@@ -49,6 +53,9 @@ export const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: st
     throw new Error(error ?? "PRFオプションの取得に失敗しました");
   }
   const generateJson = await generateRes.json();
+  if (base64ToBase64Url(prfInputBase64) !== generateJson.extensions?.prf?.eval?.first) {
+    throw new Error("サーバーから返されたPRF入力が一致しません");
+  }
   const options = PublicKeyCredential.parseRequestOptionsFromJSON(generateJson);
   const signal = startWebAuthnRequest();
   let credential: Credential | null = null;
