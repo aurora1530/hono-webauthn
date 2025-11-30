@@ -508,15 +508,11 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
      * コンポーネントが無効化されているかどうかを示すフラグ
      * モーダルが閉じられた後にアニメーションを再開しないようにするために使用する。
      */
-    let disabled = false;
+    let closed = false;
     return {
       show: (step: ProcessStep<T>) => {
         if (step === "idle") {
-          closeModal();
-          if (shouldScrollToLatestOutputRef.current && latestOutputRef.current) {
-            latestOutputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-            shouldScrollToLatestOutputRef.current = false;
-          }
+          if (!closed) closeModal();
           return;
         }
 
@@ -524,16 +520,26 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
           return;
         }
 
-        if (disabled) {
+        if (closed) {
           return;
         }
 
         openModalWithJSX(<PrfProcessVisualizer step={step} mode={mode} />, () => {
-          disabled = true;
+          closed = true;
         });
       },
+      onSuccess: () => {
+        if (!closed) closeModal();
+        /**
+         * 出力結果へスクロールする
+         */
+        if (shouldScrollToLatestOutputRef.current && latestOutputRef.current) {
+          latestOutputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+          shouldScrollToLatestOutputRef.current = false;
+        }
+      },
       waitInterval: async () => {
-        return animationEnabled && !disabled ? wait(intervalMS) : Promise.resolve();
+        return animationEnabled && !closed ? wait(intervalMS) : Promise.resolve();
       },
     };
   };
@@ -824,6 +830,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
         variant: "success",
         ariaLive: "polite",
       });
+      prfVisualizer.onSuccess();
     } catch (error) {
       if (isAbortError(error)) {
         return;
@@ -917,6 +924,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
         ],
       });
       showStatusToast({ message: "復号に成功しました。", variant: "success", ariaLive: "polite" });
+      prfVisualizer.onSuccess();
     } catch (error) {
       if (isAbortError(error)) {
         return;
