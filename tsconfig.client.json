@@ -20,5 +20,5 @@
     }
   },
   "compileOnSave": false,
-  "include": ["./src/client/**/*", "./src/ui/**/*", "./src/shared/**/*"],
+  "include": ["./src/client/**/*", "./src/ui/**/*", "./src/shared/**/*", "./src/global.d.ts"],
 }
