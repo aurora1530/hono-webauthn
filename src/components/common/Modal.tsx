@@ -3,7 +3,7 @@ import type { Child, FC } from "hono/jsx";
 
 type Props = {
   dialogID: string;
-  contentWrapperID: string;
+  contentWrapperID?: string;
   children?: Child;
 };
 
