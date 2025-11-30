@@ -270,7 +270,27 @@ const PasskeyManagement: FC<{
     }
   `;
 
+  const disabledReasonContainerClass = css`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-sm);
+    margin-right: auto;
+    @media (max-width: 600px) {
+      margin-right: 0;
+      margin-bottom: 8px;
+    }
+  `;
 
+  const disabledLabelClass = css`
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+  `;
 
   return (
     <div class={containerClass}>
@@ -477,6 +497,35 @@ const PasskeyManagement: FC<{
                 </div>
 
                 <div class={actionSectionClass}>
+                  {isDeleteDisabled && (
+                    <div class={disabledReasonContainerClass}>
+                      <span class={disabledLabelClass}>削除不可</span>
+                      <button
+                        class="view-deletion-reason-btn"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: "24px",
+                          height: "24px",
+                          border: "none",
+                          background: "transparent",
+                          cursor: "pointer",
+                          color: "var(--text-muted)",
+                          padding: 0,
+                        }}
+                        aria-label="削除できない理由"
+                        title="削除できない理由"
+                        type="button"
+                        data-reasons={JSON.stringify(deleteDisabledReasons)}
+                      >
+                        <span class="material-symbols-outlined" style="font-size: 20px;">
+                          help
+                        </span>
+                      </button>
+                    </div>
+                  )}
+
                   <button
                     id="view-passkey-history-btn"
                     class={cx(iconButtonBaseClass, "view-passkey-history-btn")}
@@ -511,40 +560,23 @@ const PasskeyManagement: FC<{
                     <span class="material-symbols-outlined">edit</span>
                   </button>
 
-                  {isDeleteDisabled ? (
-                    <>
-                      <span
-                        class={css`font-size: 12px; font-weight: bold; color: var(--color-danger); margin-right: 4px; white-space: nowrap;`}
-                      >
-                        削除不可
-                      </span>
-                      <button
-                        class={cx(iconButtonBaseClass, "view-deletion-reason-btn")}
-                        aria-label="削除できない理由"
-                        title="削除できない理由"
-                        type="button"
-                        data-reasons={JSON.stringify(deleteDisabledReasons)}
-                      >
-                        <span class="material-symbols-outlined">help</span>
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      class={cx(iconButtonBaseClass, iconButtonDangerClass, "delete-passkey-btn")}
-                      aria-label="削除"
-                      title="削除"
-                      data-passkey-id={pData.passkey.id}
-                      data-only-synced-passkey={
-                        isSynced(pData.passkey) &&
-                        passkeyData.filter((pd) => isSynced(pd.passkey)).length === 1
-                          ? "true"
-                          : "false"
-                      }
-                      type="button"
-                    >
-                      <span class="material-symbols-outlined">delete</span>
-                    </button>
-                  )}
+                  <button
+                    class={cx(iconButtonBaseClass, iconButtonDangerClass, "delete-passkey-btn")}
+                    aria-label="削除"
+                    title="削除"
+                    data-passkey-id={pData.passkey.id}
+                    data-only-synced-passkey={
+                      isSynced(pData.passkey) &&
+                      passkeyData.filter((pd) => isSynced(pd.passkey)).length === 1
+                        ? "true"
+                        : "false"
+                    }
+                    data-initial-disabled={(!canDelete || isCurrent).toString()}
+                    type="button"
+                    disabled={isDeleteDisabled}
+                  >
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
                 </div>
               </li>
             );
