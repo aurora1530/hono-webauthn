@@ -477,7 +477,6 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
   const [animationEnabled, setAnimationEnabled] = useState(true);
   const latestOutputRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollToLatestOutputRef = useRef(false);
-  const isModalDismissedRef = useRef(false);
 
   const controlsDisabled = passkeysLoading || passkeys.length === 0;
   const noPasskeys = !passkeysLoading && passkeys.length === 0;
@@ -505,14 +504,15 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
   }, []);
 
   const createPRFVisualizerModal = <T extends ProcessMode>(mode: T, intervalMS: number) => {
+    /**
+     * コンポーネントが無効化されているかどうかを示すフラグ
+     * モーダルが閉じられた後にアニメーションを再開しないようにするために使用する。
+     */
+    let disabled = false;
     return {
       show: (step: ProcessStep<T>) => {
         if (step === "idle") {
           closeModal();
-          // closeModalが完全にクローズしてからcurrent=trueにされているので、それを待ってからリセットする
-          setTimeout(() => {
-            isModalDismissedRef.current = false;
-          }, 500);
           if (shouldScrollToLatestOutputRef.current && latestOutputRef.current) {
             latestOutputRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
             shouldScrollToLatestOutputRef.current = false;
@@ -524,16 +524,16 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
           return;
         }
 
-        if (isModalDismissedRef.current) {
+        if (disabled) {
           return;
         }
 
         openModalWithJSX(<PrfProcessVisualizer step={step} mode={mode} />, () => {
-          isModalDismissedRef.current = true;
+          disabled = true;
         });
       },
       waitInterval: async () => {
-        return animationEnabled ? wait(intervalMS) : Promise.resolve();
+        return animationEnabled && !disabled ? wait(intervalMS) : Promise.resolve();
       },
     };
   };
