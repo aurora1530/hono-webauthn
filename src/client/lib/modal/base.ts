@@ -26,14 +26,18 @@ function closeModal() {
   }
 }
 
-function openModalWithJSX(content: Child, onClose?: () => void) {
+type ModalEventHandlers = {
+  onClose?: () => void;
+};
+
+function openModalWithJSX(content: Child, handlers?: ModalEventHandlers) {
   const modal = document.getElementById("main-modal") as HTMLDialogElement | null;
   const modalContent = document.getElementById("main-modal-content");
   if (modal && modalContent) {
     render(content, modalContent);
-    if (onClose) {
+    if (handlers?.onClose) {
       const closeHandler = () => {
-        onClose();
+        handlers.onClose!();
         modal.removeEventListener("close", closeHandler);
       };
       modal.addEventListener("close", closeHandler);

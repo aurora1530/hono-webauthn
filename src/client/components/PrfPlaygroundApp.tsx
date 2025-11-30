@@ -524,8 +524,10 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
           return;
         }
 
-        openModalWithJSX(<PrfProcessVisualizer step={step} mode={mode} />, () => {
-          closed = true;
+        openModalWithJSX(<PrfProcessVisualizer step={step} mode={mode} />, {
+          onClose: () => {
+            closed = true;
+          },
         });
       },
       onSuccess: () => {

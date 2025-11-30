@@ -21,7 +21,9 @@ export const openMessageModal = (
       <div>
         <p>{message}</p>
       </div>,
-      onClose,
+      {
+        onClose,
+      },
     );
   }
 };
