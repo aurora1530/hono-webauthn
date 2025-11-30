@@ -26,10 +26,6 @@ export const PasskeyRenameModal: FC<Props> = ({
   const container = css`
     position: relative;
     padding: 22px 22px 18px;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-sm);
     display: grid;
     gap: 14px;
   `;
