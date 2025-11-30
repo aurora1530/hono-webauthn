@@ -7,7 +7,7 @@ import {
   deleteAccount,
   fetchAccountDeletionSummary,
 } from "./lib/deleteAccount.js";
-import { closeModal, openModalWithJSX } from "./lib/modal/base.js";
+import { closeModal, openModal } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
 import {
   getPrfAnimationEnabled,
@@ -93,7 +93,7 @@ const openConfirmModal = (summary: AccountDeletionSummary) => {
   const cancelClass = buttonClass("secondary", "md");
   const proceedClass = buttonClass("danger", "md");
 
-  openModalWithJSX(
+  openModal(
     <div class={wrapClass}>
       <h3>本当にアカウントを削除しますか？</h3>
       <p>
@@ -209,7 +209,7 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
     });
   };
 
-  openModalWithJSX(
+  openModal(
     <form class={wrapClass} onSubmit={handleSubmit}>
       <h3>確認用の文字列を入力してください</h3>
       <p>削除を実行するには、次の文字列をそのまま入力してください。</p>

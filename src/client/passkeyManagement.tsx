@@ -4,7 +4,7 @@ import { showStatusToast } from "./components/common/StatusToast.js";
 import PasskeyHistories from "./components/PasskeyHistories.js";
 import { handleChangePasskeyName } from "./lib/changePasskeyName.js";
 import { handleDeletePasskey } from "./lib/deletePasskey.js";
-import { openModalWithJSX } from "./lib/modal/base.js";
+import { openModal } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
 import { handleRegistration } from "./lib/registration.js";
 import { webauthnClient } from "./lib/rpc/webauthnClient.js";
@@ -47,7 +47,7 @@ const invalidatePasskeyHistoryCache = (passkeyId: string) => {
 };
 
 document.getElementById("add-passkey-button")?.addEventListener("click", () => {
-  openModalWithJSX(
+  openModal(
     <PasskeyExplanationModal
       onContinue={() => {
         handleRegistration(false);
@@ -163,7 +163,7 @@ async function openPasskeyHistoryModal(
     void openPasskeyHistoryModal(passkeyId, data.page, { forceRefetch: true });
   };
 
-  openModalWithJSX(
+  openModal(
     <PasskeyHistories
       passkeyId={passkeyId}
       histories={data.histories}

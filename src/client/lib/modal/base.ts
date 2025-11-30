@@ -16,7 +16,7 @@ export type ModalEventHandlers = {
   onOverwrite?: () => void;
 };
 
-function openModalWithJSX(content: Child, handlers?: ModalEventHandlers) {
+function openModal(content: Child, handlers?: ModalEventHandlers) {
   const modal = document.getElementById("main-modal") as HTMLDialogElement | null;
   const modalContent = document.getElementById("main-modal-content");
   if (modal && modalContent) {
@@ -47,4 +47,4 @@ function openModalWithJSX(content: Child, handlers?: ModalEventHandlers) {
   }
 }
 
-export { closeModal, openModalWithJSX };
+export { closeModal, openModal };

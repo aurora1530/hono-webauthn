@@ -1,7 +1,7 @@
 import type { Result } from "@shared/type.js";
 import { PasskeyRenameModal } from "../components/common/PasskeyRenameModal.js";
 import { showStatusToast } from "../components/common/StatusToast.js";
-import { openModalWithJSX } from "./modal/base.js";
+import { openModal } from "./modal/base.js";
 import { webauthnClient } from "./rpc/webauthnClient.js";
 
 type SubmitResult = Result<never, string>;
@@ -51,7 +51,7 @@ async function handleChangePasskeyName(
     return submit(defaultName);
   };
 
-  openModalWithJSX(
+  openModal(
     <PasskeyRenameModal
       currentName={currentName}
       onSubmit={submit}

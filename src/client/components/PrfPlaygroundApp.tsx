@@ -7,7 +7,7 @@ import {
   surfaceClass,
   textMutedClass,
 } from "../../ui/theme.js";
-import { closeModal, openModalWithJSX } from "../lib/modal/base.js";
+import { closeModal, openModal } from "../lib/modal/base.js";
 import { decryptWithAesGcm, encryptWithAesGcm } from "../lib/prf/cryptoHandler.js";
 import {
   getPrfAnimationEnabled,
@@ -524,7 +524,7 @@ export const PrfPlaygroundApp = ({ debugMode = false }: { debugMode?: boolean })
           return;
         }
 
-        openModalWithJSX(<PrfProcessVisualizer step={step} mode={mode} />, {
+        openModal(<PrfProcessVisualizer step={step} mode={mode} />, {
           onClose: () => {
             closed = true;
           },

@@ -1,9 +1,9 @@
 import { PasskeyExplanationModal } from "./components/common/PasskeyExplanationModal.js";
-import { openModalWithJSX } from "./lib/modal/base.js";
+import { openModal } from "./lib/modal/base.js";
 import { handleRegistration, setupUsernameValidation } from "./lib/registration.js";
 
 document.getElementById("account-register-button")?.addEventListener("click", () => {
-  openModalWithJSX(
+  openModal(
     <PasskeyExplanationModal
       onContinue={() => {
         handleRegistration(true);
