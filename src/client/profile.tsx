@@ -115,7 +115,7 @@ const openConfirmModal = (summary: AccountDeletionSummary) => {
           type="button"
           onClick={async () => {
             closeModal();
-            openMessageModal("再認証を実行しています...", undefined, { loading: true });
+            openMessageModal("再認証を実行しています...", { loading: true });
             const ok = await handleReauthentication();
             closeModal();
             if (!ok) {
@@ -179,7 +179,7 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
       return;
     }
 
-    openMessageModal("アカウント削除を実行しています...", undefined, {
+    openMessageModal("アカウント削除を実行しています...", {
       loading: true,
     });
 

@@ -104,7 +104,7 @@ const fetchPasskeyHistoryPage = async (
     }
   }
 
-  openMessageModal("パスキー履歴を取得中...", undefined, { loading: true });
+  openMessageModal("パスキー履歴を取得中...", { loading: true });
 
   const res = await webauthnClient["passkey-histories"].$post({
     json: { passkeyId, limit: HISTORY_PAGE_LIMIT, page },
@@ -192,7 +192,7 @@ const testPasskeyBtns = document.getElementsByClassName(
 ) as HTMLCollectionOf<HTMLButtonElement>;
 
 async function handleTestAuthentication(passkeyId: string) {
-  openMessageModal("認証テストを開始します...", undefined, { loading: true });
+  openMessageModal("認証テストを開始します...", { loading: true });
   const generateRes = await webauthnClient["test-authentication"].generate.$post({
     json: { passkeyId },
   });

@@ -3,26 +3,22 @@ import { type ModalEventHandlers, openModal } from "./base.js";
 
 export type MessageModalOptions = {
   loading?: boolean;
-};
+} & ModalEventHandlers;
 
-export const openMessageModal = (
-  message: string,
-  handlers?: ModalEventHandlers,
-  options?: MessageModalOptions,
-) => {
+export const openMessageModal = (message: string, options?: MessageModalOptions) => {
   if (options?.loading) {
     openModal(
       <div>
         <LoadingIndicator message={message} inline={false} />
       </div>,
-      handlers,
+      options,
     );
   } else {
     openModal(
       <div>
         <p>{message}</p>
       </div>,
-      handlers,
+      options,
     );
   }
 };

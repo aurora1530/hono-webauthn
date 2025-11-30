@@ -75,7 +75,7 @@ async function handleRegistration(isNewAccount: boolean = true) {
       return;
     }
   } else {
-    openMessageModal(`再認証を開始します。`, undefined, { loading: true });
+    openMessageModal(`再認証を開始します。`, { loading: true });
     const reauthSuccess = await handleReauthentication();
     if (!reauthSuccess) {
       openMessageModal("再認証に失敗しました。パスキーの作成は行われませんでした。");
