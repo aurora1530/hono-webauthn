@@ -1,4 +1,4 @@
-import { handleAuthentication } from "./lib/authentication.js";
+import { handleAuthentication } from "./lib/webauthn/authentication.js";
 
 document.getElementById("login-button")?.addEventListener("click", () => {
   handleAuthentication();

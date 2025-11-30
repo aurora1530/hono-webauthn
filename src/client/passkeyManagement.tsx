@@ -6,13 +6,13 @@ import { handleChangePasskeyName } from "./lib/changePasskeyName.js";
 import { handleDeletePasskey } from "./lib/deletePasskey.js";
 import { openModal } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
-import { handleRegistration } from "./lib/registration.js";
 import { webauthnClient } from "./lib/rpc/webauthnClient.js";
+import { handleRegistration } from "./lib/webauthn/registration.js";
 import {
   clearWebAuthnRequest,
   handleWebAuthnAbort,
   startWebAuthnRequest,
-} from "./lib/webauthnAbort.js";
+} from "./lib/webauthn/webauthnAbort.js";
 
 type PasskeyHistoryPage = {
   histories: PasskeyHistory[];

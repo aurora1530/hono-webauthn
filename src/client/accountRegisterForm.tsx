@@ -1,6 +1,6 @@
 import { PasskeyExplanationModal } from "./components/common/PasskeyExplanationModal.js";
 import { openModal } from "./lib/modal/base.js";
-import { handleRegistration, setupUsernameValidation } from "./lib/registration.js";
+import { handleRegistration, setupUsernameValidation } from "./lib/webauthn/registration.js";
 
 document.getElementById("account-register-button")?.addEventListener("click", () => {
   openModal(

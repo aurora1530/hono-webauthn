@@ -1,5 +1,9 @@
 import { prfClient } from "../rpc/prfClient";
-import { clearWebAuthnRequest, handleWebAuthnAbort, startWebAuthnRequest } from "../webauthnAbort";
+import {
+  clearWebAuthnRequest,
+  handleWebAuthnAbort,
+  startWebAuthnRequest,
+} from "../webauthn/webauthnAbort";
 
 const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string | null => {
   if (!bytes) return null;

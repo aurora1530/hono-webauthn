@@ -13,7 +13,7 @@ import {
   getPrfAnimationEnabled,
   setPrfAnimationEnabled,
 } from "./lib/prf/prfAnimationPreference.js";
-import { handleReauthentication } from "./lib/reauthentication.js";
+import { handleReauthentication } from "./lib/webauthn/reauthentication.js";
 
 // --- debug mode toggle ---
 const debugToggle = document.getElementById("change-debug-mode-btn") as HTMLInputElement | null;

@@ -16,7 +16,7 @@ import {
 import { requestPrfEvaluation } from "../lib/prf/prfEvaluation.js";
 import { prfClient } from "../lib/rpc/prfClient";
 import { webauthnClient } from "../lib/rpc/webauthnClient";
-import { isAbortError } from "../lib/webauthnAbort.js";
+import { isAbortError } from "../lib/webauthn/webauthnAbort.js";
 import { LoadingIndicator } from "./common/LoadingIndicator.js";
 import { showStatusToast } from "./common/StatusToast.js";
 import {
