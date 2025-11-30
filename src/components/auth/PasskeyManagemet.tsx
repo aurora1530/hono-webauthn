@@ -7,6 +7,11 @@ import { isSynced } from "../../lib/auth/sync.js";
 import { formatUtcDateTime } from "../../lib/date.js";
 import { MAX_PASSKEYS_PER_USER } from "../../routes/auth/webauthn/constant.js";
 import { buttonClass, surfaceClass, textMutedClass } from "../../ui/theme.js";
+import {
+  type DeletionReason,
+  genPasskeyDeletionReasonModalID,
+  PasskeyDeletionReasonModal,
+} from "./PasskeyDeletionReasonModal.js";
 
 type PasskeyData = {
   passkey: Passkey;
@@ -270,20 +275,39 @@ const PasskeyManagement: FC<{
     }
   `;
 
-  const lockMessageClass = css`
-    font-size: 12px;
-    color: var(--color-danger);
+  const disabledReasonContainerClass = css`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-sm);
+    margin-right: auto;
+    @media (max-width: 600px) {
+      margin-right: 0;
+      margin-bottom: 8px;
+    }
+  `;
+
+  const disabledLabelClass = css`
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+  `;
+
+  const viewDeletionReasonBtnClass = css`
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    line-height: 1.2;
-    text-align: left;
-    &[hidden] {
-      display: none !important;
-    }
-    @media (max-width: 600px) {
-      font-size: 10px;
-    }
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0;
   `;
 
   return (
@@ -370,6 +394,14 @@ const PasskeyManagement: FC<{
 
             const hasCiphertextLock = pData.prfCiphertextCount > 0;
             const isCurrent = pData.passkey.id === currentPasskeyID;
+
+            const deleteDisabledReasons: DeletionReason[] = [];
+            if (!canDelete) deleteDisabledReasons.push("LAST_ONE");
+            if (isCurrent) deleteDisabledReasons.push("CURRENT_SESSION");
+            if (hasCiphertextLock) deleteDisabledReasons.push("HAS_LOCK");
+            const isDeleteDisabled = deleteDisabledReasons.length > 0;
+
+            const dialogID = genPasskeyDeletionReasonModalID();
 
             return (
               <li key={pData.passkey.id} class={itemClass} data-passkey-id={pData.passkey.id}>
@@ -485,17 +517,26 @@ const PasskeyManagement: FC<{
                 </div>
 
                 <div class={actionSectionClass}>
-                  <div
-                    class={lockMessageClass}
-                    data-prf-lock-message=""
-                    data-passkey-id={pData.passkey.id}
-                    hidden={!hasCiphertextLock}
-                  >
-                    <span class="material-symbols-outlined" style="font-size: 14px;">
-                      lock
-                    </span>
-                    暗号化データが存在するため削除不可
-                  </div>
+                  {isDeleteDisabled && (
+                    <div class={disabledReasonContainerClass}>
+                      <span class={disabledLabelClass}>削除不可</span>
+                      <button
+                        class={cx("view-deletion-reason-btn", viewDeletionReasonBtnClass)}
+                        aria-label="削除できない理由"
+                        title="削除できない理由"
+                        type="button"
+                        data-dialog-id={dialogID}
+                      >
+                        <span class="material-symbols-outlined" style="font-size: 20px;">
+                          help
+                        </span>
+                      </button>
+                      <PasskeyDeletionReasonModal
+                        reasons={deleteDisabledReasons}
+                        dialogID={dialogID}
+                      />
+                    </div>
+                  )}
 
                   <button
                     id="view-passkey-history-btn"
@@ -544,7 +585,7 @@ const PasskeyManagement: FC<{
                     }
                     data-initial-disabled={(!canDelete || isCurrent).toString()}
                     type="button"
-                    disabled={!canDelete || isCurrent || hasCiphertextLock}
+                    disabled={isDeleteDisabled}
                   >
                     <span class="material-symbols-outlined">delete</span>
                   </button>

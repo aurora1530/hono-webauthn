@@ -263,3 +263,19 @@ Array.from(testPasskeyBtns).forEach((btn) => {
     }
   });
 });
+
+const viewDeletionReasonBtns = document.getElementsByClassName(
+  "view-deletion-reason-btn",
+) as HTMLCollectionOf<HTMLButtonElement>;
+
+Array.from(viewDeletionReasonBtns).forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const dialogID = btn.dataset.dialogId;
+    if (dialogID) {
+      const dialog = document.getElementById(dialogID) as HTMLDialogElement | null;
+      if (dialog) {
+        dialog.showModal();
+      }
+    }
+  });
+});
