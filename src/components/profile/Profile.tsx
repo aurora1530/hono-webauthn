@@ -160,7 +160,7 @@ const Profile: FC = async () => {
         <div class={badgeClass("warning")}>Danger zone</div>
         <ul class={infoListClass}>
           <li>暗号データも含めて完全に削除します。</li>
-          <li>再登録しない限り復元できません。</li>
+          <li>復元は不可能です。</li>
         </ul>
         <button
           id="delete-account-btn"
