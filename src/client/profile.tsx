@@ -202,8 +202,10 @@ const openPhraseModal = (summary: AccountDeletionSummary) => {
       }
     }
 
-    openMessageModal("アカウントを削除しました。", () => {
-      window.location.href = "/";
+    openMessageModal("アカウントを削除しました。", {
+      onClose: () => {
+        window.location.href = "/";
+      },
     });
   };
 

@@ -11,7 +11,7 @@ function closeModal() {
   }
 }
 
-type ModalEventHandlers = {
+export type ModalEventHandlers = {
   onClose?: () => void;
   onOverwrite?: () => void;
 };

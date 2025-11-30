@@ -1,5 +1,5 @@
 import { LoadingIndicator } from "../../components/common/LoadingIndicator.js";
-import { openModalWithJSX } from "./base.js";
+import { type ModalEventHandlers, openModalWithJSX } from "./base.js";
 
 export type MessageModalOptions = {
   loading?: boolean;
@@ -7,7 +7,7 @@ export type MessageModalOptions = {
 
 export const openMessageModal = (
   message: string,
-  onClose?: () => void,
+  handlers?: ModalEventHandlers,
   options?: MessageModalOptions,
 ) => {
   if (options?.loading) {
@@ -15,15 +15,14 @@ export const openMessageModal = (
       <div>
         <LoadingIndicator message={message} inline={false} />
       </div>,
+      handlers,
     );
   } else {
     openModalWithJSX(
       <div>
         <p>{message}</p>
       </div>,
-      {
-        onClose,
-      },
+      handlers,
     );
   }
 };

@@ -135,12 +135,16 @@ async function handleRegistration(isNewAccount: boolean = true) {
   }
 
   if (isNewAccount) {
-    openMessageModal(`新規登録が完了しました。`, () => {
-      location.href = "/auth/login";
+    openMessageModal(`新規登録が完了しました。`, {
+      onClose: () => {
+        location.href = "/auth/login";
+      },
     });
   } else {
-    openMessageModal(`パスキーの作成が完了しました。`, () => {
-      location.reload();
+    openMessageModal(`パスキーの作成が完了しました。`, {
+      onClose: () => {
+        location.reload();
+      },
     });
   }
 }
