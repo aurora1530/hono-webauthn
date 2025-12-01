@@ -24,7 +24,7 @@ async function validateUsernameAndUpdateUI(): Promise<boolean> {
   if (username.length === 0) {
     valid = false;
     message = "";
-  } else if (username.length < 1 || username.length > 64) {
+  } else if (username.length > 64) {
     valid = false;
     message = "ユーザー名は1〜64文字で入力してください。";
   } else if (!alnum.test(username)) {
