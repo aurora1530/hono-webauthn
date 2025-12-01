@@ -32,7 +32,6 @@ export const createInMemoryCache = <T>(options: InMemoryCacheOptions): InMemoryC
 
   return {
     get(key: string): T | undefined {
-      console.log(cache);
       const entry = cache.get(key);
       return entry ? entry.value : undefined;
     },
