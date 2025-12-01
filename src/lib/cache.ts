@@ -8,26 +8,43 @@ interface InMemoryCacheOptions {
   ttlMs: number;
 }
 
+type CacheEntry<T> = {
+  value: T;
+  timeout: ReturnType<typeof setTimeout>;
+};
+
 export const createInMemoryCache = <T>(options: InMemoryCacheOptions): InMemoryCache<T> => {
-  const cache = new Map<string, { value: T; expiresAt: number }>();
+  const cache = new Map<string, CacheEntry<T>>();
+
+  const scheduleEviction = (key: string) => {
+    return setTimeout(() => {
+      cache.delete(key);
+    }, options.ttlMs);
+  };
+
+  const upsertEntry = (key: string, value: T) => {
+    const existing = cache.get(key);
+    if (existing) {
+      clearTimeout(existing.timeout);
+    }
+    cache.set(key, { value, timeout: scheduleEviction(key) });
+  };
 
   return {
     get(key: string): T | undefined {
+      console.log(cache);
       const entry = cache.get(key);
-      if (entry) {
-        if (entry.expiresAt > Date.now()) {
-          return entry.value;
-        } else {
-          cache.delete(key);
-        }
-      }
-      return undefined;
+      return entry ? entry.value : undefined;
     },
     set(key: string, value: T): void {
-      cache.set(key, { value, expiresAt: Date.now() + options.ttlMs });
+      upsertEntry(key, value);
     },
     delete(key: string): void {
-      cache.delete(key);
+      const entry = cache.get(key);
+      if (entry) {
+        clearTimeout(entry.timeout);
+        cache.delete(key);
+      }
     },
   };
 };
