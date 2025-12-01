@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
-import { usernameSchema } from "src/lib/schema/user.js";
 import z from "zod";
 import AccountRegisterForm from "../../components/auth/AccountRegisterForm.js";
 import AuthPage from "../../components/auth/AuthPage.js";
@@ -11,6 +10,7 @@ import { findHistories } from "../../lib/auth/history.js";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
 import { buildLoginRedirectUrl, extractRedirectPath } from "../../lib/auth/redirect.js";
 import { webauthnSessionController } from "../../lib/auth/webauthnSession.js";
+import { usernameSchema } from "../../lib/schema/user.js";
 import prisma from "../../prisma.js";
 import authPageRenderer from "./renderer.js";
 import webauthnApp from "./webauthn/index.js";
