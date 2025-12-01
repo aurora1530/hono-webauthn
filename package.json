@@ -26,6 +26,7 @@
     "@hono/node-server": "^1.19.6",
     "@prisma/client": "^6.4.1",
     "@simplewebauthn/server": "^13.1.1",
+    "debounce": "^3.0.0",
     "glob": "^11.0.3",
     "hono": "^4.7.4",
     "redis": "^5.9.0",
