@@ -1,16 +1,8 @@
-import { PasskeyExplanationModal } from "./components/common/PasskeyExplanationModal.js";
-import { openModal } from "./lib/modal/base.js";
-import { handleRegistration, setupUsernameValidation } from "./lib/webauthn/registration.js";
+import { render } from "hono/jsx/dom";
+import { AccountRegisterFormApp } from "./components/auth/AccountRegisterFormApp.js";
 
-document.getElementById("account-register-button")?.addEventListener("click", () => {
-  openModal(
-    <PasskeyExplanationModal
-      onContinue={() => {
-        handleRegistration(true);
-      }}
-    />,
-  );
-});
+const root = document.getElementById("account-register-root");
 
-// 入力リアルタイム検証を初期化
-setupUsernameValidation();
+if (root) {
+  render(<AccountRegisterFormApp />, root);
+}

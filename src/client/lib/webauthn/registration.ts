@@ -1,4 +1,3 @@
-import debounce from "debounce";
 import { showStatusToast } from "../../components/common/StatusToast.js";
 import { closeModal } from "../modal/base.js";
 import { openMessageModal } from "../modal/message.js";
@@ -11,92 +10,28 @@ import {
   startWebAuthnRequest,
 } from "./webauthnAbort.js";
 
-async function validateUsernameAndUpdateUI(): Promise<boolean> {
-  const usernameEle = document.getElementById("username");
-  if (!usernameEle || !(usernameEle instanceof HTMLInputElement)) return false;
-  const errorEle = document.getElementById("username-error");
-  const registerBtn = document.getElementById("account-register-button");
-  const username = usernameEle.value.trim();
-  const alnum = /^[a-zA-Z0-9]+$/;
-
-  let valid = true;
-  let message = "";
-  if (username.length === 0) {
-    valid = false;
-    message = "";
-  } else if (username.length > 64) {
-    valid = false;
-    message = "ユーザー名は1〜64文字で入力してください。";
-  } else if (!alnum.test(username)) {
-    valid = false;
-    message = "ユーザー名は半角英数字のみ使用できます。";
-  }
-
-  if (valid) {
-    try {
-      const availability = await authClient["username-validate"].$post({
-        json: { username },
-      });
-      if (!availability.ok) {
-        const error = (await availability.json()).error;
-        valid = false;
-        message = error;
-      }
-    } catch (e) {
-      valid = false;
-      message = "ネットワークエラーが発生しました。しばらくしてから再度お試しください。";
-    }
-  }
-
-  if (errorEle) errorEle.textContent = message;
-  usernameEle.setAttribute("aria-invalid", valid ? "false" : "true");
-  if (registerBtn instanceof HTMLButtonElement) registerBtn.disabled = !valid;
-  return valid;
+type HandleRegistrationOptions = {
+  isNewAccount: true;
+  username: string;
+} | {
+  isNewAccount: false;
 }
 
-function setupUsernameValidation() {
-  const usernameEle = document.getElementById("username");
-  if (!usernameEle || !(usernameEle instanceof HTMLInputElement)) return;
-  const counterEle = document.getElementById("username-count");
-  const updateCount = () => {
-    const trimmedLen = usernameEle.value.trim().length;
-    if (counterEle) counterEle.textContent = `${trimmedLen}/64`;
-  };
-  usernameEle.addEventListener("input", () => {
-    updateCount();
-  });
+async function handleRegistration(params: HandleRegistrationOptions) {
+  if (params.isNewAccount) {
+    const username = params.username.trim();
 
-  // ユーザー名の検証は、API コールを伴うため、デバウンスする
-  usernameEle.addEventListener(
-    "input",
-    debounce(async () => {
-      await validateUsernameAndUpdateUI();
-    }, 300),
-  );
-
-  // 初期状態の反映
-  validateUsernameAndUpdateUI();
-  updateCount();
-}
-
-async function handleRegistration(isNewAccount: boolean = true) {
-  if (isNewAccount) {
-    const usernameEle = document.getElementById("username");
-    if (!usernameEle || !(usernameEle instanceof HTMLInputElement)) {
-      return;
-    }
-    const errorEle = document.getElementById("username-error");
-    const username = usernameEle.value.trim();
-    if (!validateUsernameAndUpdateUI()) return;
-    if (errorEle) errorEle.textContent = "";
     const usernameRegisterResponse = await authClient.register.$post({
       json: { username },
     });
 
     if (!usernameRegisterResponse.ok) {
       const error = (await usernameRegisterResponse.json()).error;
-      if (errorEle) errorEle.textContent = error;
-      else alert(error); // Fatal error なので alert で良い
+      showStatusToast({
+        message: error ?? "アカウント登録に失敗しました。",
+        variant: "error",
+        ariaLive: "assertive",
+      })
       return;
     }
   } else {
@@ -159,7 +94,7 @@ async function handleRegistration(isNewAccount: boolean = true) {
     return;
   }
 
-  if (isNewAccount) {
+  if (params.isNewAccount) {
     openMessageModal(`新規登録が完了しました。`, {
       onClose: () => {
         location.href = "/auth/login";
@@ -174,4 +109,4 @@ async function handleRegistration(isNewAccount: boolean = true) {
   }
 }
 
-export { handleRegistration, setupUsernameValidation };
+export { handleRegistration };
