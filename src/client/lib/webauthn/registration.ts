@@ -65,6 +65,8 @@ function setupUsernameValidation() {
   usernameEle.addEventListener("input", () => {
     updateCount();
   });
+
+  // ユーザー名の検証は、API コールを伴うため、デバウンスする
   usernameEle.addEventListener(
     "input",
     debounce(() => {
