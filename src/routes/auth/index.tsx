@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
+import { usernameSchema } from "src/lib/schema/user.js";
 import z from "zod";
 import AccountRegisterForm from "../../components/auth/AccountRegisterForm.js";
 import AuthPage from "../../components/auth/AuthPage.js";
@@ -46,15 +47,52 @@ export const authAppRoutes = authApp
     });
   })
   .post(
+    "/username-validate",
+    validator("json", (value, c) => {
+      const parsed = usernameSchema.safeParse(value.username);
+      if (!parsed.success) {
+        return c.json(
+          {
+            valid: false,
+            error: "ユーザー名は1〜64文字、半角英数字のみ使用できます。",
+          },
+          422,
+        );
+      }
+
+      return { username: parsed.data };
+    }),
+    async (c) => {
+      const { username } = c.req.valid("json");
+
+      const alreadyExists = await prisma.user.findUnique({
+        where: {
+          name: username,
+        },
+      });
+
+      if (alreadyExists) {
+        return c.json(
+          {
+            valid: false,
+            error: "ユーザー名が既に存在します。",
+          },
+          409,
+        );
+      }
+
+      return c.json(
+        {
+          valid: true,
+        },
+        200,
+      );
+    },
+  )
+  .post(
     "/register",
     validator("json", (value, c) => {
-      const UsernameSchema = z
-        .string()
-        .trim()
-        .min(1)
-        .max(64)
-        .regex(/^[a-zA-Z0-9]+$/, { message: "ユーザー名は半角英数字のみ使用できます。" });
-      const parsed = z.object({ username: UsernameSchema }).safeParse(value);
+      const parsed = z.object({ username: usernameSchema }).safeParse(value);
       if (!parsed.success) {
         return c.json(
           {

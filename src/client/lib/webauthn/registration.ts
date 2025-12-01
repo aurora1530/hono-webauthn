@@ -1,3 +1,4 @@
+import debounce from "debounce";
 import { showStatusToast } from "../../components/common/StatusToast.js";
 import { closeModal } from "../modal/base.js";
 import { openMessageModal } from "../modal/message.js";
@@ -10,7 +11,7 @@ import {
   startWebAuthnRequest,
 } from "./webauthnAbort.js";
 
-function validateUsernameAndUpdateUI(): boolean {
+async function validateUsernameAndUpdateUI(): Promise<boolean> {
   const usernameEle = document.getElementById("username");
   if (!usernameEle || !(usernameEle instanceof HTMLInputElement)) return false;
   const errorEle = document.getElementById("username-error");
@@ -23,12 +24,28 @@ function validateUsernameAndUpdateUI(): boolean {
   if (username.length === 0) {
     valid = false;
     message = "";
-  } else if (username.length < 1 || username.length > 64) {
+  } else if (username.length > 64) {
     valid = false;
     message = "ユーザー名は1〜64文字で入力してください。";
   } else if (!alnum.test(username)) {
     valid = false;
     message = "ユーザー名は半角英数字のみ使用できます。";
+  }
+
+  if (valid) {
+    try {
+      const availability = await authClient["username-validate"].$post({
+        json: { username },
+      });
+      if (!availability.ok) {
+        const error = (await availability.json()).error;
+        valid = false;
+        message = error;
+      }
+    } catch (e) {
+      valid = false;
+      message = "ネットワークエラーが発生しました。しばらくしてから再度お試しください。";
+    }
   }
 
   if (errorEle) errorEle.textContent = message;
@@ -46,9 +63,17 @@ function setupUsernameValidation() {
     if (counterEle) counterEle.textContent = `${trimmedLen}/64`;
   };
   usernameEle.addEventListener("input", () => {
-    validateUsernameAndUpdateUI();
     updateCount();
   });
+
+  // ユーザー名の検証は、API コールを伴うため、デバウンスする
+  usernameEle.addEventListener(
+    "input",
+    debounce(async () => {
+      await validateUsernameAndUpdateUI();
+    }, 300),
+  );
+
   // 初期状態の反映
   validateUsernameAndUpdateUI();
   updateCount();
