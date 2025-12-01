@@ -17,7 +17,9 @@ const createRedisSessionStore = async <T extends JsonObject>(
   options: RedisSessionStoreOptions<T>,
 ): Promise<SessionStore<T>> => {
   const redis = await getRedis();
-  const inMemoryCache = createInMemoryCache<T>({ ttlMs: 1000 * 3 }); // 3 seconds。短いので、「redisではexpireしているが、in-memory cacheではまだ有効」という状態はほぼ起きない。
+  // 3 seconds。短いので、「redisではexpireしているが、in-memory cacheではまだ有効」という状態はほぼ起きない。
+  // 無料枠のredisを使っているので、なるべくアクセス数を減らすためにin-memory cacheも利用する。
+  const inMemoryCache = createInMemoryCache<T>({ ttlMs: 1000 * 3 });
   const KEY = (sessionID: string) => `${options.prefix}:${sessionID}`;
 
   return {
