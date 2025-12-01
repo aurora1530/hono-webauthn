@@ -1,6 +1,6 @@
 import { css, cx } from "hono/css";
 import type { FC } from "hono/jsx";
-import { buttonClass, inputFieldClass, smallLabelClass, textMutedClass } from "../../ui/theme.js";
+import { textMutedClass } from "../../ui/theme.js";
 
 const AccountRegisterForm: FC = () => {
   const container = css`
@@ -8,77 +8,35 @@ const AccountRegisterForm: FC = () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-  `;
-
-  const row = css`
-    display: flex;
     gap: 12px;
-    align-items: center;
   `;
 
-  const input = cx(
-    inputFieldClass,
-    css`
-      min-width: 220px;
-    `,
-  );
-
-  const errorText = css`
-    color: var(--color-danger);
-    font-size: 12px;
-  `;
-
-  const hintText = cx(
+  const placeholder = cx(
     textMutedClass,
-    smallLabelClass,
     css`
+      width: min(520px, 100%);
+      padding: 32px 16px;
+      border: 1px dashed var(--color-border);
+      border-radius: var(--radius-lg);
       text-align: center;
+      box-sizing: border-box;
     `,
   );
 
-  const errorWrap = css`
-    min-height: 16px;
+  const helper = css`
+    font-size: 13px;
+    margin-top: 8px;
   `;
-
-  const counterText = cx(
-    textMutedClass,
-    css`
-      font-size: 12px;
-      min-width: 48px;
-      text-align: right;
-    `,
-  );
-
-  const primaryButton = buttonClass("primary", "md");
 
   return (
     <div class={container}>
-      <div id="username-hint" class={hintText}>
-        ユーザー名は1〜64文字、半角英数字のみ。
+      <div id="account-register-root" class={placeholder}>
+        <p>アカウント登録フォームを読み込んでいます…</p>
+        <p class={helper}>読み込まれない場合は JavaScript を有効にしてください。</p>
       </div>
-      <div class={row}>
-        <input
-          class={input}
-          type="text"
-          name="username"
-          id="username"
-          placeholder="ユーザー名"
-          pattern="[a-zA-Z0-9]{1,64}"
-          title="1〜64文字、半角英数字のみ"
-          aria-describedby="username-hint username-error"
-          aria-invalid="false"
-        />
-        <span id="username-count" class={counterText} aria-live="polite">
-          0/64
-        </span>
-        <button class={primaryButton} id="account-register-button" disabled type="button">
-          登録
-        </button>
-      </div>
-      <div class={errorWrap}>
-        <span id="username-error" class={errorText} role="alert" aria-live="polite" />
-      </div>
+      <noscript>
+        <p style="color: var(--color-danger);">このフォームを利用するには JavaScript が必要です。</p>
+      </noscript>
       <script src="/public/accountRegisterForm.js" type="module"></script>
     </div>
   );
