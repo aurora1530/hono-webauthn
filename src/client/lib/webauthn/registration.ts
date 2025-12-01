@@ -33,13 +33,18 @@ async function validateUsernameAndUpdateUI(): Promise<boolean> {
   }
 
   if (valid) {
-    const availability = await authClient["username-validate"].$post({
-      json: { username },
-    });
-    if (!availability.ok) {
-      const error = (await availability.json()).error;
+    try {
+      const availability = await authClient["username-validate"].$post({
+        json: { username },
+      });
+      if (!availability.ok) {
+        const error = (await availability.json()).error;
+        valid = false;
+        message = error;
+      }
+    } catch (e) {
       valid = false;
-      message = error;
+      message = "ネットワークエラーが発生しました。しばらくしてから再度お試しください。";
     }
   }
 
