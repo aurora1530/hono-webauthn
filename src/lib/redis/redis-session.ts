@@ -46,6 +46,7 @@ const createRedisSessionStore = async <T extends JsonObject>(
       }
     },
     getAndDestroy: async (sessionID: string) => {
+      inMemoryCache.delete(sessionID);
       const raw = await redis.getDel(KEY(sessionID));
       if (!raw) return undefined;
       try {
