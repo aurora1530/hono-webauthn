@@ -56,7 +56,7 @@ export const authAppRoutes = authApp
             valid: false,
             error: "ユーザー名は1〜64文字、半角英数字のみ使用できます。",
           },
-          400,
+          422,
         );
       }
 
@@ -77,7 +77,7 @@ export const authAppRoutes = authApp
             valid: false,
             error: "ユーザー名が既に存在します。",
           },
-          400,
+          409,
         );
       }
 
