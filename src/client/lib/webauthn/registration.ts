@@ -1,3 +1,4 @@
+import debounce from "debounce";
 import { showStatusToast } from "../../components/common/StatusToast.js";
 import { closeModal } from "../modal/base.js";
 import { openMessageModal } from "../modal/message.js";
@@ -10,7 +11,7 @@ import {
   startWebAuthnRequest,
 } from "./webauthnAbort.js";
 
-function validateUsernameAndUpdateUI(): boolean {
+async function validateUsernameAndUpdateUI(): Promise<boolean> {
   const usernameEle = document.getElementById("username");
   if (!usernameEle || !(usernameEle instanceof HTMLInputElement)) return false;
   const errorEle = document.getElementById("username-error");
@@ -31,6 +32,17 @@ function validateUsernameAndUpdateUI(): boolean {
     message = "ユーザー名は半角英数字のみ使用できます。";
   }
 
+  if (valid) {
+    const availability = await authClient["username-validate"].$post({
+      json: { username },
+    });
+    if (!availability.ok) {
+      const error = (await availability.json()).error;
+      valid = false;
+      message = error;
+    }
+  }
+
   if (errorEle) errorEle.textContent = message;
   usernameEle.setAttribute("aria-invalid", valid ? "false" : "true");
   if (registerBtn instanceof HTMLButtonElement) registerBtn.disabled = !valid;
@@ -46,9 +58,15 @@ function setupUsernameValidation() {
     if (counterEle) counterEle.textContent = `${trimmedLen}/64`;
   };
   usernameEle.addEventListener("input", () => {
-    validateUsernameAndUpdateUI();
     updateCount();
   });
+  usernameEle.addEventListener(
+    "input",
+    debounce(() => {
+      validateUsernameAndUpdateUI();
+    }, 300),
+  );
+
   // 初期状態の反映
   validateUsernameAndUpdateUI();
   updateCount();
