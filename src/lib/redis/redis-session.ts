@@ -1,3 +1,4 @@
+import { createInMemoryCache } from "../cache.js";
 import type { JsonObject } from "../json.js";
 import type { SessionID, SessionStore } from "../session.js";
 import { getRedis } from "./redis.js";
@@ -16,12 +17,14 @@ const createRedisSessionStore = async <T extends JsonObject>(
   options: RedisSessionStoreOptions<T>,
 ): Promise<SessionStore<T>> => {
   const redis = await getRedis();
+  const inMemoryCache = createInMemoryCache<T>({ ttlMs: 1000 * 3 }); // 3 seconds。短いので、「redisではexpireしているが、in-memory cacheではまだ有効」という状態はほぼ起きない。
   const KEY = (sessionID: string) => `${options.prefix}:${sessionID}`;
 
   return {
     createSessionWith: async (data: T) => {
       const sessionID = generateSessionID();
       await redis.set(KEY(sessionID), JSON.stringify(data), { EX: options.ttlSec });
+      inMemoryCache.set(sessionID, data);
       return sessionID;
     },
     refresh: async (sessionID: string) => {
@@ -29,11 +32,15 @@ const createRedisSessionStore = async <T extends JsonObject>(
       return result === 1;
     },
     get: async (sessionID: string) => {
+      const cached = inMemoryCache.get(sessionID);
+      if (cached !== undefined) return cached;
       const raw = await redis.get(KEY(sessionID));
       if (!raw) return undefined;
       try {
         const parsed = JSON.parse(raw);
-        return options.parse(parsed);
+        const result = options.parse(parsed);
+        if (result) inMemoryCache.set(sessionID, result);
+        return result;
       } catch {
         return undefined;
       }
@@ -50,9 +57,11 @@ const createRedisSessionStore = async <T extends JsonObject>(
     },
     set: async (sessionID: string, data: T) => {
       await redis.set(KEY(sessionID), JSON.stringify(data), { EX: options.ttlSec });
+      inMemoryCache.set(sessionID, data);
     },
     destroy: async (sessionID: string) => {
       await redis.del(KEY(sessionID));
+      inMemoryCache.delete(sessionID);
     },
   };
 };
