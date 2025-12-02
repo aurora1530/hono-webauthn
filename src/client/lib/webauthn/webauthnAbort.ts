@@ -1,6 +1,6 @@
 import { showStatusToast } from "../../components/common/StatusToast.js";
 
-interface AbortControllerHandler {
+export interface AbortControllerHandler {
   abort(): void;
   getSignal(): AbortSignal;
 }
