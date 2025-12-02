@@ -31,6 +31,7 @@ COPY --from=builder --chown=hono:nodejs /app/dist ./dist
 COPY --from=builder --chown=hono:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=hono:nodejs /app/public ./public
 COPY --from=builder --chown=hono:nodejs /app/aaguid.json ./aaguid.json
+COPY --from=builder --chown=hono:nodejs /app/related_origins.json ./related_origins.json
 
 ENTRYPOINT ["dumb-init", "--"]
 USER hono

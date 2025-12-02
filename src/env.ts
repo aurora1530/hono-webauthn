@@ -14,7 +14,6 @@ const envSchema = z.object({
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().min(1).default(120),
   RP_ID: z.string(),
   ORIGIN: z.string(),
-  RELATED_ORIGINS: z.string().optional(),
 });
 
 export const typedEnv = envSchema.parse(process.env);
