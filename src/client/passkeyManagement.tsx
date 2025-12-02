@@ -188,7 +188,14 @@ const testPasskeyBtns = document.getElementsByClassName(
 ) as HTMLCollectionOf<HTMLButtonElement>;
 
 async function handleTestAuthentication(passkeyId: string) {
-  openMessageModal("認証テストを開始します...", { loading: true });
+  const abortControllerHandler = createAbortController();
+
+  openMessageModal("認証テストを開始します...", {
+    loading: true,
+    onClose: () => {
+      abortControllerHandler.abort();
+    },
+  });
   const generateRes = await webauthnClient["test-authentication"].generate.$post({
     json: { passkeyId },
   });
@@ -206,7 +213,6 @@ async function handleTestAuthentication(passkeyId: string) {
     return;
   }
   try {
-    const abortControllerHandler = createAbortController();
     const credential = await navigator.credentials.get({
       publicKey: options,
       signal: abortControllerHandler.getSignal(),
