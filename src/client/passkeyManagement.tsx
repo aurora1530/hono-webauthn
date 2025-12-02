@@ -8,11 +8,7 @@ import { openModal } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
 import { webauthnClient } from "./lib/rpc/webauthnClient.js";
 import { handleRegistration } from "./lib/webauthn/registration.js";
-import {
-  clearWebAuthnRequest,
-  handleWebAuthnAbort,
-  startWebAuthnRequest,
-} from "./lib/webauthn/webauthnAbort.js";
+import { createAbortController, handleWebAuthnAbort } from "./lib/webauthn/webauthnAbort.js";
 
 type PasskeyHistoryPage = {
   histories: PasskeyHistory[];
@@ -210,12 +206,11 @@ async function handleTestAuthentication(passkeyId: string) {
     return;
   }
   try {
-    const signal = startWebAuthnRequest();
+    const abortControllerHandler = createAbortController();
     const credential = await navigator.credentials.get({
       publicKey: options,
-      signal,
+      signal: abortControllerHandler.getSignal(),
     });
-    clearWebAuthnRequest();
     if (!credential) {
       showStatusToast({
         message: "認証情報の取得に失敗しました。",
@@ -235,7 +230,6 @@ async function handleTestAuthentication(passkeyId: string) {
     }
     openMessageModal("認証テストが成功しました。");
   } catch (e) {
-    clearWebAuthnRequest();
     if (handleWebAuthnAbort(e, "認証テストを中断しました。")) {
       showStatusToast({
         message: "認証テストを中断しました。",

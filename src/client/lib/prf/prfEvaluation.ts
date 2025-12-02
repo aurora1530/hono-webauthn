@@ -1,9 +1,5 @@
 import { prfClient } from "../rpc/prfClient";
-import {
-  clearWebAuthnRequest,
-  handleWebAuthnAbort,
-  startWebAuthnRequest,
-} from "../webauthn/webauthnAbort";
+import { createAbortController, handleWebAuthnAbort } from "../webauthn/webauthnAbort";
 
 const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string | null => {
   if (!bytes) return null;
@@ -61,19 +57,17 @@ export const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: st
     throw new Error("サーバーから返されたPRF入力が一致しません");
   }
   const options = PublicKeyCredential.parseRequestOptionsFromJSON(generateJson);
-  const signal = startWebAuthnRequest();
+  const abortControllerHandler = createAbortController();
   let credential: Credential | null = null;
   try {
     credential = await navigator.credentials.get({
       publicKey: options,
-      signal,
+      signal: abortControllerHandler.getSignal(),
     });
   } catch (error) {
-    clearWebAuthnRequest();
     handleWebAuthnAbort(error, "認証を中断しました。");
     throw error;
   }
-  clearWebAuthnRequest();
   if (!(credential instanceof PublicKeyCredential)) {
     throw new Error("認証情報の取得に失敗しました");
   }

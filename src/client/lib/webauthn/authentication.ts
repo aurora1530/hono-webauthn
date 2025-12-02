@@ -1,10 +1,6 @@
 import { showStatusToast } from "../../components/common/StatusToast.js";
 import { webauthnClient } from "../rpc/webauthnClient.js";
-import {
-  clearWebAuthnRequest,
-  handleWebAuthnAbort,
-  startWebAuthnRequest,
-} from "./webauthnAbort.js";
+import { createAbortController, handleWebAuthnAbort } from "./webauthnAbort.js";
 
 const parsePostLoginRedirect = () => {
   try {
@@ -41,15 +37,14 @@ async function handleAuthentication() {
   );
   console.log(options);
 
-  const signal = startWebAuthnRequest();
+  const abortControllerHandler = createAbortController();
   let credential: Credential | null;
   try {
     credential = await navigator.credentials.get({
       publicKey: options,
-      signal,
+      signal: abortControllerHandler.getSignal(),
     });
   } catch (error) {
-    clearWebAuthnRequest();
     if (handleWebAuthnAbort(error, "パスキーによる認証を中断しました。")) return;
     console.error(error);
     showStatusToast({
@@ -59,7 +54,6 @@ async function handleAuthentication() {
     });
     return;
   }
-  clearWebAuthnRequest();
   if (!credential) {
     showStatusToast({
       message: "認証情報の取得に失敗しました。",

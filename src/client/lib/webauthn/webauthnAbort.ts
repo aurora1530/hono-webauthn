@@ -1,24 +1,16 @@
 import { showStatusToast } from "../../components/common/StatusToast.js";
 
-let activeWebAuthnController: AbortController | null = null;
+interface AbortControllerHandler {
+  abort(): void;
+  getSignal(): AbortSignal;
+}
 
-const startWebAuthnRequest = (): AbortSignal => {
-  if (activeWebAuthnController) {
-    activeWebAuthnController.abort();
-  }
-  activeWebAuthnController = new AbortController();
-  return activeWebAuthnController.signal;
-};
-
-const clearWebAuthnRequest = () => {
-  activeWebAuthnController = null;
-};
-
-const abortOngoingWebAuthnRequest = () => {
-  if (activeWebAuthnController) {
-    activeWebAuthnController.abort();
-    activeWebAuthnController = null;
-  }
+const createAbortController = (): AbortControllerHandler => {
+  const controller = new AbortController();
+  return {
+    abort: () => controller.abort(),
+    getSignal: () => controller.signal,
+  };
 };
 
 const isAbortError = (error: unknown): error is DOMException =>
@@ -35,19 +27,4 @@ const handleWebAuthnAbort = (error: unknown, message: string) => {
   return true;
 };
 
-if (typeof window !== "undefined") {
-  window.addEventListener("pagehide", abortOngoingWebAuthnRequest);
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") {
-      abortOngoingWebAuthnRequest();
-    }
-  });
-}
-
-export {
-  abortOngoingWebAuthnRequest,
-  clearWebAuthnRequest,
-  handleWebAuthnAbort,
-  isAbortError,
-  startWebAuthnRequest,
-};
+export { createAbortController, handleWebAuthnAbort, isAbortError };

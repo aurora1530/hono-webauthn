@@ -4,18 +4,16 @@ import { openMessageModal } from "../modal/message.js";
 import { authClient } from "../rpc/authClient.js";
 import { webauthnClient } from "../rpc/webauthnClient.js";
 import { handleReauthentication } from "./reauthentication.js";
-import {
-  clearWebAuthnRequest,
-  handleWebAuthnAbort,
-  startWebAuthnRequest,
-} from "./webauthnAbort.js";
+import { createAbortController, handleWebAuthnAbort } from "./webauthnAbort.js";
 
-type HandleRegistrationOptions = {
-  isNewAccount: true;
-  username: string;
-} | {
-  isNewAccount: false;
-}
+type HandleRegistrationOptions =
+  | {
+      isNewAccount: true;
+      username: string;
+    }
+  | {
+      isNewAccount: false;
+    };
 
 async function handleRegistration(params: HandleRegistrationOptions) {
   if (params.isNewAccount) {
@@ -31,7 +29,7 @@ async function handleRegistration(params: HandleRegistrationOptions) {
         message: error ?? "アカウント登録に失敗しました。",
         variant: "error",
         ariaLive: "assertive",
-      })
+      });
       return;
     }
   } else {
@@ -55,15 +53,14 @@ async function handleRegistration(params: HandleRegistrationOptions) {
   );
   console.log(options);
 
-  const signal = startWebAuthnRequest();
+  const abortControllerHandler = createAbortController();
   let credential: Credential | null;
   try {
     credential = await navigator.credentials.create({
       publicKey: options,
-      signal,
+      signal: abortControllerHandler.getSignal(),
     });
   } catch (error) {
-    clearWebAuthnRequest();
     if (handleWebAuthnAbort(error, "パスキーの作成を中断しました。")) return;
     console.error(error);
     showStatusToast({
@@ -73,7 +70,6 @@ async function handleRegistration(params: HandleRegistrationOptions) {
     });
     return;
   }
-  clearWebAuthnRequest();
   if (!credential) {
     showStatusToast({
       message: "認証情報の取得に失敗しました。",
