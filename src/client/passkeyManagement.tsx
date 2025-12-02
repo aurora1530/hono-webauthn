@@ -50,7 +50,7 @@ document.getElementById("add-passkey-button")?.addEventListener("click", () => {
   openModal(
     <PasskeyExplanationModal
       onContinue={() => {
-        handleRegistration(false);
+        handleRegistration({ isNewAccount: false });
       }}
     />,
   );
