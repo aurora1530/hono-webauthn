@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { relatedOrigins } from "src/lib/auth/relatedOrigins.js";
 import { typedEnv } from "../../env.js";
+import { relatedOrigins } from "../../lib/auth/relatedOrigins.js";
 
 const wellKnownApp = new Hono();
 
