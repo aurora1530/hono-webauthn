@@ -45,7 +45,7 @@ const Top: FC = async () => {
   return (
     <div class={wrap}>
       <div class={hero}>
-        <h1 class={title}>Hono WebAuthn Demo App</h1>
+        <h1 class={title}>Passkey Demo App</h1>
         {username ? (
           <>
             <p class={cx(subtitle, textMutedClass)}>ようこそ、{username}さん。</p>

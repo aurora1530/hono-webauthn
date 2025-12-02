@@ -242,7 +242,7 @@ const Header: FC = async () => {
     <header class={headerClass}>
       <nav class={navClass}>
         <a href="/" class={logoClass}>
-          Hono WebAuthn Demo App
+          Passkey Demo App
         </a>
 
         <div class={rightAreaClass}>
