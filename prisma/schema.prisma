@@ -51,6 +51,8 @@ model PasskeyHistory {
   usedOS      String
   usedAt     DateTime @default(now())
   type       PasskeyHistoryType @default(LOGIN)
+
+  @@index([passkeyID, usedAt(sort: Desc)])
 }
 
 enum PasskeyHistoryType {
