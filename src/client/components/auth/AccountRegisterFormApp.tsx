@@ -6,11 +6,11 @@ import {
   smallLabelClass,
   textMutedClass,
 } from "../../../ui/theme.js";
-import { PasskeyExplanationModal } from "../common/PasskeyExplanationModal.js";
 import { openModal } from "../../lib/modal/base.js";
 import { authClient } from "../../lib/rpc/authClient.js";
 import { handleRegistration } from "../../lib/webauthn/registration.js";
 import LoadingIndicator from "../common/LoadingIndicator.js";
+import { PasskeyExplanationModal } from "../common/PasskeyExplanationModal.js";
 
 const usernamePattern = /^[a-zA-Z0-9]+$/;
 
@@ -76,7 +76,8 @@ const inputClass = cx(
 
 const primaryButton = buttonClass("primary", "md");
 
-const networkErrorMessage = "ネットワークエラーが発生しました。しばらくしてから再度お試しください。";
+const networkErrorMessage =
+  "ネットワークエラーが発生しました。しばらくしてから再度お試しください。";
 
 const getLocalValidationError = (value: string): string | null => {
   if (value.length === 0) return null;
@@ -205,7 +206,7 @@ export const AccountRegisterFormApp = () => {
             aria-disabled={!isAvailable || isChecking}
             onClick={handleRegisterClick}
           >
-            {isChecking ? <LoadingIndicator inline={true} message=""/> : "登録"}
+            {isChecking ? <LoadingIndicator inline={true} message="" /> : "登録"}
           </button>
         </div>
         <span id="username-error" class={errorText} role="alert" aria-live="polite">

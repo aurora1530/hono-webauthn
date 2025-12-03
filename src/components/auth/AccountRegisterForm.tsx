@@ -35,7 +35,9 @@ const AccountRegisterForm: FC = () => {
         <p class={helper}>読み込まれない場合は JavaScript を有効にしてください。</p>
       </div>
       <noscript>
-        <p style="color: var(--color-danger);">このフォームを利用するには JavaScript が必要です。</p>
+        <p style="color: var(--color-danger);">
+          このフォームを利用するには JavaScript が必要です。
+        </p>
       </noscript>
       <script src="/public/accountRegisterForm.js" type="module"></script>
     </div>
