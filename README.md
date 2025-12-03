@@ -2,7 +2,7 @@
 
 ## Deployed
 
-The demo app is deployed at: https://hono-webauthn-demo-app.onrender.com
+The demo app is deployed at: https://passkey-demo-app.aurora1530.dev
 
 We use Upstash for Redis and Supabase for Postgres.
 
