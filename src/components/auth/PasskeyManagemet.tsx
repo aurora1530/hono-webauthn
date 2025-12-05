@@ -396,9 +396,12 @@ const PasskeyManagement: FC<{
             const defaultName = metadata?.name ?? "パスキー";
             const iconLight = metadata.icon_light;
             const iconDark = metadata.icon_dark;
-            const lastUsedLabel = pData.lastUsed
-              ? `${formatUtcDateTime(pData.lastUsed.usedAt, "Asia/Tokyo")} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)}) by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS}`
+            const lastUsedDateTime = pData.lastUsed
+              ? `${formatUtcDateTime(pData.lastUsed.usedAt, "Asia/Tokyo")} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
               : "未使用";
+            const lastUsedDevice = pData.lastUsed
+              ? `by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS}`
+              : null;
 
             const hasCiphertextLock = pData.prfCiphertextCount > 0;
             const isCurrent = pData.passkey.id === currentPasskeyID;
@@ -510,7 +513,11 @@ const PasskeyManagement: FC<{
                       <span class="material-symbols-outlined" style="font-size: 16px;">
                         history
                       </span>
-                      <span>最終利用: {lastUsedLabel}</span>
+                      <span>最終利用:</span>
+                      <span class={creationDateClass}>
+                        <span>{lastUsedDateTime} </span>
+                        {lastUsedDevice && <span style="opacity: 0.7;">{lastUsedDevice}</span>}
+                      </span>
                     </div>
                     {debugMode && (
                       <>
