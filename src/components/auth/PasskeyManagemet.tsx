@@ -397,7 +397,7 @@ const PasskeyManagement: FC<{
             const iconLight = metadata.icon_light;
             const iconDark = metadata.icon_dark;
             const lastUsedLabel = pData.lastUsed
-              ? `${formatUtcDateTime(pData.lastUsed.usedAt, "Asia/Tokyo")} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)})`
+              ? `${formatUtcDateTime(pData.lastUsed.usedAt, "Asia/Tokyo")} (${getPasskeyHistoryTypeLabel(pData.lastUsed.type)}) by ${pData.lastUsed.usedBrowser} on ${pData.lastUsed.usedOS}`
               : "未使用";
 
             const hasCiphertextLock = pData.prfCiphertextCount > 0;
