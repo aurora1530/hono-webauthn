@@ -14,7 +14,8 @@ const inferClientPlatform = (headers: Headers): ClientPlatform => {
   let browser = "Unknown";
 
   // ---- OS の推定 ----
-  // User-Agent でのiOSチェックを先に行う（Client Hints より信頼性が高い場合がある）
+  // iOS版ブラウザ（Chrome等）は sec-ch-ua-platform で "macOS" を返すことがあるため、
+  // User-Agent での iPhone/iPad/iPod 検出を優先する
   const isIOSByUserAgent = /iphone|ipad|ipod/i.test(ua);
 
   if (isIOSByUserAgent) {
