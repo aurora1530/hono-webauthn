@@ -14,7 +14,14 @@ const inferClientPlatform = (headers: Headers): ClientPlatform => {
   let browser = "Unknown";
 
   // ---- OS の推定 ----
-  if (secChUaPlatform) {
+  // iOS版ブラウザ（Chrome等）は sec-ch-ua-platform で "macOS" を返すことがあるため、
+  // User-Agent での iPhone/iPad/iPod 検出を優先する
+  const isIOSByUserAgent = /iphone|ipad|ipod/i.test(ua);
+
+  if (isIOSByUserAgent) {
+    // User-Agent で iOS デバイスが確認できれば優先
+    os = "iOS";
+  } else if (secChUaPlatform) {
     const platform = secChUaPlatform.replace(/["']/g, "").toLowerCase();
     if (platform.includes("windows")) os = "Windows";
     else if (platform.includes("mac")) os = "macOS";
@@ -27,12 +34,18 @@ const inferClientPlatform = (headers: Headers): ClientPlatform => {
     if (/windows nt/i.test(ua)) os = "Windows";
     else if (/mac os x/i.test(ua)) os = "macOS";
     else if (/android/i.test(ua)) os = "Android";
-    else if (/iphone|ipad|ipod/i.test(ua)) os = "iOS";
     else if (/linux/i.test(ua)) os = "Linux";
   }
 
   // ---- ブラウザの推定 ----
-  if (secChUa) {
+  // iOS版ブラウザは特有の識別子を使用: CriOS (Chrome), EdgiOS (Edge), FxiOS (Firefox)
+  if (/crios/i.test(ua)) {
+    browser = "Chrome";
+  } else if (/edgios/i.test(ua)) {
+    browser = "Edge";
+  } else if (/fxios/i.test(ua)) {
+    browser = "Firefox";
+  } else if (secChUa) {
     // 例: "Chromium";v="125", "Google Chrome";v="125", "Not.A/Brand";v="24"
     if (/chrome/i.test(secChUa) && !/edg/i.test(secChUa)) browser = "Chrome";
     else if (/edg/i.test(secChUa)) browser = "Edge";
