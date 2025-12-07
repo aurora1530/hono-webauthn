@@ -1,5 +1,4 @@
 import type { Context } from "hono";
-import { createMiddleware } from "hono/factory";
 import z from "zod";
 import { createRedisSessionStore } from "../redis/redis-session.js";
 import type { SessionStore } from "../session.js";
@@ -65,12 +64,3 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
 };
 
 export const loginSessionController = createLoginSessionController(loginSessionStore);
-
-export const loginSessionMiddleware = createMiddleware(async (c, next) => {
-  const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
-  if (sessionID) {
-    await setCookieHelper(c, LOGIN_SESSION_COOKIE_NAME, sessionID, { maxAge: TTL_SEC });
-  }
-
-  await next();
-});
