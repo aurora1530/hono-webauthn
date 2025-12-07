@@ -1,6 +1,8 @@
 import type { Context } from "hono";
+import { createMiddleware } from "hono/factory";
 import z from "zod";
 import { createRedisSessionStore } from "../redis/redis-session.js";
+import { serverMessageHandler } from "../serverMessage.js";
 import type { SessionStore } from "../session.js";
 import { deleteCookieHelper, getCookieHelper, setCookieHelper } from "./cookieHelper.js";
 
@@ -78,3 +80,16 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
 };
 
 export const loginSessionController = createLoginSessionController(loginSessionStore);
+
+export const loginSessionExpirationMiddleware = createMiddleware(async (c, next) => {
+  const loginState = await loginSessionController.getLoginState(c);
+  if (loginState.state === "EXPIRED") {
+    await loginSessionController.setLoggedOut(c);
+    await serverMessageHandler.setMessage(
+      c,
+      "セッションの有効期限が切れました。再度ログインしてください。",
+    );
+  }
+
+  await next();
+});

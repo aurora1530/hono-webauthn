@@ -5,9 +5,10 @@ type Props = {
   dialogID: string;
   contentWrapperID?: string;
   children?: Child;
+  isOpenInitially?: boolean;
 };
 
-const Modal: FC<Props> = async ({ dialogID, contentWrapperID, children }) => {
+const Modal: FC<Props> = async ({ dialogID, contentWrapperID, children, isOpenInitially }) => {
   const dialogClass = css`
     position: fixed;
     inset: 0;
@@ -64,7 +65,13 @@ const Modal: FC<Props> = async ({ dialogID, contentWrapperID, children }) => {
           }
         `}
       </Style>
-      <dialog id={dialogID} class={dialogClass} aria-modal="true" closedby="any">
+      <dialog
+        id={dialogID}
+        class={dialogClass}
+        aria-modal="true"
+        closedby="any"
+        open={isOpenInitially}
+      >
         <form method="dialog">
           <button type="submit" class={closeBtnClass} aria-label="Close modal" title="Close">
             ×

@@ -1,13 +1,18 @@
 import { Style } from "hono/css";
 import { html } from "hono/html";
-import { jsxRenderer } from "hono/jsx-renderer";
+import { jsxRenderer, useRequestContext } from "hono/jsx-renderer";
 import Footer from "./components/common/Footer.js";
 import Header from "./components/common/Header.js";
 import Modal from "./components/common/Modal.js";
+import ServerMessageModal from "./components/common/ServerMessageModal.js";
 import StatusToast from "./components/common/StatusToast.js";
+import { serverMessageHandler } from "./lib/serverMessage.js";
 import { bodyClass, mainContainerClass, themeClass } from "./ui/theme.js";
 
-const rootRenderer = jsxRenderer(({ children, title }) => {
+const rootRenderer = jsxRenderer(async ({ children, title }) => {
+  const c = useRequestContext();
+  const serverMessage = await serverMessageHandler.getMessage(c);
+
   return (
     <html lang="ja" class={themeClass}>
       <head>
@@ -47,6 +52,7 @@ const rootRenderer = jsxRenderer(({ children, title }) => {
         <Header />
         <StatusToast />
         <Modal dialogID="main-modal" contentWrapperID="main-modal-content" />
+        {serverMessage && <ServerMessageModal message={serverMessage} />}
         <main class={mainContainerClass}>{children}</main>
         <Footer />
       </body>
