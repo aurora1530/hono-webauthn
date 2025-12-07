@@ -53,8 +53,8 @@ export const prfRoutes = prfApp
       return parsed.data;
     }),
     async (c) => {
-      const userData = await loginSessionController.getUserData(c);
-      if (!userData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -81,7 +81,7 @@ export const prfRoutes = prfApp
       const passkey = await prisma.passkey.findFirst({
         where: {
           id: passkeyId,
-          userID: userData.userID,
+          userID: loginState.userData.userID,
         },
       });
 
@@ -140,8 +140,8 @@ export const prfRoutes = prfApp
         );
       }
 
-      const loginSessionData = await loginSessionController.getUserData(c);
-      if (!loginSessionData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -155,7 +155,7 @@ export const prfRoutes = prfApp
       const savedPasskey = await prisma.passkey.findFirst({
         where: {
           id: sessionData.passkeyId,
-          userID: loginSessionData.userID,
+          userID: loginState.userData.userID,
         },
       });
 
@@ -252,8 +252,8 @@ export const prfRoutes = prfApp
       return parsed.data;
     }),
     async (c) => {
-      const userData = await loginSessionController.getUserData(c);
-      if (!userData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -300,7 +300,7 @@ export const prfRoutes = prfApp
       const passkey = await prisma.passkey.findFirst({
         where: {
           id: body.passkeyId,
-          userID: userData.userID,
+          userID: loginState.userData.userID,
         },
         select: {
           id: true,
@@ -320,7 +320,7 @@ export const prfRoutes = prfApp
       const created = await prisma.prfCiphertext.create({
         data: {
           passkeyID: passkey.id,
-          userID: userData.userID,
+          userID: loginState.userData.userID,
           label,
           ciphertext: body.ciphertext,
           iv: body.iv,
@@ -377,8 +377,8 @@ export const prfRoutes = prfApp
       return parsed.data;
     }),
     async (c) => {
-      const userData = await loginSessionController.getUserData(c);
-      if (!userData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -391,7 +391,7 @@ export const prfRoutes = prfApp
       const passkeyFilter = passkeyId ?? undefined;
 
       const whereClause = {
-        userID: userData.userID,
+        userID: loginState.userData.userID,
         ...(passkeyFilter ? { passkeyID: passkeyFilter } : {}),
       };
 
@@ -446,8 +446,8 @@ export const prfRoutes = prfApp
     },
   )
   .delete("/entries/:id", async (c) => {
-    const userData = await loginSessionController.getUserData(c);
-    if (!userData) {
+    const loginState = await loginSessionController.getLoginState(c);
+    if (loginState.state !== "LOGGED_IN") {
       return c.json(
         {
           error: "ログインが必要です。",
@@ -477,7 +477,7 @@ export const prfRoutes = prfApp
       },
     });
 
-    if (!ciphertext || ciphertext.userID !== userData.userID) {
+    if (!ciphertext || ciphertext.userID !== loginState.userData.userID) {
       return c.json(
         {
           error: "暗号化データが見つかりません。",

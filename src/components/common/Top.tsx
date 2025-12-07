@@ -6,7 +6,8 @@ import { buttonClass, textMutedClass } from "../../ui/theme.js";
 
 const Top: FC = async () => {
   const c = useRequestContext();
-  const username = (await loginSessionController.getUserData(c))?.username;
+  const loginState = await loginSessionController.getLoginState(c);
+  const username = loginState.state === "LOGGED_IN" ? loginState.userData.username : undefined;
 
   const wrap = css`
     display: grid;

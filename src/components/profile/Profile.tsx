@@ -13,9 +13,9 @@ import {
 
 const Profile: FC = async () => {
   const c = useRequestContext();
-  const userData = await loginSessionController.getUserData(c);
+  const loginState = await loginSessionController.getLoginState(c);
 
-  if (!userData) {
+  if (loginState.state !== "LOGGED_IN") {
     const backLinkClass = css`
       color: var(--primary-color);
       text-decoration: none;
@@ -100,7 +100,7 @@ const Profile: FC = async () => {
     <div class={sectionStackClass} style="max-width: 820px;">
       <header>
         <h1 class={pageTitleClass}>プロフィール</h1>
-        <p class={subHeadingClass}>こんにちは、{userData.username} さん</p>
+        <p class={subHeadingClass}>こんにちは、{loginState.userData.username} さん</p>
       </header>
 
       <section class={defaultCardClass}>
@@ -111,7 +111,7 @@ const Profile: FC = async () => {
         <label class={toggleRowClass}>
           <input
             type="checkbox"
-            checked={!!userData.debugMode}
+            checked={!!loginState.userData.debugMode}
             id="change-debug-mode-btn"
             class={css`
               position: absolute;
@@ -121,7 +121,7 @@ const Profile: FC = async () => {
           />
           <span
             class={switchTrackClass}
-            data-enabled={String(!!userData.debugMode)}
+            data-enabled={String(!!loginState.userData.debugMode)}
             aria-hidden="true"
           />
           <span>デバッグモードを有効にする</span>
@@ -165,8 +165,8 @@ const Profile: FC = async () => {
         <button
           id="delete-account-btn"
           class={dangerButtonClass}
-          data-username={userData.username}
-          data-user-id={userData.userID}
+          data-username={loginState.userData.username}
+          data-user-id={loginState.userData.userID}
           type="button"
         >
           アカウントを削除する

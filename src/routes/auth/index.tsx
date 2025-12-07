@@ -31,8 +31,8 @@ export const authAppRoutes = authApp
     return c.redirect("/");
   })
   .get("/login", async (c) => {
-    const userData = await loginSessionController.getUserData(c);
-    if (userData) {
+    const loginState = await loginSessionController.getLoginState(c);
+    if (loginState.state === "LOGGED_IN") {
       const redirectPath = extractRedirectPath(c.req.raw);
       return c.redirect(redirectPath ?? "/");
     }
@@ -130,14 +130,14 @@ export const authAppRoutes = authApp
     },
   )
   .get("/passkey-management", async (c) => {
-    const userData = await loginSessionController.getUserData(c);
-    if (!userData) {
+    const loginState = await loginSessionController.getLoginState(c);
+    if (loginState.state !== "LOGGED_IN") {
       return c.redirect(buildLoginRedirectUrl(c.req.raw));
     }
 
     const passkeys = await prisma.passkey.findMany({
       where: {
-        userID: userData.userID,
+        userID: loginState.userData.userID,
       },
       include: {
         _count: {
@@ -161,15 +161,15 @@ export const authAppRoutes = authApp
     return c.render(
       <PasskeyManagement
         passkeyData={passkeyData}
-        currentPasskeyID={userData.usedPasskeyID}
-        debugMode={userData.debugMode}
+        currentPasskeyID={loginState.userData.usedPasskeyID}
+        debugMode={loginState.userData.debugMode}
       />,
       { title: "パスキー管理" },
     );
   })
   .get("/prf", async (c) => {
-    const userData = await loginSessionController.getUserData(c);
-    if (!userData) {
+    const loginState = await loginSessionController.getLoginState(c);
+    if (loginState.state !== "LOGGED_IN") {
       return c.redirect(buildLoginRedirectUrl(c.req.raw));
     }
     return c.render(<PrfPlayground />, {

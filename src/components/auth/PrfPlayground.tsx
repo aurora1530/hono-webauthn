@@ -6,8 +6,8 @@ import { pageTitleClass, surfaceClass, textMutedClass } from "../../ui/theme.js"
 
 export const PrfPlayground: FC = async () => {
   const c = useRequestContext();
-  const userData = await loginSessionController.getUserData(c);
-  const debugMode = !!userData?.debugMode;
+  const loginState = await loginSessionController.getLoginState(c);
+  const debugMode = loginState.state === "LOGGED_IN" && !!loginState.userData.debugMode;
 
   const wrapperClass = css`
     max-width: 920px;

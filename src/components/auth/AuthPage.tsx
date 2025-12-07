@@ -6,7 +6,7 @@ import { buttonClass, textMutedClass } from "../../ui/theme.js";
 
 const AuthPage: FC = async () => {
   const c = useRequestContext();
-  const userData = await loginSessionController.getUserData(c);
+  const loginState = await loginSessionController.getLoginState(c);
 
   const titleClass = css`
     font-size: 28px;
@@ -29,9 +29,10 @@ const AuthPage: FC = async () => {
     <>
       <h1 class={titleClass}>WebAuthn</h1>
       <div class={authLinksClass}>
-        {userData ? (
+        {loginState.state === "LOGGED_IN" ? (
           <>
-            <span class={textMutedClass}>ログイン中:</span> <strong>{userData.username}</strong>
+            <span class={textMutedClass}>ログイン中:</span>{" "}
+            <strong>{loginState.userData.username}</strong>
             <button class={secondary} id="add-passkey-button" type="button">
               パスキー作成
             </button>

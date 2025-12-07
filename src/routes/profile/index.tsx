@@ -13,8 +13,8 @@ const profileApp = new Hono();
 
 export const profileRoutes = profileApp
   .get("/", async (c) => {
-    const isLoginedIn = !!(await loginSessionController.getUserData(c));
-    if (!isLoginedIn) {
+    const loginState = await loginSessionController.getLoginState(c);
+    if (loginState.state !== "LOGGED_IN") {
       return c.redirect(buildLoginRedirectUrl(c.req.raw));
     }
 
@@ -23,12 +23,15 @@ export const profileRoutes = profileApp
     });
   })
   .get("/account-deletion/summary", async (c) => {
-    const userData = await loginSessionController.getUserData(c);
-    if (!userData) {
+    const loginState = await loginSessionController.getLoginState(c);
+    if (loginState.state !== "LOGGED_IN") {
       return c.json({ error: "ログインしてください" }, 401);
     }
 
-    const summary = await buildDeletionSummary(userData.userID, userData.username);
+    const summary = await buildDeletionSummary(
+      loginState.userData.userID,
+      loginState.userData.username,
+    );
     return c.json(summary, 200);
   })
   .post(
@@ -47,8 +50,8 @@ export const profileRoutes = profileApp
       return parsed.data;
     }),
     async (c) => {
-      const isLoginedIn = !!(await loginSessionController.getUserData(c));
-      if (!isLoginedIn) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json({ error: "ログインしてください" }, 401);
       }
 
@@ -73,17 +76,20 @@ export const profileRoutes = profileApp
       };
     }),
     async (c) => {
-      const userData = await loginSessionController.getUserData(c);
-      if (!userData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json({ error: "ログインしてください" }, 401);
       }
 
       const reauthData = await reauthSessionController.extractSessionData(c);
-      if (!reauthData || reauthData.userId !== userData.userID) {
+      if (!reauthData || reauthData.userId !== loginState.userData.userID) {
         return c.json({ error: "再認証が必要です" }, 401);
       }
 
-      const summary = await buildDeletionSummary(userData.userID, userData.username);
+      const summary = await buildDeletionSummary(
+        loginState.userData.userID,
+        loginState.userData.username,
+      );
       const { confirmationText } = c.req.valid("json");
 
       if (confirmationText !== summary.confirmationText) {
@@ -97,14 +103,14 @@ export const profileRoutes = profileApp
       }
 
       const passkeyIds = await prisma.passkey.findMany({
-        where: { userID: userData.userID },
+        where: { userID: loginState.userData.userID },
         select: { id: true },
       });
 
       try {
         await prisma.$transaction(async (tx) => {
           await tx.prfCiphertext.deleteMany({
-            where: { userID: userData.userID },
+            where: { userID: loginState.userData.userID },
           });
 
           if (passkeyIds.length > 0) {
@@ -118,11 +124,11 @@ export const profileRoutes = profileApp
           }
 
           await tx.passkey.deleteMany({
-            where: { userID: userData.userID },
+            where: { userID: loginState.userData.userID },
           });
 
           await tx.user.delete({
-            where: { id: userData.userID },
+            where: { id: loginState.userData.userID },
           });
         });
       } catch (error) {

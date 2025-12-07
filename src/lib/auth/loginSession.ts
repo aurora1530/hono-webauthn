@@ -25,8 +25,20 @@ const loginSessionStore = await createRedisSessionStore<UserData>({
   },
 });
 
+type LoginState =
+  | {
+      state: "LOGGED_IN";
+      userData: UserData;
+    }
+  | {
+      state: "EXPIRED";
+    }
+  | {
+      state: "LOGGED_OUT";
+    };
+
 interface LoginSessionController {
-  getUserData(c: Context): Promise<UserData | undefined>;
+  getLoginState(c: Context): Promise<LoginState>;
   setLoggedIn(c: Context, userData: UserData): Promise<void>;
   setLoggedOut(c: Context): Promise<void>;
   changeDebugMode(c: Context, debugMode: boolean): Promise<void>;
@@ -34,10 +46,12 @@ interface LoginSessionController {
 
 const createLoginSessionController = (store: LoginSessionStore): LoginSessionController => {
   return {
-    getUserData: async (c: Context) => {
+    getLoginState: async (c: Context) => {
       const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
-      if (!sessionID) return undefined;
-      return store.get(sessionID);
+      if (!sessionID) return { state: "LOGGED_OUT" };
+      const data = await store.get(sessionID);
+      if (!data) return { state: "EXPIRED" };
+      return { state: "LOGGED_IN", userData: data };
     },
     setLoggedIn: async (c: Context, userData: UserData) => {
       const currentSessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);

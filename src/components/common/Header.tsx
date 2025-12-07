@@ -39,7 +39,7 @@ const MenuLink: FC<MenuLinkProps> = ({
 
 const Header: FC = async () => {
   const c = useRequestContext();
-  const userdata = await loginSessionController.getUserData(c);
+  const loginState = await loginSessionController.getLoginState(c);
   const currentPath = c.req.path;
 
   const headerClass = css`
@@ -246,8 +246,10 @@ const Header: FC = async () => {
         </a>
 
         <div class={rightAreaClass}>
-          {userdata && (
-            <span class={cx(textMutedClass, usernameInlineClass)}>{userdata.username}</span>
+          {loginState.state === "LOGGED_IN" && (
+            <span class={cx(textMutedClass, usernameInlineClass)}>
+              {loginState.userData.username}
+            </span>
           )}
 
           <details class={menuRootClass} id="header-menu">
@@ -256,17 +258,17 @@ const Header: FC = async () => {
             </summary>
 
             <div class={menuPanelClass}>
-              {userdata ? (
+              {loginState.state === "LOGGED_IN" ? (
                 <>
                   <div class={menuMetaRowClass}>
                     <span class={textMutedClass}>ユーザー</span>
-                    <span class={usernameMenuClass}>{userdata.username}</span>
+                    <span class={usernameMenuClass}>{loginState.userData.username}</span>
                   </div>
 
                   <div class={debugRowClass}>
                     <span class={textMutedClass}>デバッグモード</span>
-                    <span class={badgeClass(userdata.debugMode ? "warning" : "neutral")}>
-                      {userdata.debugMode ? "ON" : "OFF"}
+                    <span class={badgeClass(loginState.userData.debugMode ? "warning" : "neutral")}>
+                      {loginState.userData.debugMode ? "ON" : "OFF"}
                     </span>
                   </div>
 

@@ -29,10 +29,11 @@ webauthnApp.route("/prf", prfApp);
 
 export const webAuthnRoutes = webauthnApp
   .get("/registration/generate", async (c) => {
-    const loginSessionData = await loginSessionController.getUserData(c);
+    const loginState = await loginSessionController.getLoginState(c);
     const username =
-      loginSessionData?.username ??
-      (await webauthnSessionController.registration.generate.extractSessionData(c))?.username;
+      loginState.state === "LOGGED_IN"
+        ? loginState.userData.username
+        : (await webauthnSessionController.registration.generate.extractSessionData(c))?.username;
 
     if (!username) {
       return c.json(
@@ -43,10 +44,10 @@ export const webAuthnRoutes = webauthnApp
       );
     }
 
-    if (loginSessionData) {
+    if (loginState.state === "LOGGED_IN") {
       // ログイン済みであれば、再認証がなされているかのチェック（本来の手順を済ませていれば適切に再認証がされているはずなので、単にエラーを返すだけで良い）
       const reauthData = await reauthSessionController.extractSessionData(c);
-      if (loginSessionData.userID !== reauthData?.userId) {
+      if (loginState.userData.userID !== reauthData?.userId) {
         return c.json(
           {
             error: "再認証が必要です。再度認証を行ってください。",
@@ -57,7 +58,7 @@ export const webAuthnRoutes = webauthnApp
     }
 
     // ログイン済みユーザであれば、これはパスキーを作成するリクエストなので、既存のパスキーを取得する
-    const userID = loginSessionData?.userID;
+    const userID = loginState.state === "LOGGED_IN" ? loginState.userData.userID : undefined;
     const savedPasskeys: Passkey[] = userID
       ? await prisma.passkey.findMany({
           where: {
@@ -162,7 +163,8 @@ export const webAuthnRoutes = webauthnApp
       const { os, browser } = inferClientPlatform(c.req.raw.headers);
 
       // 新規作成ならユーザを作成し、既存ユーザならセッションからIDを取得
-      let userID = (await loginSessionController.getUserData(c))?.userID;
+      const loginState = await loginSessionController.getLoginState(c);
+      let userID = loginState.state === "LOGGED_IN" ? loginState.userData.userID : undefined;
       try {
         await prisma.$transaction(async (tx) => {
           if (!userID) {
@@ -328,8 +330,8 @@ export const webAuthnRoutes = webauthnApp
     },
   )
   .get("/reauthentication/generate", async (c) => {
-    const userData = await loginSessionController.getUserData(c);
-    if (!userData) {
+    const loginState = await loginSessionController.getLoginState(c);
+    if (loginState.state !== "LOGGED_IN") {
       return c.json(
         {
           error: "再認証にはログインが必要です。",
@@ -340,7 +342,7 @@ export const webAuthnRoutes = webauthnApp
 
     const savedPasskey = await prisma.passkey.findMany({
       where: {
-        userID: userData.userID,
+        userID: loginState.userData.userID,
       },
     });
 
@@ -383,8 +385,8 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      const loginSessionData = await loginSessionController.getUserData(c);
-      if (!loginSessionData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -410,7 +412,7 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      if (loginSessionData.userID !== savedPasskey.userID) {
+      if (loginState.userData.userID !== savedPasskey.userID) {
         return c.json(
           {
             error: "認証に失敗しました。もう一度やり直してください",
@@ -462,7 +464,7 @@ export const webAuthnRoutes = webauthnApp
       });
 
       await reauthSessionController.initialize(c, {
-        userId: loginSessionData.userID,
+        userId: loginState.userData.userID,
       });
 
       return c.json({}, 200);
@@ -483,8 +485,8 @@ export const webAuthnRoutes = webauthnApp
       return parsed.data;
     }),
     async (c) => {
-      const userData = await loginSessionController.getUserData(c);
-      if (!userData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -498,7 +500,7 @@ export const webAuthnRoutes = webauthnApp
       const passkey = await prisma.passkey.findFirst({
         where: {
           id: passkeyId,
-          userID: userData.userID,
+          userID: loginState.userData.userID,
         },
       });
 
@@ -556,8 +558,8 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      const loginSessionData = await loginSessionController.getUserData(c);
-      if (!loginSessionData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -571,7 +573,7 @@ export const webAuthnRoutes = webauthnApp
       const savedPasskey = await prisma.passkey.findFirst({
         where: {
           id: sessionData.passkeyId,
-          userID: loginSessionData.userID,
+          userID: loginState.userData.userID,
         },
       });
 
@@ -667,8 +669,8 @@ export const webAuthnRoutes = webauthnApp
       return parsed.data;
     }),
     async (c) => {
-      const userData = await loginSessionController.getUserData(c);
-      if (!userData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -685,7 +687,7 @@ export const webAuthnRoutes = webauthnApp
         },
       });
 
-      if (!passkey || passkey.userID !== userData.userID) {
+      if (!passkey || passkey.userID !== loginState.userData.userID) {
         return c.json(
           {
             error: "パスキーが見つかりません。",
@@ -722,8 +724,8 @@ export const webAuthnRoutes = webauthnApp
       return parsed.data;
     }),
     async (c) => {
-      const userData = await loginSessionController.getUserData(c);
-      if (!userData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -733,7 +735,7 @@ export const webAuthnRoutes = webauthnApp
       }
 
       const reauthData = await reauthSessionController.extractSessionData(c);
-      if (userData.userID !== reauthData?.userId) {
+      if (loginState.userData.userID !== reauthData?.userId) {
         return c.json(
           {
             error: "再認証が必要です。再度認証を行ってください。",
@@ -744,7 +746,7 @@ export const webAuthnRoutes = webauthnApp
 
       const { passkeyId } = c.req.valid("json");
 
-      const targetPasskeyIsCurrentUsed = userData.usedPasskeyID === passkeyId;
+      const targetPasskeyIsCurrentUsed = loginState.userData.usedPasskeyID === passkeyId;
       if (targetPasskeyIsCurrentUsed) {
         return c.json(
           {
@@ -757,7 +759,7 @@ export const webAuthnRoutes = webauthnApp
       const userHasAtLeastTwoPasskeys =
         (await prisma.passkey.count({
           where: {
-            userID: userData.userID,
+            userID: loginState.userData.userID,
           },
         })) >= 2;
 
@@ -773,7 +775,7 @@ export const webAuthnRoutes = webauthnApp
       const referencingCiphertexts = await prisma.prfCiphertext.count({
         where: {
           passkeyID: passkeyId,
-          userID: userData.userID,
+          userID: loginState.userData.userID,
         },
       });
 
@@ -796,7 +798,7 @@ export const webAuthnRoutes = webauthnApp
         const deletedPasskey = await prisma.passkey.delete({
           where: {
             id: passkeyId,
-            userID: userData.userID,
+            userID: loginState.userData.userID,
           },
         });
         return c.json(
@@ -839,8 +841,8 @@ export const webAuthnRoutes = webauthnApp
       return parsed.data;
     }),
     async (c) => {
-      const userData = await loginSessionController.getUserData(c);
-      if (!userData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -854,7 +856,7 @@ export const webAuthnRoutes = webauthnApp
       const passkey = await prisma.passkey.findUnique({
         where: {
           id: passkeyId,
-          userID: userData.userID,
+          userID: loginState.userData.userID,
         },
       });
 
@@ -925,8 +927,8 @@ export const webAuthnRoutes = webauthnApp
       return result.data;
     }),
     async (c) => {
-      const userData = await loginSessionController.getUserData(c);
-      if (!userData) {
+      const loginState = await loginSessionController.getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") {
         return c.json(
           {
             error: "ログインが必要です。",
@@ -940,7 +942,7 @@ export const webAuthnRoutes = webauthnApp
       const targetPasskeyExists = await prisma.passkey.findUnique({
         where: {
           id: requestData.passkeyId,
-          userID: userData.userID,
+          userID: loginState.userData.userID,
         },
       });
 
@@ -992,15 +994,15 @@ export const webAuthnRoutes = webauthnApp
     },
   )
   .get("/passkeys-list", async (c) => {
-    const userData = await loginSessionController.getUserData(c);
-    if (!userData) {
+    const loginState = await loginSessionController.getLoginState(c);
+    if (loginState.state !== "LOGGED_IN") {
       return c.json({ error: "ログインが必要です" }, 401);
     }
 
     try {
       const passkeys = await prisma.passkey.findMany({
         where: {
-          userID: userData.userID,
+          userID: loginState.userData.userID,
         },
         orderBy: {
           createdAt: "asc",
