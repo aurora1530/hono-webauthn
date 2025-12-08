@@ -19,8 +19,6 @@ const parsePostLoginRedirect = () => {
   }
 };
 
-const postLoginRedirect = parsePostLoginRedirect();
-
 async function handleAuthentication() {
   const generateAuthenticationOptionsResponse = await webauthnClient.authentication.generate.$get();
   if (!generateAuthenticationOptionsResponse.ok) {
@@ -78,7 +76,7 @@ async function handleAuthentication() {
     return;
   }
 
-  location.href = postLoginRedirect;
+  location.href = parsePostLoginRedirect();
 }
 
 export { handleAuthentication };
