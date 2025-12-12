@@ -165,7 +165,7 @@ export const PasskeyRenameModal: FC<Props> = ({
   };
 
   return (
-    <form class={container} data-rename-form onSubmit={handleSubmit}>
+    <form class={container} onSubmit={handleSubmit}>
       <span class={accentBar} aria-hidden="true"></span>
       <div class={titleRow}>
         <h3 class={title}>パスキー名を変更</h3>
@@ -215,7 +215,6 @@ export const PasskeyRenameModal: FC<Props> = ({
           <button
             type="button"
             class={buttonClass("secondary", "md")}
-            data-reset-btn
             onClick={handleReset}
             title={`デフォルト名（${defaultName}）に戻す`}
             disabled={newName.trim() === defaultName.trim() || isSubmitting}
@@ -226,7 +225,6 @@ export const PasskeyRenameModal: FC<Props> = ({
         <button
           type="submit"
           class={buttonClass("primary", "md")}
-          data-submit-btn
           disabled={newName.trim() === currentName.trim() || isSubmitting}
         >
           {isSubmitting ? "変更中…" : "保存する"}
