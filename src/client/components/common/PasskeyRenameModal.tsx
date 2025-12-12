@@ -23,7 +23,7 @@ export const PasskeyRenameModal: FC<Props> = ({
   defaultName,
   onReset,
 }) => {
-  const [nameChanged, setNameChanged] = useState(false);
+  const [newName, setNewName] = useState(currentName);
 
   const container = css`
     position: relative;
@@ -115,7 +115,7 @@ export const PasskeyRenameModal: FC<Props> = ({
     const error = wrapper?.querySelector<HTMLElement>("[data-error-message]");
     if (error) error.textContent = "";
 
-    setNameChanged(input.value.trim() !== currentName);
+    setNewName(input.value);
   };
 
   const handleSubmit = async (e: Event) => {
@@ -213,17 +213,14 @@ export const PasskeyRenameModal: FC<Props> = ({
       <div class={inputWrap}>
         <div class={labelRow}>
           <label for="new-passkey-name">新しい名前</label>
-          <span
-            class={hint}
-            data-char-count
-          >{`${currentName.trim().length}/${NAME_MAX_LENGTH}`}</span>
+          <span class={hint} data-char-count>{`${newName.trim().length}/${NAME_MAX_LENGTH}`}</span>
         </div>
         <input
           id="new-passkey-name"
           type="text"
           name="newName"
           class={inputClass}
-          value={currentName}
+          value={newName}
           maxlength={NAME_MAX_LENGTH}
           placeholder="例: iPhone 17 Pro / メインPC"
           onInput={handleInput}
@@ -250,7 +247,7 @@ export const PasskeyRenameModal: FC<Props> = ({
             data-reset-btn
             onClick={handleReset}
             title={`デフォルト名（${defaultName}）に戻す`}
-            disabled={currentName === defaultName}
+            disabled={newName.trim() === defaultName.trim()}
           >
             デフォルトに戻す
           </button>
@@ -259,7 +256,7 @@ export const PasskeyRenameModal: FC<Props> = ({
           type="submit"
           class={buttonClass("primary", "md")}
           data-submit-btn
-          disabled={!nameChanged}
+          disabled={newName.trim() === currentName.trim()}
         >
           保存する
         </button>
