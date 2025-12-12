@@ -1,6 +1,6 @@
 import type { Result } from "@shared/type.js";
 import { css, cx } from "hono/css";
-import type { FC } from "hono/jsx";
+import { type FC, useState } from "hono/jsx";
 import { buttonClass, inputFieldClass, textMutedClass } from "../../../ui/theme.js";
 import { closeModal } from "../../lib/modal/base.js";
 
@@ -23,6 +23,8 @@ export const PasskeyRenameModal: FC<Props> = ({
   defaultName,
   onReset,
 }) => {
+  const [nameChanged, setNameChanged] = useState(false);
+
   const container = css`
     position: relative;
     padding: 22px 22px 18px;
@@ -112,6 +114,8 @@ export const PasskeyRenameModal: FC<Props> = ({
     if (counter) counter.textContent = `${input.value.trim().length}/${NAME_MAX_LENGTH}`;
     const error = wrapper?.querySelector<HTMLElement>("[data-error-message]");
     if (error) error.textContent = "";
+
+    setNameChanged(input.value.trim() !== currentName);
   };
 
   const handleSubmit = async (e: Event) => {
@@ -251,7 +255,12 @@ export const PasskeyRenameModal: FC<Props> = ({
             デフォルトに戻す
           </button>
         </div>
-        <button type="submit" class={buttonClass("primary", "md")} data-submit-btn>
+        <button
+          type="submit"
+          class={buttonClass("primary", "md")}
+          data-submit-btn
+          disabled={!nameChanged}
+        >
           保存する
         </button>
       </div>
