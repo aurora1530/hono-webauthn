@@ -263,6 +263,13 @@ const buttonVariant = {
     &:active {
       transform: translateY(1px);
     }
+    &:disabled {
+      background: var(--color-surface-muted);
+      color: var(--color-text-subtle);
+      border-color: var(--color-border);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
   `,
   ghost: css`
     background: transparent;
@@ -273,6 +280,12 @@ const buttonVariant = {
     }
     &:active {
       transform: translateY(1px);
+    }
+    &:disabled {
+      color: var(--color-text-subtle);
+      border-color: var(--color-border);
+      cursor: not-allowed;
+      opacity: 0.6;
     }
   `,
   danger: css`
