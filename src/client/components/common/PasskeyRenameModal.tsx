@@ -1,3 +1,4 @@
+import { MAX_PASSKEY_NAME_LENGTH } from "@shared/constant.js";
 import type { Result } from "@shared/type.js";
 import { css, cx } from "hono/css";
 import { type FC, useState } from "hono/jsx";
@@ -13,8 +14,6 @@ type Props = {
   defaultName: string;
   onReset: () => Promise<SubmitResult>;
 };
-
-const NAME_MAX_LENGTH = 60;
 
 export const PasskeyRenameModal: FC<Props> = ({
   currentName,
@@ -131,8 +130,8 @@ export const PasskeyRenameModal: FC<Props> = ({
       return;
     }
 
-    if (nextName.length > NAME_MAX_LENGTH) {
-      setErrMsg(`名前は${NAME_MAX_LENGTH}文字以内で入力してください。`);
+    if (nextName.length > MAX_PASSKEY_NAME_LENGTH) {
+      setErrMsg(`名前は${MAX_PASSKEY_NAME_LENGTH}文字以内で入力してください。`);
       input?.focus();
       return;
     }
@@ -204,7 +203,7 @@ export const PasskeyRenameModal: FC<Props> = ({
       <div class={inputWrap}>
         <div class={labelRow}>
           <label for="new-passkey-name">新しい名前</label>
-          <span class={hint}>{`${newName.trim().length}/${NAME_MAX_LENGTH}`}</span>
+          <span class={hint}>{`${newName.trim().length}/${MAX_PASSKEY_NAME_LENGTH}`}</span>
         </div>
         <input
           id="new-passkey-name"
@@ -212,7 +211,7 @@ export const PasskeyRenameModal: FC<Props> = ({
           name="newName"
           class={inputClass}
           value={newName}
-          maxlength={NAME_MAX_LENGTH}
+          maxlength={MAX_PASSKEY_NAME_LENGTH}
           placeholder="例: iPhone 17 Pro / メインPC"
           onInput={handleInput}
           autocomplete="off"

@@ -21,6 +21,7 @@ import { reauthSessionController } from "../../../lib/auth/reauthSession.js";
 import { isAuthenticatorTransportFuture } from "../../../lib/auth/transport.js";
 import { webauthnSessionController } from "../../../lib/auth/webauthnSession.js";
 import prisma from "../../../prisma.js";
+import { MAX_PASSKEY_NAME_LENGTH } from "../../../shared/constant.js";
 import { MAX_PASSKEYS_PER_USER, ORIGIN, rpID, rpName } from "./constant.js";
 import prfApp from "./prf/index.js";
 
@@ -646,14 +647,14 @@ export const webAuthnRoutes = webauthnApp
       const parsed = z
         .object({
           passkeyId: z.string(),
-          newName: z.string().trim().min(1).max(50),
+          newName: z.string().trim().min(1).max(MAX_PASSKEY_NAME_LENGTH),
         })
         .safeParse(value);
       if (!parsed.success) {
         if (parsed.error.issues.some((i) => i.code === "too_small" || i.code === "too_big")) {
           return c.json(
             {
-              error: "パスキー名は1文字以上50文字以下である必要があります。",
+              error: `パスキー名は1文字以上${MAX_PASSKEY_NAME_LENGTH}文字以下である必要があります。`,
             },
             400,
           );
