@@ -1,7 +1,7 @@
 import { MAX_PASSKEY_NAME_LENGTH } from "@shared/constant.js";
 import type { Result } from "@shared/type.js";
 import { css, cx } from "hono/css";
-import { type FC, useState } from "hono/jsx";
+import { type FC, useRef, useState } from "hono/jsx";
 import { buttonClass, inputFieldClass, textMutedClass } from "../../../ui/theme.js";
 import { closeModal } from "../../lib/modal/base.js";
 
@@ -22,6 +22,7 @@ export const PasskeyRenameModal: FC<Props> = ({
   defaultName,
   onReset,
 }) => {
+  const inputElement = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newName, setNewName] = useState(currentName);
   const [errMsg, setErrMsg] = useState("");
@@ -115,39 +116,32 @@ export const PasskeyRenameModal: FC<Props> = ({
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
     if (isSubmitting) return;
-
-    const form = e.currentTarget as HTMLFormElement;
-    const wrapper = form.closest<HTMLElement>("[data-rename-form]") ?? form;
-    const input = wrapper.querySelector<HTMLInputElement>("input[name=newName]");
-
-    const nextName = input?.value.trim() ?? "";
-
-    if (!nextName) {
+    if (!newName.trim()) {
       setErrMsg("新しい名前を入力してください。");
-      input?.focus();
+      inputElement.current?.focus();
       return;
     }
 
-    if (nextName.length > MAX_PASSKEY_NAME_LENGTH) {
+    if (newName.length > MAX_PASSKEY_NAME_LENGTH) {
       setErrMsg(`名前は${MAX_PASSKEY_NAME_LENGTH}文字以内で入力してください。`);
-      input?.focus();
+      inputElement.current?.focus();
       return;
     }
 
-    if (nextName === currentName) {
+    if (newName === currentName) {
       setErrMsg("現在の名前と異なるものを指定してください。");
-      input?.focus();
+      inputElement.current?.focus();
       return;
     }
 
     setIsSubmitting(true);
 
-    const result = await onSubmit(nextName);
+    const result = await onSubmit(newName);
 
     if (!result.success) {
       setIsSubmitting(false);
       setErrMsg(result.error ?? "変更に失敗しました。");
-      input?.focus();
+      inputElement.current?.focus();
       return;
     }
 
@@ -202,6 +196,7 @@ export const PasskeyRenameModal: FC<Props> = ({
           placeholder="例: iPhone 17 Pro / メインPC"
           onInput={handleInput}
           autocomplete="off"
+          ref={inputElement}
         />
         <p class={errorClass} role="alert" aria-live="polite">
           {errMsg}
