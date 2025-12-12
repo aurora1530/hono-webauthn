@@ -110,8 +110,6 @@ export const PasskeyRenameModal: FC<Props> = ({
   const handleInput = (e: Event) => {
     const input = e.currentTarget as HTMLInputElement;
     const wrapper = input.closest<HTMLElement>("[data-rename-form]");
-    const counter = wrapper?.querySelector<HTMLElement>("[data-char-count]");
-    if (counter) counter.textContent = `${input.value.trim().length}/${NAME_MAX_LENGTH}`;
     const error = wrapper?.querySelector<HTMLElement>("[data-error-message]");
     if (error) error.textContent = "";
 
@@ -213,7 +211,7 @@ export const PasskeyRenameModal: FC<Props> = ({
       <div class={inputWrap}>
         <div class={labelRow}>
           <label for="new-passkey-name">新しい名前</label>
-          <span class={hint} data-char-count>{`${newName.trim().length}/${NAME_MAX_LENGTH}`}</span>
+          <span class={hint}>{`${newName.trim().length}/${NAME_MAX_LENGTH}`}</span>
         </div>
         <input
           id="new-passkey-name"
