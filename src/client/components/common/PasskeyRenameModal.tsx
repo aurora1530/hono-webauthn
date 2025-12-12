@@ -24,6 +24,7 @@ export const PasskeyRenameModal: FC<Props> = ({
   onReset,
 }) => {
   const [newName, setNewName] = useState(currentName);
+  const [errMsg, setErrMsg] = useState("");
 
   const container = css`
     position: relative;
@@ -109,10 +110,7 @@ export const PasskeyRenameModal: FC<Props> = ({
 
   const handleInput = (e: Event) => {
     const input = e.currentTarget as HTMLInputElement;
-    const wrapper = input.closest<HTMLElement>("[data-rename-form]");
-    const error = wrapper?.querySelector<HTMLElement>("[data-error-message]");
-    if (error) error.textContent = "";
-
+    setErrMsg("");
     setNewName(input.value);
   };
 
@@ -123,25 +121,24 @@ export const PasskeyRenameModal: FC<Props> = ({
     const form = e.currentTarget as HTMLFormElement;
     const wrapper = form.closest<HTMLElement>("[data-rename-form]") ?? form;
     const input = wrapper.querySelector<HTMLInputElement>("input[name=newName]");
-    const error = wrapper.querySelector<HTMLElement>("[data-error-message]");
     const submitBtn = wrapper.querySelector<HTMLButtonElement>("[data-submit-btn]");
 
     const nextName = input?.value.trim() ?? "";
 
     if (!nextName) {
-      if (error) error.textContent = "新しい名前を入力してください。";
+      setErrMsg("新しい名前を入力してください。");
       input?.focus();
       return;
     }
 
     if (nextName.length > NAME_MAX_LENGTH) {
-      if (error) error.textContent = `名前は${NAME_MAX_LENGTH}文字以内で入力してください。`;
+      setErrMsg(`名前は${NAME_MAX_LENGTH}文字以内で入力してください。`);
       input?.focus();
       return;
     }
 
     if (nextName === currentName) {
-      if (error) error.textContent = "現在の名前と異なるものを指定してください。";
+      setErrMsg("現在の名前と異なるものを指定してください。");
       input?.focus();
       return;
     }
@@ -160,9 +157,7 @@ export const PasskeyRenameModal: FC<Props> = ({
         submitBtn.disabled = false;
         submitBtn.textContent = "保存する";
       }
-      if (error) {
-        error.textContent = result.error ?? "変更に失敗しました。";
-      }
+      setErrMsg(result.error ?? "変更に失敗しました。");
       input?.focus();
       return;
     }
@@ -174,8 +169,6 @@ export const PasskeyRenameModal: FC<Props> = ({
     if (isSubmitting) return;
     const resetBtn = document.querySelector<HTMLButtonElement>("[data-reset-btn]");
     const submitBtn = document.querySelector<HTMLButtonElement>("[data-submit-btn]");
-    const wrapper = resetBtn?.closest<HTMLElement>("[data-rename-form]");
-    const error = wrapper?.querySelector<HTMLElement>("[data-error-message]");
 
     isSubmitting = true;
     if (resetBtn) resetBtn.disabled = true;
@@ -187,7 +180,7 @@ export const PasskeyRenameModal: FC<Props> = ({
       isSubmitting = false;
       if (resetBtn) resetBtn.disabled = false;
       if (submitBtn) submitBtn.disabled = false;
-      if (error) error.textContent = result.error ?? "リセットに失敗しました。";
+      setErrMsg(result.error ?? "リセットに失敗しました。");
       return;
     }
 
@@ -224,7 +217,9 @@ export const PasskeyRenameModal: FC<Props> = ({
           onInput={handleInput}
           autocomplete="off"
         />
-        <p class={errorClass} role="alert" aria-live="polite" data-error-message></p>
+        <p class={errorClass} role="alert" aria-live="polite">
+          {errMsg}
+        </p>
       </div>
 
       <div class={actions}>
