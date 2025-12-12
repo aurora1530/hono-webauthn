@@ -246,6 +246,7 @@ export const PasskeyRenameModal: FC<Props> = ({
             data-reset-btn
             onClick={handleReset}
             title={`デフォルト名（${defaultName}）に戻す`}
+            disabled={currentName === defaultName}
           >
             デフォルトに戻す
           </button>
