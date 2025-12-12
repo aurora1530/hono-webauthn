@@ -150,16 +150,13 @@ export const PasskeyRenameModal: FC<Props> = ({
 
   const handleReset = async () => {
     if (isSubmitting) return;
-    const resetBtn = document.querySelector<HTMLButtonElement>("[data-reset-btn]");
 
     setIsSubmitting(true);
-    if (resetBtn) resetBtn.disabled = true;
 
     const result = await onReset();
 
     if (!result.success) {
       setIsSubmitting(false);
-      if (resetBtn) resetBtn.disabled = false;
       setErrMsg(result.error ?? "リセットに失敗しました。");
       return;
     }
@@ -221,7 +218,7 @@ export const PasskeyRenameModal: FC<Props> = ({
             data-reset-btn
             onClick={handleReset}
             title={`デフォルト名（${defaultName}）に戻す`}
-            disabled={newName.trim() === defaultName.trim()}
+            disabled={newName.trim() === defaultName.trim() || isSubmitting}
           >
             デフォルトに戻す
           </button>
