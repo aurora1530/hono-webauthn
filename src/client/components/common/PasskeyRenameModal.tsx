@@ -22,6 +22,7 @@ export const PasskeyRenameModal: FC<Props> = ({
   defaultName,
   onReset,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newName, setNewName] = useState(currentName);
   const [errMsg, setErrMsg] = useState("");
 
@@ -105,8 +106,6 @@ export const PasskeyRenameModal: FC<Props> = ({
     flex-wrap: wrap;
   `;
 
-  let isSubmitting = false;
-
   const handleInput = (e: Event) => {
     const input = e.currentTarget as HTMLInputElement;
     setErrMsg("");
@@ -120,7 +119,6 @@ export const PasskeyRenameModal: FC<Props> = ({
     const form = e.currentTarget as HTMLFormElement;
     const wrapper = form.closest<HTMLElement>("[data-rename-form]") ?? form;
     const input = wrapper.querySelector<HTMLInputElement>("input[name=newName]");
-    const submitBtn = wrapper.querySelector<HTMLButtonElement>("[data-submit-btn]");
 
     const nextName = input?.value.trim() ?? "";
 
@@ -142,20 +140,12 @@ export const PasskeyRenameModal: FC<Props> = ({
       return;
     }
 
-    isSubmitting = true;
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = "変更中…";
-    }
+    setIsSubmitting(true);
 
     const result = await onSubmit(nextName);
 
     if (!result.success) {
-      isSubmitting = false;
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "保存する";
-      }
+      setIsSubmitting(false);
       setErrMsg(result.error ?? "変更に失敗しました。");
       input?.focus();
       return;
@@ -167,18 +157,15 @@ export const PasskeyRenameModal: FC<Props> = ({
   const handleReset = async () => {
     if (isSubmitting) return;
     const resetBtn = document.querySelector<HTMLButtonElement>("[data-reset-btn]");
-    const submitBtn = document.querySelector<HTMLButtonElement>("[data-submit-btn]");
 
-    isSubmitting = true;
+    setIsSubmitting(true);
     if (resetBtn) resetBtn.disabled = true;
-    if (submitBtn) submitBtn.disabled = true;
 
     const result = await onReset();
 
     if (!result.success) {
-      isSubmitting = false;
+      setIsSubmitting(false);
       if (resetBtn) resetBtn.disabled = false;
-      if (submitBtn) submitBtn.disabled = false;
       setErrMsg(result.error ?? "リセットに失敗しました。");
       return;
     }
@@ -248,9 +235,9 @@ export const PasskeyRenameModal: FC<Props> = ({
           type="submit"
           class={buttonClass("primary", "md")}
           data-submit-btn
-          disabled={newName.trim() === currentName.trim()}
+          disabled={newName.trim() === currentName.trim() || isSubmitting}
         >
-          保存する
+          {isSubmitting ? "変更中…" : "保存する"}
         </button>
       </div>
     </form>
