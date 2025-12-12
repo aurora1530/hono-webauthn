@@ -38,7 +38,7 @@ export const prfRoutes = prfApp
             .string()
             .trim()
             .min(1)
-            .max(PRF_CONSTRAINTS.prfInput.exactLength)
+            .max(PRF_CONSTRAINTS.PRF_INPUT.EXACT_LENGTH)
             .regex(BASE64_REGEX),
         })
         .safeParse(value);
@@ -65,8 +65,8 @@ export const prfRoutes = prfApp
 
       const { passkeyId, prfInput } = c.req.valid("json");
       const prfInputBytes = decodeBase64ToBytesWithBounds(prfInput, {
-        min: PRF_CONSTRAINTS.prfInput.byteLength,
-        max: PRF_CONSTRAINTS.prfInput.byteLength,
+        min: PRF_CONSTRAINTS.PRF_INPUT.BYTE_LENGTH,
+        max: PRF_CONSTRAINTS.PRF_INPUT.BYTE_LENGTH,
       });
 
       if (!prfInputBytes) {
@@ -228,17 +228,21 @@ export const prfRoutes = prfApp
       const parsed = z
         .object({
           passkeyId: z.string().min(1),
-          label: z.string().max(PRF_CONSTRAINTS.label.maxLength).optional(),
+          label: z.string().max(PRF_CONSTRAINTS.LABEL.MAX_LENGTH).optional(),
           ciphertext: z
             .string()
             .min(1)
-            .max(PRF_CONSTRAINTS.ciphertext.maxLength)
+            .max(PRF_CONSTRAINTS.CIPHERTEXT.MAX_LENGTH)
             .regex(BASE64_REGEX),
           iv: z.string().min(1).regex(BASE64_REGEX),
           tag: z.string().min(1).regex(BASE64_REGEX),
-          associatedData: z.string().max(PRF_CONSTRAINTS.associatedData.maxLength).optional(),
+          associatedData: z.string().max(PRF_CONSTRAINTS.ASSOCIATED_DATA.MAX_LENGTH).optional(),
           version: z.number().int().min(1).max(10).default(1),
-          prfInput: z.string().min(1).max(PRF_CONSTRAINTS.prfInput.exactLength).regex(BASE64_REGEX),
+          prfInput: z
+            .string()
+            .min(1)
+            .max(PRF_CONSTRAINTS.PRF_INPUT.EXACT_LENGTH)
+            .regex(BASE64_REGEX),
         })
         .safeParse(value);
       if (!parsed.success) {
@@ -273,19 +277,19 @@ export const prfRoutes = prfApp
 
       const ciphertextBytes = decodeBase64ToBytesWithBounds(body.ciphertext, {
         min: 1,
-        max: PRF_CONSTRAINTS.maxCiphertextBytes,
+        max: PRF_CONSTRAINTS.MAX_CIPHERTEXT_BYTES,
       });
       const ivBytes = decodeBase64ToBytesWithBounds(body.iv, {
-        min: PRF_CONSTRAINTS.ivByteLength,
-        max: PRF_CONSTRAINTS.ivByteLength,
+        min: PRF_CONSTRAINTS.IV_BYTE_LENGTH,
+        max: PRF_CONSTRAINTS.IV_BYTE_LENGTH,
       });
       const tagBytes = decodeBase64ToBytesWithBounds(body.tag, {
-        min: PRF_CONSTRAINTS.tagByteLength,
-        max: PRF_CONSTRAINTS.tagByteLength,
+        min: PRF_CONSTRAINTS.TAG_BYTE_LENGTH,
+        max: PRF_CONSTRAINTS.TAG_BYTE_LENGTH,
       });
       const prfInputBytes = decodeBase64ToBytesWithBounds(body.prfInput, {
-        min: PRF_CONSTRAINTS.prfInput.byteLength,
-        max: PRF_CONSTRAINTS.prfInput.byteLength,
+        min: PRF_CONSTRAINTS.PRF_INPUT.BYTE_LENGTH,
+        max: PRF_CONSTRAINTS.PRF_INPUT.BYTE_LENGTH,
       });
 
       if (!ciphertextBytes || !ivBytes || !tagBytes || !prfInputBytes) {

@@ -31,16 +31,16 @@ export const decodeBase64ToBytesWithBounds = (
 };
 
 export const PRF_CONSTRAINTS = {
-  label: { maxLength: 120 },
-  associatedData: { maxLength: 512 },
-  ciphertext: { maxLength: 8192 },
-  iv: { maxLength: 64 },
-  tag: { maxLength: 64 },
-  prfInput: {
-    exactLength: 64, // base64 for 32 bytes
-    byteLength: 32,
+  LABEL: { MAX_LENGTH: 120 },
+  ASSOCIATED_DATA: { MAX_LENGTH: 512 },
+  CIPHERTEXT: { MAX_LENGTH: 8192 },
+  IV: { MAX_LENGTH: 64 },
+  TAG: { MAX_LENGTH: 64 },
+  PRF_INPUT: {
+    EXACT_LENGTH: 64, // base64 for 32 bytes
+    BYTE_LENGTH: 32,
   },
-  ivByteLength: 12,
-  tagByteLength: 16,
-  maxCiphertextBytes: 4096,
+  IV_BYTE_LENGTH: 12,
+  TAG_BYTE_LENGTH: 16,
+  MAX_CIPHERTEXT_BYTES: 4096,
 };
