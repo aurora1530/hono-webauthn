@@ -32,6 +32,9 @@ const createRedisSessionStore = async <T extends JsonObject>(
     },
     refresh: async (sessionID: string) => {
       const result = await redis.expire(KEY(sessionID), options.ttlSec);
+      if (result !== 1) {
+        inMemoryCache?.delete(sessionID);
+      }
       return result === 1;
     },
     get: async (sessionID: string) => {
