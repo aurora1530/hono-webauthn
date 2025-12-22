@@ -1,4 +1,4 @@
-import { PasskeyHistoryType } from "@prisma/client";
+import { type Passkey, PasskeyHistoryType, type PrfCiphertext } from "@prisma/client";
 import {
   generateAuthenticationOptions,
   type VerifiedAuthenticationResponse,
@@ -78,12 +78,23 @@ export const prfRoutes = prfApp
         );
       }
 
-      const passkey = await prisma.passkey.findFirst({
-        where: {
-          id: passkeyId,
-          userID: loginState.userData.userID,
-        },
-      });
+      let passkey: Passkey | null;
+      try {
+        passkey = await prisma.passkey.findFirst({
+          where: {
+            id: passkeyId,
+            userID: loginState.userData.userID,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey for PRF assertion:", error);
+        return c.json(
+          {
+            error: "パスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!passkey) {
         return c.json(
@@ -152,12 +163,23 @@ export const prfRoutes = prfApp
 
       const body = c.req.valid("json").body;
 
-      const savedPasskey = await prisma.passkey.findFirst({
-        where: {
-          id: sessionData.passkeyId,
-          userID: loginState.userData.userID,
-        },
-      });
+      let savedPasskey: Passkey | null;
+      try {
+        savedPasskey = await prisma.passkey.findFirst({
+          where: {
+            id: sessionData.passkeyId,
+            userID: loginState.userData.userID,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey for PRF verify:", error);
+        return c.json(
+          {
+            error: "パスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!savedPasskey) {
         return c.json(
@@ -211,13 +233,23 @@ export const prfRoutes = prfApp
         );
       }
 
-      await handlePostAuthentication({
-        savedPasskeyID: savedPasskey.id,
-        newCounter: authenticationInfo.newCounter,
-        backedUp: authenticationInfo.credentialBackedUp,
-        headers: c.req.raw.headers,
-        authType: PasskeyHistoryType.PRF,
-      });
+      try {
+        await handlePostAuthentication({
+          savedPasskeyID: savedPasskey.id,
+          newCounter: authenticationInfo.newCounter,
+          backedUp: authenticationInfo.credentialBackedUp,
+          headers: c.req.raw.headers,
+          authType: PasskeyHistoryType.PRF,
+        });
+      } catch (error) {
+        console.error("Failed to handle post PRF authentication:", error);
+        return c.json(
+          {
+            error: "PRF認証後の処理に失敗しました。",
+          },
+          500,
+        );
+      }
 
       return c.json({}, 200);
     },
@@ -301,16 +333,27 @@ export const prfRoutes = prfApp
         );
       }
 
-      const passkey = await prisma.passkey.findFirst({
-        where: {
-          id: body.passkeyId,
-          userID: loginState.userData.userID,
-        },
-        select: {
-          id: true,
-          name: true,
-        },
-      });
+      let passkey: Pick<Passkey, "id" | "name"> | null;
+      try {
+        passkey = await prisma.passkey.findFirst({
+          where: {
+            id: body.passkeyId,
+            userID: loginState.userData.userID,
+          },
+          select: {
+            id: true,
+            name: true,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey for PRF encrypt:", error);
+        return c.json(
+          {
+            error: "パスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!passkey) {
         return c.json(
@@ -321,19 +364,30 @@ export const prfRoutes = prfApp
         );
       }
 
-      const created = await prisma.prfCiphertext.create({
-        data: {
-          passkeyID: passkey.id,
-          userID: loginState.userData.userID,
-          label,
-          ciphertext: body.ciphertext,
-          iv: body.iv,
-          tag: body.tag,
-          associatedData: associatedData ?? null,
-          version: body.version,
-          prfInput: body.prfInput,
-        },
-      });
+      let created: PrfCiphertext;
+      try {
+        created = await prisma.prfCiphertext.create({
+          data: {
+            passkeyID: passkey.id,
+            userID: loginState.userData.userID,
+            label,
+            ciphertext: body.ciphertext,
+            iv: body.iv,
+            tag: body.tag,
+            associatedData: associatedData ?? null,
+            version: body.version,
+            prfInput: body.prfInput,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to create PRF ciphertext:", error);
+        return c.json(
+          {
+            error: "暗号化データの保存に失敗しました。",
+          },
+          500,
+        );
+      }
 
       return c.json(
         {
@@ -399,54 +453,64 @@ export const prfRoutes = prfApp
         ...(passkeyFilter ? { passkeyID: passkeyFilter } : {}),
       };
 
-      const total = await prisma.prfCiphertext.count({
-        where: whereClause,
-      });
+      try {
+        const total = await prisma.prfCiphertext.count({
+          where: whereClause,
+        });
 
-      const computedTotalPages = Math.ceil(total / limit);
-      const cappedPage = computedTotalPages === 0 ? 1 : Math.min(page, computedTotalPages);
-      const skip = (cappedPage - 1) * limit;
+        const computedTotalPages = Math.ceil(total / limit);
+        const cappedPage = computedTotalPages === 0 ? 1 : Math.min(page, computedTotalPages);
+        const skip = (cappedPage - 1) * limit;
 
-      const entries = await prisma.prfCiphertext.findMany({
-        where: whereClause,
-        orderBy: {
-          createdAt: "desc",
-        },
-        take: limit,
-        skip,
-        include: {
-          passkey: {
-            select: {
-              name: true,
+        const entries = await prisma.prfCiphertext.findMany({
+          where: whereClause,
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: limit,
+          skip,
+          include: {
+            passkey: {
+              select: {
+                name: true,
+              },
             },
           },
-        },
-      });
+        });
 
-      return c.json(
-        {
-          entries: entries.map((entry) => ({
-            id: entry.id,
-            passkeyId: entry.passkeyID,
-            passkeyName: entry.passkey.name,
-            label: entry.label,
-            ciphertext: entry.ciphertext,
-            iv: entry.iv,
-            tag: entry.tag,
-            associatedData: entry.associatedData,
-            version: entry.version,
-            createdAt: entry.createdAt.toISOString(),
-            prfInput: entry.prfInput,
-          })),
-          pagination: {
-            page: total === 0 ? 0 : cappedPage,
-            limit,
-            total,
-            totalPages: total === 0 ? 0 : computedTotalPages,
+        return c.json(
+          {
+            entries: entries.map((entry) => ({
+              id: entry.id,
+              passkeyId: entry.passkeyID,
+              passkeyName: entry.passkey.name,
+              label: entry.label,
+              ciphertext: entry.ciphertext,
+              iv: entry.iv,
+              tag: entry.tag,
+              associatedData: entry.associatedData,
+              version: entry.version,
+              createdAt: entry.createdAt.toISOString(),
+              prfInput: entry.prfInput,
+            })),
+            pagination: {
+              page: total === 0 ? 0 : cappedPage,
+              limit,
+              total,
+              totalPages: total === 0 ? 0 : computedTotalPages,
+            },
           },
-        },
-        200,
-      );
+          200,
+        );
+      } catch (error) {
+        console.error("Failed to fetch PRF entries:", error);
+        return c.json(
+          {
+            error: "暗号化データの取得に失敗しました。",
+          },
+          500,
+        );
+      }
     },
   )
   .delete("/entries/:id", async (c) => {
@@ -470,16 +534,27 @@ export const prfRoutes = prfApp
       );
     }
 
-    const ciphertext = await prisma.prfCiphertext.findUnique({
-      where: {
-        id: ciphertextId,
-      },
-      select: {
-        id: true,
-        userID: true,
-        passkeyID: true,
-      },
-    });
+    let ciphertext: Pick<PrfCiphertext, "id" | "userID" | "passkeyID"> | null;
+    try {
+      ciphertext = await prisma.prfCiphertext.findUnique({
+        where: {
+          id: ciphertextId,
+        },
+        select: {
+          id: true,
+          userID: true,
+          passkeyID: true,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to fetch PRF ciphertext:", error);
+      return c.json(
+        {
+          error: "暗号化データの取得に失敗しました。",
+        },
+        500,
+      );
+    }
 
     if (!ciphertext || ciphertext.userID !== loginState.userData.userID) {
       return c.json(
@@ -490,11 +565,21 @@ export const prfRoutes = prfApp
       );
     }
 
-    await prisma.prfCiphertext.delete({
-      where: {
-        id: ciphertextId,
-      },
-    });
+    try {
+      await prisma.prfCiphertext.delete({
+        where: {
+          id: ciphertextId,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to delete PRF ciphertext:", error);
+      return c.json(
+        {
+          error: "暗号化データの削除に失敗しました。",
+        },
+        500,
+      );
+    }
 
     return c.json(
       {
