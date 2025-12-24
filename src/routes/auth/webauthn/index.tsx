@@ -1,4 +1,4 @@
-import { type Passkey, PasskeyHistoryType } from "@prisma/client";
+import { type Passkey, PasskeyHistoryType, type User } from "@prisma/client";
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
@@ -60,13 +60,24 @@ export const webAuthnRoutes = webauthnApp
 
     // ログイン済みユーザであれば、これはパスキーを作成するリクエストなので、既存のパスキーを取得する
     const userID = loginState.state === "LOGGED_IN" ? loginState.userData.userID : undefined;
-    const savedPasskeys: Passkey[] = userID
-      ? await prisma.passkey.findMany({
+    let savedPasskeys: Passkey[] = [];
+    if (userID) {
+      try {
+        savedPasskeys = await prisma.passkey.findMany({
           where: {
             userID: userID,
           },
-        })
-      : [];
+        });
+      } catch (error) {
+        console.error("Failed to fetch existing passkeys:", error);
+        return c.json(
+          {
+            error: "既存のパスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
+    }
 
     if (savedPasskeys.length >= MAX_PASSKEYS_PER_USER) {
       return c.json(
@@ -248,11 +259,22 @@ export const webAuthnRoutes = webauthnApp
 
       const body = c.req.valid("json").body;
 
-      const savedPasskey = await prisma.passkey.findFirst({
-        where: {
-          id: body?.id,
-        },
-      });
+      let savedPasskey: Passkey | null;
+      try {
+        savedPasskey = await prisma.passkey.findFirst({
+          where: {
+            id: body?.id,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey for authentication:", error);
+        return c.json(
+          {
+            error: "パスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!savedPasskey) {
         return c.json(
@@ -298,11 +320,22 @@ export const webAuthnRoutes = webauthnApp
       }
 
       // 認証したパスキーレコードからユーザ情報を取得
-      const user = await prisma.user.findUnique({
-        where: {
-          id: savedPasskey.userID,
-        },
-      });
+      let user: User | null;
+      try {
+        user = await prisma.user.findUnique({
+          where: {
+            id: savedPasskey.userID,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+        return c.json(
+          {
+            error: "ユーザー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!user) {
         return c.json(
@@ -313,13 +346,23 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      await handlePostAuthentication({
-        savedPasskeyID: savedPasskey.id,
-        newCounter: authenticationInfo.newCounter,
-        backedUp: authenticationInfo.credentialBackedUp,
-        headers: c.req.raw.headers,
-        authType: PasskeyHistoryType.LOGIN,
-      });
+      try {
+        await handlePostAuthentication({
+          savedPasskeyID: savedPasskey.id,
+          newCounter: authenticationInfo.newCounter,
+          backedUp: authenticationInfo.credentialBackedUp,
+          headers: c.req.raw.headers,
+          authType: PasskeyHistoryType.LOGIN,
+        });
+      } catch (error) {
+        console.error("Failed to handle post authentication:", error);
+        return c.json(
+          {
+            error: "認証後の処理に失敗しました。",
+          },
+          500,
+        );
+      }
 
       await loginSessionController.setLoggedIn(c, {
         userID: user.id,
@@ -341,11 +384,22 @@ export const webAuthnRoutes = webauthnApp
       );
     }
 
-    const savedPasskey = await prisma.passkey.findMany({
-      where: {
-        userID: loginState.userData.userID,
-      },
-    });
+    let savedPasskey: Passkey[];
+    try {
+      savedPasskey = await prisma.passkey.findMany({
+        where: {
+          userID: loginState.userData.userID,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to fetch passkeys for reauthentication:", error);
+      return c.json(
+        {
+          error: "パスキー情報の取得に失敗しました。",
+        },
+        500,
+      );
+    }
 
     const options: PublicKeyCredentialRequestOptionsJSON = await generateAuthenticationOptions({
       rpID,
@@ -398,11 +452,22 @@ export const webAuthnRoutes = webauthnApp
 
       const body = c.req.valid("json").body;
 
-      const savedPasskey = await prisma.passkey.findFirst({
-        where: {
-          id: body?.id,
-        },
-      });
+      let savedPasskey: Passkey | null;
+      try {
+        savedPasskey = await prisma.passkey.findFirst({
+          where: {
+            id: body?.id,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey for reauthentication:", error);
+        return c.json(
+          {
+            error: "パスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!savedPasskey) {
         return c.json(
@@ -456,13 +521,23 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      await handlePostAuthentication({
-        savedPasskeyID: savedPasskey.id,
-        newCounter: authenticationInfo.newCounter,
-        backedUp: authenticationInfo.credentialBackedUp,
-        headers: c.req.raw.headers,
-        authType: PasskeyHistoryType.REAUTH,
-      });
+      try {
+        await handlePostAuthentication({
+          savedPasskeyID: savedPasskey.id,
+          newCounter: authenticationInfo.newCounter,
+          backedUp: authenticationInfo.credentialBackedUp,
+          headers: c.req.raw.headers,
+          authType: PasskeyHistoryType.REAUTH,
+        });
+      } catch (error) {
+        console.error("Failed to handle post reauthentication:", error);
+        return c.json(
+          {
+            error: "再認証後の処理に失敗しました。",
+          },
+          500,
+        );
+      }
 
       await reauthSessionController.initialize(c, {
         userId: loginState.userData.userID,
@@ -498,12 +573,23 @@ export const webAuthnRoutes = webauthnApp
 
       const { passkeyId } = c.req.valid("json");
 
-      const passkey = await prisma.passkey.findFirst({
-        where: {
-          id: passkeyId,
-          userID: loginState.userData.userID,
-        },
-      });
+      let passkey: Passkey | null;
+      try {
+        passkey = await prisma.passkey.findFirst({
+          where: {
+            id: passkeyId,
+            userID: loginState.userData.userID,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey for test authentication:", error);
+        return c.json(
+          {
+            error: "パスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!passkey) {
         return c.json(
@@ -571,12 +657,23 @@ export const webAuthnRoutes = webauthnApp
 
       const body = c.req.valid("json").body;
 
-      const savedPasskey = await prisma.passkey.findFirst({
-        where: {
-          id: sessionData.passkeyId,
-          userID: loginState.userData.userID,
-        },
-      });
+      let savedPasskey: Passkey | null;
+      try {
+        savedPasskey = await prisma.passkey.findFirst({
+          where: {
+            id: sessionData.passkeyId,
+            userID: loginState.userData.userID,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey for test authentication verify:", error);
+        return c.json(
+          {
+            error: "パスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!savedPasskey) {
         return c.json(
@@ -630,13 +727,23 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      await handlePostAuthentication({
-        savedPasskeyID: savedPasskey.id,
-        newCounter: authenticationInfo.newCounter,
-        backedUp: authenticationInfo.credentialBackedUp,
-        headers: c.req.raw.headers,
-        authType: PasskeyHistoryType.TEST,
-      });
+      try {
+        await handlePostAuthentication({
+          savedPasskeyID: savedPasskey.id,
+          newCounter: authenticationInfo.newCounter,
+          backedUp: authenticationInfo.credentialBackedUp,
+          headers: c.req.raw.headers,
+          authType: PasskeyHistoryType.TEST,
+        });
+      } catch (error) {
+        console.error("Failed to handle post test authentication:", error);
+        return c.json(
+          {
+            error: "テスト認証後の処理に失敗しました。",
+          },
+          500,
+        );
+      }
 
       return c.json({}, 200);
     },
@@ -682,11 +789,22 @@ export const webAuthnRoutes = webauthnApp
 
       const { passkeyId, newName } = c.req.valid("json");
 
-      const passkey = await prisma.passkey.findUnique({
-        where: {
-          id: passkeyId,
-        },
-      });
+      let passkey: Passkey | null;
+      try {
+        passkey = await prisma.passkey.findUnique({
+          where: {
+            id: passkeyId,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey for name change:", error);
+        return c.json(
+          {
+            error: "パスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!passkey || passkey.userID !== loginState.userData.userID) {
         return c.json(
@@ -697,14 +815,24 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      await prisma.passkey.update({
-        where: {
-          id: passkeyId,
-        },
-        data: {
-          name: newName,
-        },
-      });
+      try {
+        await prisma.passkey.update({
+          where: {
+            id: passkeyId,
+          },
+          data: {
+            name: newName,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to update passkey name:", error);
+        return c.json(
+          {
+            error: "パスキー名の変更に失敗しました。",
+          },
+          500,
+        );
+      }
 
       return c.json({}, 200);
     },
@@ -757,12 +885,23 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      const userHasAtLeastTwoPasskeys =
-        (await prisma.passkey.count({
-          where: {
-            userID: loginState.userData.userID,
+      let userHasAtLeastTwoPasskeys: boolean;
+      try {
+        userHasAtLeastTwoPasskeys =
+          (await prisma.passkey.count({
+            where: {
+              userID: loginState.userData.userID,
+            },
+          })) >= 2;
+      } catch (error) {
+        console.error("Failed to count passkeys:", error);
+        return c.json(
+          {
+            error: "パスキー数の確認に失敗しました。",
           },
-        })) >= 2;
+          500,
+        );
+      }
 
       if (!userHasAtLeastTwoPasskeys) {
         return c.json(
@@ -773,12 +912,23 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      const referencingCiphertexts = await prisma.prfCiphertext.count({
-        where: {
-          passkeyID: passkeyId,
-          userID: loginState.userData.userID,
-        },
-      });
+      let referencingCiphertexts: number;
+      try {
+        referencingCiphertexts = await prisma.prfCiphertext.count({
+          where: {
+            passkeyID: passkeyId,
+            userID: loginState.userData.userID,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to count referencing ciphertexts:", error);
+        return c.json(
+          {
+            error: "暗号化データの確認に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (referencingCiphertexts > 0) {
         return c.json(
@@ -854,12 +1004,23 @@ export const webAuthnRoutes = webauthnApp
 
       const { passkeyId, limit, page } = c.req.valid("json");
 
-      const passkey = await prisma.passkey.findUnique({
-        where: {
-          id: passkeyId,
-          userID: loginState.userData.userID,
-        },
-      });
+      let passkey: Passkey | null;
+      try {
+        passkey = await prisma.passkey.findUnique({
+          where: {
+            id: passkeyId,
+            userID: loginState.userData.userID,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey for histories:", error);
+        return c.json(
+          {
+            error: "パスキー情報の取得に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!passkey) {
         return c.json(
@@ -870,33 +1031,43 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      const histories = await prisma.passkeyHistory.findMany({
-        where: {
-          passkeyID: passkeyId,
-        },
-        orderBy: {
-          usedAt: "desc",
-        },
-        take: limit,
-        skip: (page - 1) * limit,
-      });
+      try {
+        const histories = await prisma.passkeyHistory.findMany({
+          where: {
+            passkeyID: passkeyId,
+          },
+          orderBy: {
+            usedAt: "desc",
+          },
+          take: limit,
+          skip: (page - 1) * limit,
+        });
 
-      const total = await prisma.passkeyHistory.count({
-        where: {
-          passkeyID: passkeyId,
-        },
-      });
+        const total = await prisma.passkeyHistory.count({
+          where: {
+            passkeyID: passkeyId,
+          },
+        });
 
-      return c.json(
-        {
-          histories,
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit),
-        },
-        200,
-      );
+        return c.json(
+          {
+            histories,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+          },
+          200,
+        );
+      } catch (error) {
+        console.error("Failed to fetch passkey histories:", error);
+        return c.json(
+          {
+            error: "利用履歴の取得に失敗しました。",
+          },
+          500,
+        );
+      }
     },
   )
   .post(
@@ -940,12 +1111,23 @@ export const webAuthnRoutes = webauthnApp
 
       const requestData = c.req.valid("json");
 
-      const targetPasskeyExists = await prisma.passkey.findUnique({
-        where: {
-          id: requestData.passkeyId,
-          userID: loginState.userData.userID,
-        },
-      });
+      let targetPasskeyExists: Passkey | null;
+      try {
+        targetPasskeyExists = await prisma.passkey.findUnique({
+          where: {
+            id: requestData.passkeyId,
+            userID: loginState.userData.userID,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to check passkey existence:", error);
+        return c.json(
+          {
+            error: "パスキー情報の確認に失敗しました。",
+          },
+          500,
+        );
+      }
 
       if (!targetPasskeyExists) {
         return c.json(

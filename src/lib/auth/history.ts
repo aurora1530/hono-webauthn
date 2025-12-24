@@ -28,25 +28,30 @@ export const findHistories = async (
 ): Promise<{
   [key: Passkey["id"]]: PasskeyHistory[];
 }> => {
-  const histories = await prisma.passkeyHistory.findMany({
-    where: {
-      passkeyID: {
-        in: passkeyIds,
+  try {
+    const histories = await prisma.passkeyHistory.findMany({
+      where: {
+        passkeyID: {
+          in: passkeyIds,
+        },
       },
-    },
-    orderBy: {
-      usedAt: "desc",
-    },
-  });
+      orderBy: {
+        usedAt: "desc",
+      },
+    });
 
-  return histories.reduce(
-    (acc, history) => {
-      if (!acc[history.passkeyID]) {
-        acc[history.passkeyID] = [];
-      }
-      acc[history.passkeyID].push(history);
-      return acc;
-    },
-    {} as { [key: Passkey["id"]]: PasskeyHistory[] },
-  );
+    return histories.reduce(
+      (acc, history) => {
+        if (!acc[history.passkeyID]) {
+          acc[history.passkeyID] = [];
+        }
+        acc[history.passkeyID].push(history);
+        return acc;
+      },
+      {} as { [key: Passkey["id"]]: PasskeyHistory[] },
+    );
+  } catch (error) {
+    console.error("Failed to find passkey histories:", error);
+    throw error;
+  }
 };

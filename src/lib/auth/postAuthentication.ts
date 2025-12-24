@@ -11,29 +11,34 @@ type PostAuthParams = {
   authType: PasskeyHistoryType;
 };
 
-const handlePostAuthentication = ({
+const handlePostAuthentication = async ({
   savedPasskeyID,
   newCounter,
   backedUp,
   headers,
   authType,
 }: PostAuthParams) => {
-  return Promise.all([
-    prisma.passkey.update({
-      where: {
-        id: savedPasskeyID,
-      },
-      data: {
-        counter: newCounter,
-        backedUp: backedUp,
-      },
-    }),
-    addHistory({
-      passkeyId: savedPasskeyID,
-      ...inferClientPlatform(headers),
-      authType,
-    }),
-  ]);
+  try {
+    return await Promise.all([
+      prisma.passkey.update({
+        where: {
+          id: savedPasskeyID,
+        },
+        data: {
+          counter: newCounter,
+          backedUp: backedUp,
+        },
+      }),
+      addHistory({
+        passkeyId: savedPasskeyID,
+        ...inferClientPlatform(headers),
+        authType,
+      }),
+    ]);
+  } catch (error) {
+    console.error("Failed to handle post authentication:", error);
+    throw error;
+  }
 };
 
 export default handlePostAuthentication;

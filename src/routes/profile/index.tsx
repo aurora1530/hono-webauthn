@@ -28,11 +28,16 @@ export const profileRoutes = profileApp
       return c.json({ error: "ログインしてください" }, 401);
     }
 
-    const summary = await buildDeletionSummary(
-      loginState.userData.userID,
-      loginState.userData.username,
-    );
-    return c.json(summary, 200);
+    try {
+      const summary = await buildDeletionSummary(
+        loginState.userData.userID,
+        loginState.userData.username,
+      );
+      return c.json(summary, 200);
+    } catch (error) {
+      console.error("Failed to build deletion summary:", error);
+      return c.json({ error: "削除サマリーの取得に失敗しました" }, 500);
+    }
   })
   .post(
     "/change-debug-mode",
@@ -86,10 +91,17 @@ export const profileRoutes = profileApp
         return c.json({ error: "再認証が必要です" }, 401);
       }
 
-      const summary = await buildDeletionSummary(
-        loginState.userData.userID,
-        loginState.userData.username,
-      );
+      let summary: Awaited<ReturnType<typeof buildDeletionSummary>>;
+      try {
+        summary = await buildDeletionSummary(
+          loginState.userData.userID,
+          loginState.userData.username,
+        );
+      } catch (error) {
+        console.error("Failed to build deletion summary:", error);
+        return c.json({ error: "削除サマリーの取得に失敗しました" }, 500);
+      }
+
       const { confirmationText } = c.req.valid("json");
 
       if (confirmationText !== summary.confirmationText) {
@@ -102,10 +114,16 @@ export const profileRoutes = profileApp
         );
       }
 
-      const passkeyIds = await prisma.passkey.findMany({
-        where: { userID: loginState.userData.userID },
-        select: { id: true },
-      });
+      let passkeyIds: { id: string }[];
+      try {
+        passkeyIds = await prisma.passkey.findMany({
+          where: { userID: loginState.userData.userID },
+          select: { id: true },
+        });
+      } catch (error) {
+        console.error("Failed to fetch passkey IDs:", error);
+        return c.json({ error: "パスキー情報の取得に失敗しました" }, 500);
+      }
 
       try {
         await prisma.$transaction(async (tx) => {
