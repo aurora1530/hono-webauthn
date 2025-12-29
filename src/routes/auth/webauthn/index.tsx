@@ -409,7 +409,10 @@ export const webAuthnRoutes = webauthnApp
       })),
     });
 
-    await webauthnSessionController.reauthentication.verify.initialize(c, options);
+    await webauthnSessionController.reauthentication.verify.initialize(c, {
+      ...options,
+      userId: loginState.userData.userID,
+    });
 
     return c.json(options, 200);
   })
@@ -429,7 +432,7 @@ export const webAuthnRoutes = webauthnApp
       return parsed.data;
     }),
     async (c) => {
-      const { challenge: savedChallenge } =
+      const { challenge: savedChallenge, userId: reauthUserId } =
         (await webauthnSessionController.reauthentication.verify.extractSessionData(c)) || {};
       if (!savedChallenge) {
         return c.json(
@@ -478,7 +481,10 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      if (loginState.userData.userID !== savedPasskey.userID) {
+      if (
+        loginState.userData.userID !== savedPasskey.userID ||
+        reauthUserId !== savedPasskey.userID
+      ) {
         return c.json(
           {
             error: "認証に失敗しました。もう一度やり直してください",
