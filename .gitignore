@@ -30,3 +30,6 @@ lerna-debug.log*
 # javascript
 public/*.js
 public/*.js.map
+
+# codex
+.codex/
