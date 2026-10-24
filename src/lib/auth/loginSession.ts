@@ -31,6 +31,7 @@ const loginSessionStore = await createRedisSessionStore<UserData>({
 type LoginState =
   | {
       state: "LOGGED_IN";
+      sessionID: string;
       userData: UserData;
     }
   | {
@@ -54,7 +55,7 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
       if (!sessionID) return { state: "LOGGED_OUT" };
       const data = await store.get(sessionID);
       if (!data) return { state: "EXPIRED" };
-      return { state: "LOGGED_IN", userData: data };
+      return { state: "LOGGED_IN", sessionID, userData: data };
     },
     setLoggedIn: async (c: Context, userData: UserData) => {
       const currentSessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);

@@ -31,6 +31,9 @@ webauthnApp.route("/prf", prfApp);
 export const webAuthnRoutes = webauthnApp
   .get("/registration/generate", async (c) => {
     const loginState = await loginSessionController.getLoginState(c);
+    if (loginState.state === "EXPIRED") {
+      return c.json({ error: "セッションが不正です。登録をやり直してください。" }, 401);
+    }
     const username =
       loginState.state === "LOGGED_IN"
         ? loginState.userData.username
@@ -46,7 +49,6 @@ export const webAuthnRoutes = webauthnApp
     }
 
     if (loginState.state === "LOGGED_IN") {
-      // ログイン済みであれば、再認証がなされているかのチェック（本来の手順を済ませていれば適切に再認証がされているはずなので、単にエラーを返すだけで良い）
       const reauthData = await reauthSessionController.extractSessionData(c);
       if (loginState.userData.userID !== reauthData?.userId) {
         return c.json(
@@ -108,7 +110,18 @@ export const webAuthnRoutes = webauthnApp
       },
     });
 
-    await webauthnSessionController.registration.verify.initialize(c, options);
+    await webauthnSessionController.registration.verify.initialize(c, {
+      challenge: options.challenge,
+      user: options.user,
+      authorization:
+        loginState.state === "LOGGED_IN"
+          ? {
+              type: "add-passkey",
+              userID: loginState.userData.userID,
+              loginSessionID: loginState.sessionID,
+            }
+          : { type: "new-account" },
+    });
 
     return c.json(options, 200);
   })
@@ -138,6 +151,19 @@ export const webAuthnRoutes = webauthnApp
           },
           401,
         );
+      }
+
+      const loginState = await loginSessionController.getLoginState(c);
+      const { authorization } = webauthnRegistrationSession;
+      const isAuthorized =
+        authorization.type === "new-account"
+          ? loginState.state === "LOGGED_OUT"
+          : loginState.state === "LOGGED_IN" &&
+            loginState.userData.userID === authorization.userID &&
+            loginState.sessionID === authorization.loginSessionID;
+
+      if (!isAuthorized) {
+        return c.json({ error: "セッションが不正です。登録をやり直してください。" }, 401);
       }
 
       const body = c.req.valid("json").body;
@@ -174,42 +200,52 @@ export const webAuthnRoutes = webauthnApp
       const passkeyName = aaguidToNameAndIcon(aaguid)?.name ?? "パスキー";
       const { os, browser } = inferClientPlatform(c.req.raw.headers);
 
-      // 新規作成ならユーザを作成し、既存ユーザならセッションからIDを取得
-      const loginState = await loginSessionController.getLoginState(c);
-      let userID = loginState.state === "LOGGED_IN" ? loginState.userData.userID : undefined;
       try {
-        await prisma.$transaction(async (tx) => {
-          if (!userID) {
-            const user = await tx.user.create({
+        await prisma.$transaction(
+          async (tx) => {
+            let userID: string;
+            if (authorization.type === "new-account") {
+              const user = await tx.user.create({
+                data: {
+                  name: webauthnRegistrationSession.user.name,
+                },
+              });
+              userID = user.id;
+            } else {
+              userID = authorization.userID;
+              const passkeyCount = await tx.passkey.count({
+                where: { userID },
+              });
+              if (passkeyCount >= MAX_PASSKEYS_PER_USER) {
+                throw new Error("Passkey limit reached");
+              }
+            }
+
+            await tx.passkey.create({
               data: {
-                name: webauthnRegistrationSession.user.name,
+                id: credential.id,
+                webauthnUserID: webauthnRegistrationSession.user.id,
+                userID,
+                backedUp: credentialBackedUp,
+                publicKey: credential.publicKey,
+                transports: credential.transports,
+                deviceType: credentialDeviceType,
+                counter: credential.counter,
+                aaguid,
+                name: passkeyName,
+                createdBrowser: browser,
+                createdOS: os,
               },
             });
-            userID = user.id;
-          }
-
-          await tx.passkey.create({
-            data: {
-              id: credential.id,
-              webauthnUserID: webauthnRegistrationSession.user.id,
-              userID,
-              backedUp: credentialBackedUp,
-              publicKey: credential.publicKey,
-              transports: credential.transports,
-              deviceType: credentialDeviceType,
-              counter: credential.counter,
-              aaguid,
-              name: passkeyName,
-              createdBrowser: browser,
-              createdOS: os,
-            },
-          });
-        });
+          },
+          { isolationLevel: "Serializable" },
+        );
       } catch (e) {
         console.error("Failed to create passkey record:", e);
-        const error = userID
-          ? "パスキーの保存に失敗しました。もう一度やり直してください。"
-          : "ユーザの作成に失敗しました。もう一度やり直してください。";
+        const error =
+          authorization.type === "add-passkey"
+            ? "パスキーの保存に失敗しました。もう一度やり直してください。"
+            : "ユーザの作成に失敗しました。もう一度やり直してください。";
         return c.json(
           {
             error,

@@ -8,6 +8,7 @@
     "typecheck": "npm-run-all typecheck:server typecheck:client",
     "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
     "typecheck:client": "tsc -p tsconfig.client.json --noEmit",
+    "test:registration": "node --import tsx --experimental-test-module-mocks --test tests/registration.test.mjs",
     "build": "npm-run-all build:db build:server build:client",
     "build:server": "tsc -p tsconfig.server.json",
     "build:db": "prisma generate",

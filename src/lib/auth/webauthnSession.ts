@@ -30,6 +30,14 @@ const webAuthnSessionSchemas = {
     verify: z.object({
       challenge: z.string(),
       user: z.object({ id: z.string(), name: z.string() }),
+      authorization: z.discriminatedUnion("type", [
+        z.object({ type: z.literal("new-account") }),
+        z.object({
+          type: z.literal("add-passkey"),
+          userID: z.string(),
+          loginSessionID: z.string(),
+        }),
+      ]),
     }),
   },
   authentication: {
