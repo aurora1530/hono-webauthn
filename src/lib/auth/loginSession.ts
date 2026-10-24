@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import z from "zod";
+import prisma from "../../prisma.js";
 import { createRedisSessionStore } from "../redis/redis-session.js";
 import { serverMessageHandler } from "../serverMessage.js";
 import type { SessionStore } from "../session.js";
@@ -25,7 +26,6 @@ const loginSessionStore = await createRedisSessionStore<UserData>({
     const parsed = UserDataSchema.safeParse(data);
     return parsed.success ? parsed.data : undefined;
   },
-  useCache: true,
 });
 
 type LoginState =
@@ -49,14 +49,25 @@ interface LoginSessionController {
 }
 
 const createLoginSessionController = (store: LoginSessionStore): LoginSessionController => {
+  const getLoginState = async (c: Context): Promise<LoginState> => {
+    const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
+    if (!sessionID) return { state: "LOGGED_OUT" };
+    const data = await store.get(sessionID);
+    if (!data) return { state: "EXPIRED" };
+
+    const passkey = await prisma.passkey.findUnique({
+      where: { id: data.usedPasskeyID, userID: data.userID },
+      select: { id: true },
+    });
+    if (!passkey) {
+      await store.destroy(sessionID);
+      return { state: "EXPIRED" };
+    }
+    return { state: "LOGGED_IN", sessionID, userData: data };
+  };
+
   return {
-    getLoginState: async (c: Context) => {
-      const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
-      if (!sessionID) return { state: "LOGGED_OUT" };
-      const data = await store.get(sessionID);
-      if (!data) return { state: "EXPIRED" };
-      return { state: "LOGGED_IN", sessionID, userData: data };
-    },
+    getLoginState,
     setLoggedIn: async (c: Context, userData: UserData) => {
       const currentSessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
       if (currentSessionID) await store.destroy(currentSessionID);
@@ -71,12 +82,9 @@ const createLoginSessionController = (store: LoginSessionStore): LoginSessionCon
       }
     },
     changeDebugMode: async (c: Context, debugMode: boolean) => {
-      const sessionID = await getCookieHelper(c, LOGIN_SESSION_COOKIE_NAME);
-      if (!sessionID) return;
-      const userData = await store.get(sessionID);
-      if (!userData) return;
-      userData.debugMode = debugMode;
-      await store.set(sessionID, userData);
+      const loginState = await getLoginState(c);
+      if (loginState.state !== "LOGGED_IN") return;
+      await store.set(loginState.sessionID, { ...loginState.userData, debugMode });
     },
   };
 };

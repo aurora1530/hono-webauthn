@@ -47,6 +47,8 @@ const prisma = {
     },
   },
   passkey: {
+    findUnique: async ({ where }) =>
+      where.id === `${where.userID}-key` ? { id: where.id } : null,
     findMany: async ({ where }) =>
       Array.from({ length: passkeyCount }, (_, index) => ({
         id: `existing-key-${index}`,

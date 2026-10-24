@@ -63,8 +63,12 @@ const createRedisSessionStore = async <T extends JsonObject>(
       }
     },
     set: async (sessionID: string, data: T) => {
-      await redis.set(KEY(sessionID), JSON.stringify(data), { EX: options.ttlSec });
-      inMemoryCache?.set(sessionID, data);
+      const result = await redis.set(KEY(sessionID), JSON.stringify(data), {
+        EX: options.ttlSec,
+        XX: true,
+      });
+      if (result) inMemoryCache?.set(sessionID, data);
+      else inMemoryCache?.delete(sessionID);
     },
     destroy: async (sessionID: string) => {
       await redis.del(KEY(sessionID));
