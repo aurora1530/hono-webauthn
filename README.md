@@ -23,9 +23,18 @@ DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTG
 REDIS_URL="redis://localhost:${REDIS_PORT}"
 RATE_LIMIT_WINDOW_SEC=60
 RATE_LIMIT_MAX_REQUESTS=120
+RATE_LIMIT_TRUSTED_PROXIES=
 ```
 
 `RATE_LIMIT_WINDOW_SEC` と `RATE_LIMIT_MAX_REQUESTS` は省略可能で、未指定時はそれぞれ 60 秒・120 リクエストの上限になります。
+
+レート制限は接続元 IP 単位で適用し、ログイン済みの場合はユーザー単位の上限も併用します。`/auth/*` と `/profile/*` はカウンターを共有します。上限超過は `429`、Redis 障害などで制限を確認できない場合は `503` を返します。
+
+`RATE_LIMIT_TRUSTED_PROXIES` の既定値は空で、転送ヘッダーを信頼しません。プロキシを使う場合は、管理・確認できるプロキシの IP または CIDR をカンマ区切りで指定してください。例えば、自分で管理するローカルプロキシだけを経由する場合は `127.0.0.1,::1` とします。無効な値は起動時に拒否します。
+
+接続元が指定範囲に含まれる場合に限り、`X-Forwarded-For` を右からたどって最初の非信頼 IP を使用します。プロキシは実際の接続元をこのヘッダーへ追記または上書きする必要があります。`X-Real-IP`、`Forwarded`、`User-Agent` は識別に使いません。全 IP や、無関係なサービスも含む範囲を信頼する設定は避けてください。
+
+Render へのデプロイ時も、実際の経路とプロキシ範囲を確認して設定してください。このリポジトリでは Render の範囲を固定していません。未設定ならプロキシ IP ごとの制限となるため、複数の利用者が同じ上限を共有する可能性があります。[Render のクライアント IP に関する説明](https://render.com/articles/how-render-handles-ddos-attacks)
 
 then start only the data services:
 

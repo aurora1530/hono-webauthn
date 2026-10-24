@@ -1,4 +1,5 @@
 import z from "zod";
+import { trustedProxyListSchema } from "./lib/clientIp.js";
 
 const envSchema = z.object({
   COOKIE_SECURE: z.enum(["true", "false"]).default("false"),
@@ -12,6 +13,11 @@ const envSchema = z.object({
     .default(3000),
   RATE_LIMIT_WINDOW_SEC: z.coerce.number().int().min(1).default(60),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().min(1).default(120),
+  RATE_LIMIT_TRUSTED_PROXIES: z
+    .string()
+    .default("")
+    .transform((value) => (value.trim() ? value.split(",").map((entry) => entry.trim()) : []))
+    .pipe(trustedProxyListSchema),
   RP_ID: z.string(),
   ORIGIN: z.string(),
 });
