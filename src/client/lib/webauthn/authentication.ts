@@ -1,22 +1,11 @@
+import { sanitizeRedirectPath } from "../../../shared/redirect.js";
 import { showStatusToast } from "../../components/common/StatusToast.js";
 import { webauthnClient } from "../rpc/webauthnClient.js";
 import { createAbortController, handleWebAuthnAbort } from "./webauthnAbort.js";
 
 const parsePostLoginRedirect = () => {
-  try {
-    const searchParams = new URLSearchParams(window.location.search);
-    const redirect = searchParams.get("redirect");
-    if (!redirect) return "/";
-    if (!redirect.startsWith("/")) return "/";
-    if (redirect.startsWith("//")) return "/";
-
-    const resolved = new URL(redirect, window.location.origin);
-    if (resolved.origin !== window.location.origin) return "/";
-
-    return `${resolved.pathname}${resolved.search}${resolved.hash}`;
-  } catch {
-    return "/";
-  }
+  const searchParams = new URLSearchParams(window.location.search);
+  return sanitizeRedirectPath(searchParams.get("redirect")) ?? "/";
 };
 
 async function handleAuthentication() {
