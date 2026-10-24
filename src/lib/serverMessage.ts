@@ -20,7 +20,7 @@ const serverMessageHandler: ServerMessageHandler = {
   },
   getMessage: async (c: Context) => {
     const message = await getCookieHelper(c, SERVER_MESSAGE_COOKIE_NAME);
-    await deleteCookieHelper(c, SERVER_MESSAGE_COOKIE_NAME);
+    deleteCookieHelper(c, SERVER_MESSAGE_COOKIE_NAME);
     return message || undefined;
   },
 };

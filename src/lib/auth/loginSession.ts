@@ -25,6 +25,7 @@ const loginSessionStore = await createRedisSessionStore<UserData>({
     const parsed = UserDataSchema.safeParse(data);
     return parsed.success ? parsed.data : undefined;
   },
+  useCache: true,
 });
 
 type LoginState =

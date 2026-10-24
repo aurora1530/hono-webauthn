@@ -1,3 +1,5 @@
+const MAX_CACHE_ENTRIES = 1000;
+
 interface InMemoryCache<T> {
   get(key: string): T | undefined;
   set(key: string, value: T): void;
@@ -16,6 +18,16 @@ type CacheEntry<T> = {
 export const createInMemoryCache = <T>(options: InMemoryCacheOptions): InMemoryCache<T> => {
   const cache = new Map<string, CacheEntry<T>>();
 
+  const evictOldest = () => {
+    const firstKey = cache.keys().next().value;
+    if (!firstKey) return;
+    const entry = cache.get(firstKey);
+    if (entry) {
+      clearTimeout(entry.timeout);
+    }
+    cache.delete(firstKey);
+  };
+
   const scheduleEviction = (key: string) => {
     return setTimeout(() => {
       cache.delete(key);
@@ -26,6 +38,8 @@ export const createInMemoryCache = <T>(options: InMemoryCacheOptions): InMemoryC
     const existing = cache.get(key);
     if (existing) {
       clearTimeout(existing.timeout);
+    } else if (cache.size >= MAX_CACHE_ENTRIES) {
+      evictOldest();
     }
     cache.set(key, { value, timeout: scheduleEviction(key) });
   };

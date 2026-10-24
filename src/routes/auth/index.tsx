@@ -65,28 +65,39 @@ export const authAppRoutes = authApp
     async (c) => {
       const { username } = c.req.valid("json");
 
-      const alreadyExists = await prisma.user.findUnique({
-        where: {
-          name: username,
-        },
-      });
+      try {
+        const alreadyExists = await prisma.user.findUnique({
+          where: {
+            name: username,
+          },
+        });
 
-      if (alreadyExists) {
+        if (alreadyExists) {
+          return c.json(
+            {
+              valid: false,
+              error: "ユーザー名が既に存在します。",
+            },
+            409,
+          );
+        }
+
+        return c.json(
+          {
+            valid: true,
+          },
+          200,
+        );
+      } catch (error) {
+        console.error("Failed to validate username:", error);
         return c.json(
           {
             valid: false,
-            error: "ユーザー名が既に存在します。",
+            error: "ユーザー名の検証に失敗しました。",
           },
-          409,
+          500,
         );
       }
-
-      return c.json(
-        {
-          valid: true,
-        },
-        200,
-      );
     },
   )
   .post(
@@ -107,26 +118,36 @@ export const authAppRoutes = authApp
     async (c) => {
       const { username } = c.req.valid("json");
 
-      const alreadyExists = await prisma.user.findUnique({
-        where: {
-          name: username,
-        },
-      });
+      try {
+        const alreadyExists = await prisma.user.findUnique({
+          where: {
+            name: username,
+          },
+        });
 
-      if (alreadyExists) {
+        if (alreadyExists) {
+          return c.json(
+            {
+              error: "ユーザー名が既に存在します。",
+            },
+            400,
+          );
+        }
+
+        await webauthnSessionController.registration.generate.initialize(c, {
+          username: username,
+        });
+
+        return c.json({}, 200);
+      } catch (error) {
+        console.error("Failed to register user:", error);
         return c.json(
           {
-            error: "ユーザー名が既に存在します。",
+            error: "ユーザー登録の処理に失敗しました。",
           },
-          400,
+          500,
         );
       }
-
-      await webauthnSessionController.registration.generate.initialize(c, {
-        username: username,
-      });
-
-      return c.json({}, 200);
     },
   )
   .get("/passkey-management", async (c) => {
@@ -135,37 +156,42 @@ export const authAppRoutes = authApp
       return c.redirect(buildLoginRedirectUrl(c.req.raw));
     }
 
-    const passkeys = await prisma.passkey.findMany({
-      where: {
-        userID: loginState.userData.userID,
-      },
-      include: {
-        _count: {
-          select: {
-            prfCiphertexts: true,
+    try {
+      const passkeys = await prisma.passkey.findMany({
+        where: {
+          userID: loginState.userData.userID,
+        },
+        include: {
+          _count: {
+            select: {
+              prfCiphertexts: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    const histories = await findHistories(passkeys.map((pk) => pk.id));
-    const passkeyData = passkeys.map((pk) => {
-      const { _count, ...passkeyRecord } = pk;
-      return {
-        passkey: passkeyRecord,
-        lastUsed: histories[pk.id]?.[0],
-        prfCiphertextCount: _count.prfCiphertexts,
-      };
-    });
+      const histories = await findHistories(passkeys.map((pk) => pk.id));
+      const passkeyData = passkeys.map((pk) => {
+        const { _count, ...passkeyRecord } = pk;
+        return {
+          passkey: passkeyRecord,
+          lastUsed: histories[pk.id]?.[0],
+          prfCiphertextCount: _count.prfCiphertexts,
+        };
+      });
 
-    return c.render(
-      <PasskeyManagement
-        passkeyData={passkeyData}
-        currentPasskeyID={loginState.userData.usedPasskeyID}
-        debugMode={loginState.userData.debugMode}
-      />,
-      { title: "パスキー管理" },
-    );
+      return c.render(
+        <PasskeyManagement
+          passkeyData={passkeyData}
+          currentPasskeyID={loginState.userData.usedPasskeyID}
+          debugMode={loginState.userData.debugMode}
+        />,
+        { title: "パスキー管理" },
+      );
+    } catch (error) {
+      console.error("Failed to load passkey management page:", error);
+      return c.redirect("/");
+    }
   })
   .get("/prf", async (c) => {
     const loginState = await loginSessionController.getLoginState(c);

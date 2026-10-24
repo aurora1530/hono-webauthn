@@ -36,7 +36,7 @@ const webAuthnSessionSchemas = {
     verify: z.object({ challenge: z.string() }),
   },
   reauthentication: {
-    verify: z.object({ challenge: z.string() }),
+    verify: z.object({ challenge: z.string(), userId: z.string() }),
   },
   testAuthentication: {
     verify: z.object({ challenge: z.string(), passkeyId: z.string() }),

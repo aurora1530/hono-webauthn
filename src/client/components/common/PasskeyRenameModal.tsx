@@ -1,6 +1,7 @@
+import { MAX_PASSKEY_NAME_LENGTH } from "@shared/constant.js";
 import type { Result } from "@shared/type.js";
 import { css, cx } from "hono/css";
-import type { FC } from "hono/jsx";
+import { type FC, useRef, useState } from "hono/jsx";
 import { buttonClass, inputFieldClass, textMutedClass } from "../../../ui/theme.js";
 import { closeModal } from "../../lib/modal/base.js";
 
@@ -14,8 +15,6 @@ type Props = {
   onReset: () => Promise<SubmitResult>;
 };
 
-const NAME_MAX_LENGTH = 60;
-
 export const PasskeyRenameModal: FC<Props> = ({
   currentName,
   onSubmit,
@@ -23,6 +22,11 @@ export const PasskeyRenameModal: FC<Props> = ({
   defaultName,
   onReset,
 }) => {
+  const inputElement = useRef<HTMLInputElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newName, setNewName] = useState(currentName);
+  const [errMsg, setErrMsg] = useState("");
+
   const container = css`
     position: relative;
     padding: 22px 22px 18px;
@@ -103,65 +107,41 @@ export const PasskeyRenameModal: FC<Props> = ({
     flex-wrap: wrap;
   `;
 
-  let isSubmitting = false;
-
   const handleInput = (e: Event) => {
     const input = e.currentTarget as HTMLInputElement;
-    const wrapper = input.closest<HTMLElement>("[data-rename-form]");
-    const counter = wrapper?.querySelector<HTMLElement>("[data-char-count]");
-    if (counter) counter.textContent = `${input.value.trim().length}/${NAME_MAX_LENGTH}`;
-    const error = wrapper?.querySelector<HTMLElement>("[data-error-message]");
-    if (error) error.textContent = "";
+    setErrMsg("");
+    setNewName(input.value);
   };
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
     if (isSubmitting) return;
-
-    const form = e.currentTarget as HTMLFormElement;
-    const wrapper = form.closest<HTMLElement>("[data-rename-form]") ?? form;
-    const input = wrapper.querySelector<HTMLInputElement>("input[name=newName]");
-    const error = wrapper.querySelector<HTMLElement>("[data-error-message]");
-    const submitBtn = wrapper.querySelector<HTMLButtonElement>("[data-submit-btn]");
-
-    const nextName = input?.value.trim() ?? "";
-
-    if (!nextName) {
-      if (error) error.textContent = "新しい名前を入力してください。";
-      input?.focus();
+    if (!newName.trim()) {
+      setErrMsg("新しい名前を入力してください。");
+      inputElement.current?.focus();
       return;
     }
 
-    if (nextName.length > NAME_MAX_LENGTH) {
-      if (error) error.textContent = `名前は${NAME_MAX_LENGTH}文字以内で入力してください。`;
-      input?.focus();
+    if (newName.length > MAX_PASSKEY_NAME_LENGTH) {
+      setErrMsg(`名前は${MAX_PASSKEY_NAME_LENGTH}文字以内で入力してください。`);
+      inputElement.current?.focus();
       return;
     }
 
-    if (nextName === currentName) {
-      if (error) error.textContent = "現在の名前と異なるものを指定してください。";
-      input?.focus();
+    if (newName === currentName) {
+      setErrMsg("現在の名前と異なるものを指定してください。");
+      inputElement.current?.focus();
       return;
     }
 
-    isSubmitting = true;
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = "変更中…";
-    }
+    setIsSubmitting(true);
 
-    const result = await onSubmit(nextName);
+    const result = await onSubmit(newName);
 
     if (!result.success) {
-      isSubmitting = false;
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "保存する";
-      }
-      if (error) {
-        error.textContent = result.error ?? "変更に失敗しました。";
-      }
-      input?.focus();
+      setIsSubmitting(false);
+      setErrMsg(result.error ?? "変更に失敗しました。");
+      inputElement.current?.focus();
       return;
     }
 
@@ -170,22 +150,14 @@ export const PasskeyRenameModal: FC<Props> = ({
 
   const handleReset = async () => {
     if (isSubmitting) return;
-    const resetBtn = document.querySelector<HTMLButtonElement>("[data-reset-btn]");
-    const submitBtn = document.querySelector<HTMLButtonElement>("[data-submit-btn]");
-    const wrapper = resetBtn?.closest<HTMLElement>("[data-rename-form]");
-    const error = wrapper?.querySelector<HTMLElement>("[data-error-message]");
 
-    isSubmitting = true;
-    if (resetBtn) resetBtn.disabled = true;
-    if (submitBtn) submitBtn.disabled = true;
+    setIsSubmitting(true);
 
     const result = await onReset();
 
     if (!result.success) {
-      isSubmitting = false;
-      if (resetBtn) resetBtn.disabled = false;
-      if (submitBtn) submitBtn.disabled = false;
-      if (error) error.textContent = result.error ?? "リセットに失敗しました。";
+      setIsSubmitting(false);
+      setErrMsg(result.error ?? "リセットに失敗しました。");
       return;
     }
 
@@ -193,7 +165,7 @@ export const PasskeyRenameModal: FC<Props> = ({
   };
 
   return (
-    <form class={container} data-rename-form onSubmit={handleSubmit}>
+    <form class={container} onSubmit={handleSubmit}>
       <span class={accentBar} aria-hidden="true"></span>
       <div class={titleRow}>
         <h3 class={title}>パスキー名を変更</h3>
@@ -209,23 +181,23 @@ export const PasskeyRenameModal: FC<Props> = ({
       <div class={inputWrap}>
         <div class={labelRow}>
           <label for="new-passkey-name">新しい名前</label>
-          <span
-            class={hint}
-            data-char-count
-          >{`${currentName.trim().length}/${NAME_MAX_LENGTH}`}</span>
+          <span class={hint}>{`${newName.trim().length}/${MAX_PASSKEY_NAME_LENGTH}`}</span>
         </div>
         <input
           id="new-passkey-name"
           type="text"
           name="newName"
           class={inputClass}
-          value={currentName}
-          maxlength={NAME_MAX_LENGTH}
+          value={newName}
+          maxlength={MAX_PASSKEY_NAME_LENGTH}
           placeholder="例: iPhone 17 Pro / メインPC"
           onInput={handleInput}
           autocomplete="off"
+          ref={inputElement}
         />
-        <p class={errorClass} role="alert" aria-live="polite" data-error-message></p>
+        <p class={errorClass} role="alert" aria-live="polite">
+          {errMsg}
+        </p>
       </div>
 
       <div class={actions}>
@@ -243,15 +215,19 @@ export const PasskeyRenameModal: FC<Props> = ({
           <button
             type="button"
             class={buttonClass("secondary", "md")}
-            data-reset-btn
             onClick={handleReset}
             title={`デフォルト名（${defaultName}）に戻す`}
+            disabled={newName.trim() === defaultName.trim() || isSubmitting}
           >
             デフォルトに戻す
           </button>
         </div>
-        <button type="submit" class={buttonClass("primary", "md")} data-submit-btn>
-          保存する
+        <button
+          type="submit"
+          class={buttonClass("primary", "md")}
+          disabled={newName.trim() === currentName.trim() || isSubmitting}
+        >
+          {isSubmitting ? "変更中…" : "保存する"}
         </button>
       </div>
     </form>
