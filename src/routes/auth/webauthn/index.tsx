@@ -927,80 +927,54 @@ export const webAuthnRoutes = webauthnApp
         );
       }
 
-      let userHasAtLeastTwoPasskeys: boolean;
       try {
-        userHasAtLeastTwoPasskeys =
-          (await prisma.passkey.count({
-            where: {
-              userID: loginState.userData.userID,
-            },
-          })) >= 2;
-      } catch (error) {
-        console.error("Failed to count passkeys:", error);
-        return c.json(
-          {
-            error: "パスキー数の確認に失敗しました。",
-          },
-          500,
-        );
-      }
+        return await prisma.$transaction(
+          async (tx) => {
+            const userID = loginState.userData.userID;
+            const targetPasskey = await tx.passkey.findUnique({
+              where: { id: passkeyId, userID },
+            });
+            if (!targetPasskey) {
+              return c.json({ error: "パスキーが見つかりません。" }, 404);
+            }
 
-      if (!userHasAtLeastTwoPasskeys) {
-        return c.json(
-          {
-            error: "削除後に最低でも1つのパスキーを保持する必要があります。",
-          },
-          400,
-        );
-      }
+            const passkeyCount = await tx.passkey.count({ where: { userID } });
+            if (passkeyCount < 2) {
+              return c.json(
+                { error: "削除後に最低でも1つのパスキーを保持する必要があります。" },
+                400,
+              );
+            }
 
-      let referencingCiphertexts: number;
-      try {
-        referencingCiphertexts = await prisma.prfCiphertext.count({
-          where: {
-            passkeyID: passkeyId,
-            userID: loginState.userData.userID,
-          },
-        });
-      } catch (error) {
-        console.error("Failed to count referencing ciphertexts:", error);
-        return c.json(
-          {
-            error: "暗号化データの確認に失敗しました。",
-          },
-          500,
-        );
-      }
+            const referencingCiphertexts = await tx.prfCiphertext.count({
+              where: { passkeyID: targetPasskey.id, userID },
+            });
+            if (referencingCiphertexts > 0) {
+              return c.json(
+                {
+                  error: "このパスキーで暗号化されたデータが残っているため削除できません。",
+                  ciphertextCount: referencingCiphertexts,
+                },
+                409,
+              );
+            }
 
-      if (referencingCiphertexts > 0) {
-        return c.json(
-          {
-            error: "このパスキーで暗号化されたデータが残っているため削除できません。",
-            ciphertextCount: referencingCiphertexts,
+            await tx.passkeyHistory.deleteMany({
+              where: { passkeyID: targetPasskey.id, passkey: { userID } },
+            });
+            const deletedPasskey = await tx.passkey.delete({
+              where: { id: targetPasskey.id, userID },
+            });
+            return c.json(
+              {
+                rpId: rpID,
+                passkeyId: deletedPasskey.id,
+                passkeyName: deletedPasskey.name,
+              },
+              200,
+            );
           },
-          409,
-        );
-      }
-
-      try {
-        await prisma.passkeyHistory.deleteMany({
-          where: {
-            passkeyID: passkeyId,
-          },
-        });
-        const deletedPasskey = await prisma.passkey.delete({
-          where: {
-            id: passkeyId,
-            userID: loginState.userData.userID,
-          },
-        });
-        return c.json(
-          {
-            rpId: rpID,
-            passkeyId: deletedPasskey.id,
-            passkeyName: deletedPasskey.name,
-          },
-          200,
+          { isolationLevel: "Serializable" },
         );
       } catch (e) {
         console.error(e);
