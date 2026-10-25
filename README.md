@@ -19,12 +19,16 @@ POSTGRES_PASSWORD=postgres_password_here
 POSTGRES_DB=postgres_db_name_here
 POSTGRES_PORT=5432
 REDIS_PORT=6379
-DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public"
-REDIS_URL="redis://localhost:${REDIS_PORT}"
+DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public"
+REDIS_URL="redis://127.0.0.1:${REDIS_PORT}"
 RATE_LIMIT_WINDOW_SEC=60
 RATE_LIMIT_MAX_REQUESTS=120
 RATE_LIMIT_TRUSTED_PROXIES=
 ```
+
+Compose の DB・Redis はホストの `127.0.0.1` にのみポートを公開します。`POSTGRES_PORT`・`REDIS_PORT` ではポート番号だけを変更でき、公開先 IP は固定です。接続 URL も IPv4 の `127.0.0.1` を指定してください。Redis はこのローカル開発構成では認証を設定していないため、ホスト上の他プロセスや同じ Compose ネットワークのコンテナーからはアクセスできます。共有・遠隔利用には認証・TLS・ネットワーク制限を別途設定してください。
+
+Docker Engine 28.0.0 未満には、localhost に公開したポートへ同一 L2 ネットワークから到達できる既知の問題があります。28.0.0 以上を使用してください。[Docker のポート公開に関する説明](https://docs.docker.com/engine/network/port-publishing/)
 
 `RATE_LIMIT_WINDOW_SEC` と `RATE_LIMIT_MAX_REQUESTS` は省略可能で、未指定時はそれぞれ 60 秒・120 リクエストの上限になります。
 
@@ -51,6 +55,8 @@ then start only the data services:
 ```bash
 docker compose up -d
 ```
+
+既に起動済みの場合も、設定変更後に `docker compose up -d db redis` を実行してコンテナーを再作成してください。`docker compose restart` だけではポート設定は反映されません。DB の名前付きボリュームは保持されますが、Redis の永続化はこの Compose では設定していないため、再作成で既存のログイン・認証途中のセッションが失われる可能性があります。
 
 Back on your host shell:
 
