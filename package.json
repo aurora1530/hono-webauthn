@@ -8,6 +8,12 @@
     "typecheck": "npm-run-all typecheck:server typecheck:client",
     "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
     "typecheck:client": "tsc -p tsconfig.client.json --noEmit",
+    "typecheck:worker": "tsc -p tsconfig.worker.json --noEmit",
+    "cf:types": "wrangler types",
+    "cf:dev": "wrangler dev",
+    "cf:deploy": "wrangler deploy",
+    "cf:check": "wrangler deploy --dry-run --outdir dist/worker",
+    "cf:prepare": "prisma generate && node scripts/bundler.js --production",
     "test:registration": "node --import tsx --experimental-test-module-mocks --test tests/registration.test.mjs",
     "test:passkey-deletion": "node --import tsx --experimental-test-module-mocks --test tests/passkey-deletion.test.mjs",
     "test:redirect": "node --import tsx --experimental-test-module-mocks --test tests/redirect.test.mjs",
@@ -16,6 +22,7 @@
     "test:resource-limits": "tsx --tsconfig tsconfig.server.json --experimental-test-module-mocks --test tests/resource-limits.test.mjs",
     "test:dependency-compatibility": "node --test tests/dependency-compatibility.test.mjs",
     "test:logout": "tsx --tsconfig tsconfig.server.json --experimental-test-module-mocks --test tests/logout.test.mjs",
+    "test:cloudflare": "node --import tsx --test tests/cloudflare.test.mjs",
     "build": "npm-run-all build:db build:server build:client",
     "build:server": "tsc -p tsconfig.server.json",
     "build:db": "prisma generate",
@@ -31,10 +38,13 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.17",
-    "@prisma/client": "^6.4.1",
+    "@prisma/adapter-pg": "^6.19.3",
+    "@prisma/client": "^6.19.3",
     "@simplewebauthn/server": "^13.3.3",
+    "@upstash/redis": "^1.39.0",
     "debounce": "^3.0.0",
     "hono": "^4.13.13",
+    "pg": "^8.23.1",
     "redis": "^5.9.0",
     "zod": "^4.6.7"
   },
@@ -42,14 +52,20 @@
     "@biomejs/biome": "^2.3.6",
     "@dotenvx/dotenvx": "^1.51.1",
     "@types/node": "^20.11.17",
+    "@types/pg": "^8.23.1",
     "esbuild": "0.25.12",
     "glob": "^11.0.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "npm-run-all": "^4.1.5",
-    "prisma": "^6.4.1",
+    "prisma": "^6.19.3",
     "tsx": "^4.7.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "^4.152.0"
+  },
+  "overrides": {
+    "@prisma/config": { "deepmerge-ts": "^8.0.0" },
+    "miniflare": { "undici": "^7.30.1" }
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,md,css}": "biome check --write --no-errors-on-unmatched"

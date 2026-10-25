@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hono-webauthn",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "minify": true,
+  "tsconfig": "tsconfig.server.json",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "00000000000000000000000000000000"
+    }
+  ],
+  "vars": {
+    "NODE_ENV": "production",
+    "CLOUDFLARE_WORKERS": "true",
+    "COOKIE_SECURE": "true",
+    "RP_ID": "passkey-demo-app.aurora1530.dev",
+    "ORIGIN": "https://passkey-demo-app.aurora1530.dev"
+  },
+  "observability": { "enabled": true, "head_sampling_rate": 0.1 }
+}

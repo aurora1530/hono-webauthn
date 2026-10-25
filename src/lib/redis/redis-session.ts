@@ -17,7 +17,6 @@ const generateSessionID = (): SessionID => {
 const createRedisSessionStore = async <T extends JsonObject>(
   options: RedisSessionStoreOptions<T>,
 ): Promise<SessionStore<T>> => {
-  const redis = await getRedis();
   // 無料枠のredisを使っているので、なるべくアクセス数を減らすためにin-memory cacheも利用する。
   // 10 seconds。短いので、「redisではexpireしているが、in-memory cacheではまだ有効」という状態はほぼ起きない。
   const inMemoryCache = options.useCache ? createInMemoryCache<T>({ ttlMs: 1000 * 10 }) : undefined;
@@ -25,12 +24,14 @@ const createRedisSessionStore = async <T extends JsonObject>(
 
   return {
     createSessionWith: async (data: T) => {
+      const redis = await getRedis();
       const sessionID = generateSessionID();
       await redis.set(KEY(sessionID), JSON.stringify(data), { EX: options.ttlSec });
       inMemoryCache?.set(sessionID, data);
       return sessionID;
     },
     refresh: async (sessionID: string) => {
+      const redis = await getRedis();
       const result = await redis.expire(KEY(sessionID), options.ttlSec);
       if (result !== 1) {
         inMemoryCache?.delete(sessionID);
@@ -38,6 +39,7 @@ const createRedisSessionStore = async <T extends JsonObject>(
       return result === 1;
     },
     get: async (sessionID: string) => {
+      const redis = await getRedis();
       const cached = inMemoryCache?.get(sessionID);
       if (cached !== undefined) return cached;
       const raw = await redis.get(KEY(sessionID));
@@ -52,6 +54,7 @@ const createRedisSessionStore = async <T extends JsonObject>(
       }
     },
     getAndDestroy: async (sessionID: string) => {
+      const redis = await getRedis();
       inMemoryCache?.delete(sessionID);
       const raw = await redis.getDel(KEY(sessionID));
       if (!raw) return undefined;
@@ -63,6 +66,7 @@ const createRedisSessionStore = async <T extends JsonObject>(
       }
     },
     set: async (sessionID: string, data: T) => {
+      const redis = await getRedis();
       const result = await redis.set(KEY(sessionID), JSON.stringify(data), {
         EX: options.ttlSec,
         XX: true,
@@ -71,6 +75,7 @@ const createRedisSessionStore = async <T extends JsonObject>(
       else inMemoryCache?.delete(sessionID);
     },
     destroy: async (sessionID: string) => {
+      const redis = await getRedis();
       await redis.del(KEY(sessionID));
       inMemoryCache?.delete(sessionID);
     },

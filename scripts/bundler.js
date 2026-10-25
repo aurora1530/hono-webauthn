@@ -3,7 +3,7 @@ import { globSync } from 'glob';
 import path from 'path';
 
 const isWatch = process.argv.includes('--watch');
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === 'production' || process.argv.includes('--production');
 
 const entryPoints = globSync('src/client/*.{ts,tsx}');
 const options = {

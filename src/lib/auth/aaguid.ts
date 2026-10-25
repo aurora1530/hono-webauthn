@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
 import z from "zod";
+import metadata from "../../../aaguid.json" with { type: "json" };
 
 const passkeyMetadataSchema = z.object({
   name: z.string(),
@@ -13,12 +13,7 @@ type PasskeyMetadata = z.infer<typeof passkeyMetadataSchema>;
 
 type PasskeyMetadataJson = z.infer<typeof passkeyMetadataJsonSchema>;
 
-const aaguidData: PasskeyMetadataJson = await (async () => {
-  const parsed = JSON.parse(
-    await readFile(new URL("../../../aaguid.json", import.meta.url), "utf-8"),
-  );
-  return passkeyMetadataJsonSchema.parse(parsed);
-})();
+const aaguidData: PasskeyMetadataJson = passkeyMetadataJsonSchema.parse(metadata);
 
 export const aaguidToNameAndIcon = (aaguid: string): PasskeyMetadata | undefined => {
   return aaguidData[aaguid];

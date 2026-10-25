@@ -2,6 +2,9 @@
 .git
 .gitignore
 .github
+.worktrees
+.wrangler
+.dev.vars*
 
 # Dependency / debug artifacts
 node_modules

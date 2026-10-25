@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.server.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "types": ["node", "./worker-configuration.d.ts"]
+  },
+  "include": ["src/**/*", "worker-configuration.d.ts"],
+  "exclude": ["src/client/**/*"]
+}

@@ -1,0 +1,5 @@
+# Copy to .dev.vars for local Wrangler only. Do not commit real values.
+SIGNED_COOKIE_SECRET=replace-with-a-random-secret-at-least-32-characters
+UPSTASH_REDIS_REST_URL=https://your-existing-database.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-existing-database-standard-rest-token
+# Node.js development against local DB/Redis still uses .env and npm run dev.

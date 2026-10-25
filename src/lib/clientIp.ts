@@ -30,6 +30,9 @@ export function createClientIpResolver(trustedProxies: string[] = []) {
   }
 
   return (c: Context): string => {
+    if (process.env.CLOUDFLARE_WORKERS === "true") {
+      return normalizeAddress(c.req.header("cf-connecting-ip")) ?? "unknown";
+    }
     let address: string | undefined;
     try {
       address = normalizeAddress(getConnInfo(c).remote.address);

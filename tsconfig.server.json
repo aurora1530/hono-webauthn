@@ -3,6 +3,7 @@
     "target": "ESNext",
     "module": "NodeNext",
     "strict": true,
+    "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "types": [
@@ -19,5 +20,5 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["./src/client/**/*"]
+  "exclude": ["./src/client/**/*", "./src/worker.ts"]
 }
