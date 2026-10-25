@@ -64,8 +64,10 @@
     "wrangler": "^4.152.0"
   },
   "overrides": {
-    "@prisma/config": { "deepmerge-ts": "^8.0.0" },
-    "miniflare": { "undici": "^7.30.1" }
+    "@prisma/config": {
+      "deepmerge-ts": "^8.0.0"
+    },
+    "undici": "^7.30.1"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,md,css}": "biome check --write --no-errors-on-unmatched"
