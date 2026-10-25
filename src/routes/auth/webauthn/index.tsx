@@ -334,7 +334,7 @@ export const webAuthnRoutes = webauthnApp
           expectedRPID: rpID,
           credential: {
             id: savedPasskey.id,
-            publicKey: savedPasskey.publicKey,
+            publicKey: new Uint8Array(savedPasskey.publicKey),
             counter: savedPasskey.counter,
             transports: savedPasskey.transports.filter(isAuthenticatorTransportFuture),
           },
@@ -542,7 +542,7 @@ export const webAuthnRoutes = webauthnApp
           expectedRPID: rpID,
           credential: {
             id: savedPasskey.id,
-            publicKey: savedPasskey.publicKey,
+            publicKey: new Uint8Array(savedPasskey.publicKey),
             counter: savedPasskey.counter,
             transports: savedPasskey.transports.filter(isAuthenticatorTransportFuture),
           },
@@ -748,7 +748,7 @@ export const webAuthnRoutes = webauthnApp
           expectedRPID: rpID,
           credential: {
             id: savedPasskey.id,
-            publicKey: savedPasskey.publicKey,
+            publicKey: new Uint8Array(savedPasskey.publicKey),
             counter: savedPasskey.counter,
             transports: savedPasskey.transports.filter(isAuthenticatorTransportFuture),
           },

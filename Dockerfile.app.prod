@@ -14,6 +14,13 @@ RUN npx prisma generate
 
 RUN npm run build
 
+FROM base AS production-deps
+COPY package*.json ./
+# Exclude development roots before resolving Prisma's optional CLI/TypeScript peers.
+RUN npm pkg delete devDependencies scripts && \
+    npm ci --omit=dev --omit=peer --ignore-scripts
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
 FROM base AS runner
 ENV NODE_ENV=production
 WORKDIR /app
@@ -26,7 +33,7 @@ RUN apt-get update && \
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 hono
 
-COPY --from=builder --chown=hono:nodejs /app/node_modules ./node_modules
+COPY --from=production-deps --chown=hono:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=hono:nodejs /app/dist ./dist
 COPY --from=builder --chown=hono:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=hono:nodejs /app/public ./public

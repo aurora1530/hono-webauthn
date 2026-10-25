@@ -67,6 +67,12 @@ npm run dev
 
 Then open `http://localhost:3000` in your browser.
 
+## Dependency maintenance
+
+依存関係は `npm ci` で lockfile どおりにインストールし、更新時は `npm audit` と `npm audit --omit=dev` の両方を確認してください。認証・署名 Cookie・CSRF・静的配信の依存互換性テストは `npm run test:dependency-compatibility` で実行できます。
+
+`Dockerfile.app.prod` はビルド用と実行用の依存を分離します。実行用ステージだけで開発依存・スクリプトを manifest から除き、任意 peer 依存もインストールしません。Prisma CLI や TypeScript 等の開発ツールを含めず、ビルド時に生成した Prisma Client とクエリーエンジンを引き継ぎます。マイグレーションは従来どおり CI で実施します。
+
 ## LICENSE
 
 MIT License
