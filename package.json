@@ -15,6 +15,7 @@
     "test:login-session": "node --import tsx --experimental-test-module-mocks --test tests/login-session.test.mjs",
     "test:resource-limits": "tsx --tsconfig tsconfig.server.json --experimental-test-module-mocks --test tests/resource-limits.test.mjs",
     "test:dependency-compatibility": "node --test tests/dependency-compatibility.test.mjs",
+    "test:logout": "tsx --tsconfig tsconfig.server.json --experimental-test-module-mocks --test tests/logout.test.mjs",
     "build": "npm-run-all build:db build:server build:client",
     "build:server": "tsc -p tsconfig.server.json",
     "build:db": "prisma generate",

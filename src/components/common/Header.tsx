@@ -299,16 +299,20 @@ const Header: FC = async () => {
                   >
                     PRFプレイグラウンド
                   </MenuLink>
-                  <MenuLink
-                    href="/auth/logout"
-                    currentPath={currentPath}
-                    icon="logout"
-                    className={cx(menuLinkClass, dangerLinkClass)}
-                    activeClassName={activeMenuLinkClass}
-                    onclick="return confirm('ログアウトしますか？');"
+                  <form
+                    method="post"
+                    action="/auth/logout"
+                    onsubmit="return confirm('ログアウトしますか？');"
                   >
-                    ログアウト
-                  </MenuLink>
+                    <button
+                      type="submit"
+                      class={cx(menuLinkClass, dangerLinkClass)}
+                      style="width: 100%; cursor: pointer; font-size: inherit;"
+                    >
+                      <span class="material-symbols-outlined">logout</span>
+                      ログアウト
+                    </button>
+                  </form>
                 </>
               ) : (
                 <>

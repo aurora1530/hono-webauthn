@@ -67,6 +67,8 @@ npm run dev
 
 Then open `http://localhost:3000` in your browser.
 
+ログアウトは画面の POST フォームから実行します。`GET /auth/logout` は 404 となり、ログアウトしません。POST は本文形式によらず、Origin がリクエスト URL と一致する場合だけ許可します。Origin がない場合は `Sec-Fetch-Site: same-origin` を要求し、不一致・不明な送信元は 403 で拒否します。プロキシはこれらのヘッダーを保持してください。正常時はログインセッションと Cookie を破棄し、303 でトップへ戻ります。回帰テストは `npm run test:logout` で実行できます。
+
 ## Dependency maintenance
 
 依存関係は `npm ci` で lockfile どおりにインストールし、更新時は `npm audit` と `npm audit --omit=dev` の両方を確認してください。認証・署名 Cookie・CSRF・静的配信の依存互換性テストは `npm run test:dependency-compatibility` で実行できます。

@@ -25,9 +25,16 @@ export const authAppRoutes = authApp
       title: "WebAuthn Demo",
     });
   })
-  .get("/logout", async (c) => {
+  .post("/logout", async (c) => {
+    const origin = c.req.header("Origin");
+    const isSameOrigin =
+      origin !== undefined
+        ? origin === new URL(c.req.url).origin
+        : c.req.header("Sec-Fetch-Site") === "same-origin";
+    if (!isSameOrigin) return c.text("Forbidden", 403);
+
     await loginSessionController.setLoggedOut(c);
-    return c.redirect("/");
+    return c.redirect("/", 303);
   })
   .get("/login", async (c) => {
     const loginState = await loginSessionController.getLoginState(c);

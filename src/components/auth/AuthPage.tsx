@@ -39,13 +39,15 @@ const AuthPage: FC = async () => {
             <a class={secondary} href="/auth/prf">
               PRF プレイグラウンド
             </a>
-            <a
-              class={primary}
-              href="/auth/logout"
-              onclick={`if (!confirm('ログアウトしますか？')) event.preventDefault();`}
+            <form
+              method="post"
+              action="/auth/logout"
+              onsubmit="return confirm('ログアウトしますか？');"
             >
-              ログアウト
-            </a>
+              <button class={primary} type="submit">
+                ログアウト
+              </button>
+            </form>
           </>
         ) : (
           <>

@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { csrf } from "hono/csrf";
+import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { trimTrailingSlash } from "hono/trailing-slash";
@@ -65,6 +66,8 @@ app.route("/", routerRootApp);
 
 app
   .onError((err, c) => {
+    if (err instanceof HTTPException) return err.getResponse();
+
     console.error(err);
     c.status(500);
     return c.render("エラーが発生しました。Code: 500", {
