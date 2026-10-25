@@ -155,7 +155,12 @@ async function generate(cookies) {
 }
 
 async function verify(cookies) {
-  return request(cookies, "/webauthn/registration/verify", "POST", { body: {} });
+  return request(cookies, "/webauthn/registration/verify", "POST", {
+    body: {
+      id: "new-key", rawId: "new-key", type: "public-key", clientExtensionResults: {},
+      response: { clientDataJSON: "AA", attestationObject: "AA" },
+    },
+  });
 }
 
 async function startNewAccount() {

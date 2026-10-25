@@ -1,4 +1,4 @@
-import { type Passkey, PasskeyHistoryType, type PrfCiphertext } from "@prisma/client";
+import { type Passkey, PasskeyHistoryType, type PrfCiphertext, Prisma } from "@prisma/client";
 import {
   generateAuthenticationOptions,
   type VerifiedAuthenticationResponse,
@@ -12,11 +12,13 @@ import handlePostAuthentication from "../../../../lib/auth/postAuthentication.js
 import {
   buildPrfExtensions,
   decodeBase64ToBytesWithBounds,
+  getPrfPayloadBytes,
   PRF_CONSTRAINTS,
 } from "../../../../lib/auth/prfHelpers.js";
 import { isAuthenticatorTransportFuture } from "../../../../lib/auth/transport.js";
 import { webauthnSessionController } from "../../../../lib/auth/webauthnSession.js";
 import { BASE64_REGEX } from "../../../../lib/base64.js";
+import { authenticationResponseSchema } from "../../../../lib/schema/webauthn.js";
 import prisma from "../../../../prisma.js";
 import { ORIGIN, rpID } from "../constant.js";
 import {
@@ -127,7 +129,7 @@ export const prfRoutes = prfApp
   .post(
     "/assertion/verify",
     validator("json", (value, c) => {
-      const parsed = z.object({ body: z.any() }).safeParse(value);
+      const parsed = z.object({ body: authenticationResponseSchema }).safeParse(value);
       if (!parsed.success) {
         return c.json(
           {
@@ -266,8 +268,8 @@ export const prfRoutes = prfApp
             .min(1)
             .max(PRF_CONSTRAINTS.CIPHERTEXT.MAX_LENGTH)
             .regex(BASE64_REGEX),
-          iv: z.string().min(1).regex(BASE64_REGEX),
-          tag: z.string().min(1).regex(BASE64_REGEX),
+          iv: z.string().min(1).max(PRF_CONSTRAINTS.IV.MAX_LENGTH).regex(BASE64_REGEX),
+          tag: z.string().min(1).max(PRF_CONSTRAINTS.TAG.MAX_LENGTH).regex(BASE64_REGEX),
           associatedData: z.string().max(PRF_CONSTRAINTS.ASSOCIATED_DATA.MAX_LENGTH).optional(),
           version: z.number().int().min(1).max(10).default(1),
           prfInput: z
@@ -366,20 +368,59 @@ export const prfRoutes = prfApp
 
       let created: PrfCiphertext;
       try {
-        created = await prisma.prfCiphertext.create({
-          data: {
-            passkeyID: passkey.id,
-            userID: loginState.userData.userID,
-            label,
-            ciphertext: body.ciphertext,
-            iv: body.iv,
-            tag: body.tag,
-            associatedData: associatedData ?? null,
-            version: body.version,
-            prfInput: body.prfInput,
+        const data = {
+          passkeyID: passkey.id,
+          userID: loginState.userData.userID,
+          label: label ?? null,
+          ciphertext: body.ciphertext,
+          iv: body.iv,
+          tag: body.tag,
+          associatedData: associatedData ?? null,
+          version: body.version,
+          prfInput: body.prfInput,
+        };
+        const result = await prisma.$transaction(
+          async (tx) => {
+            const entries = await tx.prfCiphertext.findMany({
+              where: { userID: data.userID },
+              take: PRF_CONSTRAINTS.MAX_ENTRIES_PER_USER + 1,
+              select: {
+                ciphertext: true,
+                iv: true,
+                tag: true,
+                prfInput: true,
+                label: true,
+                associatedData: true,
+              },
+            });
+            const usedBytes = entries.reduce(
+              (total, entry) => total + getPrfPayloadBytes(entry),
+              0,
+            );
+            if (
+              entries.length >= PRF_CONSTRAINTS.MAX_ENTRIES_PER_USER ||
+              usedBytes + getPrfPayloadBytes(data) > PRF_CONSTRAINTS.MAX_STORAGE_BYTES_PER_USER
+            ) {
+              return { status: "quota-exceeded" } as const;
+            }
+            return { status: "saved", entry: await tx.prfCiphertext.create({ data }) } as const;
           },
-        });
+          { isolationLevel: "Serializable" },
+        );
+        if (result.status === "quota-exceeded") {
+          return c.json(
+            {
+              error:
+                "保存上限（100件・文字列データ合計256 KiB）に達しました。不要なデータを削除してください。",
+            },
+            409,
+          );
+        }
+        created = result.entry;
       } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
+          return c.json({ error: "保存処理が競合しました。再度お試しください。" }, 409);
+        }
         console.error("Failed to create PRF ciphertext:", error);
         return c.json(
           {

@@ -122,11 +122,26 @@ test("ログイン済みルートは正常な戻り先のクエリーとフラ�
 for (const value of ["/\\evil.example", "/account/..//evil.example", "/\t/evil.example", "/profile?tab=passkeys#latest"]) {
   test(`クライアントのログイン後も同一オリジンへ戻す: ${JSON.stringify(value)}`, async (t) => {
     const location = { origin, search: `?${new URLSearchParams({ redirect: value })}`, href: "" };
+    class AssertionResponse {
+      clientDataJSON = new Uint8Array([0]).buffer;
+      authenticatorData = new Uint8Array([0]).buffer;
+      signature = new Uint8Array([0]).buffer;
+      userHandle = null;
+    }
+    class TestCredential {
+      static parseRequestOptionsFromJSON(options) { return options; }
+      id = "AA";
+      rawId = new Uint8Array([0]).buffer;
+      response = new AssertionResponse();
+      authenticatorAttachment = null;
+      getClientExtensionResults() { return {}; }
+    }
     const globals = {
       window: { location },
       location,
-      navigator: { credentials: { get: async () => ({}) } },
-      PublicKeyCredential: { parseRequestOptionsFromJSON: (options) => options },
+      navigator: { credentials: { get: async () => new TestCredential() } },
+      PublicKeyCredential: TestCredential,
+      AuthenticatorAssertionResponse: AssertionResponse,
     };
     for (const [name, value] of Object.entries(globals)) {
       const descriptor = Object.getOwnPropertyDescriptor(globalThis, name);

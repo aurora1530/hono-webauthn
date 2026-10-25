@@ -20,6 +20,10 @@ import handlePostAuthentication from "../../../lib/auth/postAuthentication.js";
 import { reauthSessionController } from "../../../lib/auth/reauthSession.js";
 import { isAuthenticatorTransportFuture } from "../../../lib/auth/transport.js";
 import { webauthnSessionController } from "../../../lib/auth/webauthnSession.js";
+import {
+  authenticationResponseSchema,
+  registrationResponseSchema,
+} from "../../../lib/schema/webauthn.js";
 import prisma from "../../../prisma.js";
 import { MAX_PASSKEY_NAME_LENGTH } from "../../../shared/constant.js";
 import { MAX_PASSKEYS_PER_USER, ORIGIN, rpID, rpName } from "./constant.js";
@@ -128,7 +132,7 @@ export const webAuthnRoutes = webauthnApp
   .post(
     "/registration/verify",
     validator("json", (value, c) => {
-      const parsed = z.object({ body: z.any() }).safeParse(value);
+      const parsed = z.object({ body: registrationResponseSchema }).safeParse(value);
       if (!parsed.success) {
         return c.json(
           {
@@ -269,7 +273,7 @@ export const webAuthnRoutes = webauthnApp
   .post(
     "/authentication/verify",
     validator("json", (value, c) => {
-      const parsed = z.object({ body: z.any() }).safeParse(value);
+      const parsed = z.object({ body: authenticationResponseSchema }).safeParse(value);
       if (!parsed.success) {
         return c.json(
           {
@@ -455,7 +459,7 @@ export const webAuthnRoutes = webauthnApp
   .post(
     "/reauthentication/verify",
     validator("json", (value, c) => {
-      const parsed = z.object({ body: z.any() }).safeParse(value);
+      const parsed = z.object({ body: authenticationResponseSchema }).safeParse(value);
       if (!parsed.success) {
         return c.json(
           {
@@ -663,7 +667,7 @@ export const webAuthnRoutes = webauthnApp
   .post(
     "/test-authentication/verify",
     validator("json", (value, c) => {
-      const parsed = z.object({ body: z.any() }).safeParse(value);
+      const parsed = z.object({ body: authenticationResponseSchema }).safeParse(value);
       if (!parsed.success) {
         return c.json(
           {
@@ -993,8 +997,8 @@ export const webAuthnRoutes = webauthnApp
       const parsed = z
         .object({
           passkeyId: z.string(),
-          limit: z.number().min(1).max(100).default(10),
-          page: z.number().min(1).default(1),
+          limit: z.number().int().min(1).max(100).default(10),
+          page: z.number().int().min(1).max(1000).default(1),
         })
         .safeParse(value);
       if (!parsed.success) {
@@ -1092,7 +1096,7 @@ export const webAuthnRoutes = webauthnApp
       const parsed = z.union([
         z.object({
           passkeyId: z.string(),
-          historyIds: z.array(z.string()).min(1),
+          historyIds: z.array(z.string().min(1).max(128)).min(1).max(100),
           deleteAll: z.literal(false).default(false),
         }),
         z.object({

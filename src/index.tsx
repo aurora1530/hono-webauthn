@@ -11,6 +11,7 @@ import {
   loginSessionExpirationMiddleware,
 } from "./lib/auth/loginSession.js";
 import { createRateLimitMiddleware } from "./lib/middleware/rateLimit.js";
+import { requestBodyLimit } from "./lib/middleware/requestBodyLimit.js";
 import rootRenderer from "./rootRenderer.js";
 import routerRootApp from "./routes/index.js";
 
@@ -38,6 +39,7 @@ app.use(
     crossOriginResourcePolicy: "same-origin",
   }),
 );
+app.use(requestBodyLimit);
 app.use(csrf());
 // Cache-Control for static assets
 if (typedEnv.NODE_ENV === "production") {

@@ -1,6 +1,7 @@
 import { sanitizeRedirectPath } from "../../../shared/redirect.js";
 import { showStatusToast } from "../../components/common/StatusToast.js";
 import { webauthnClient } from "../rpc/webauthnClient.js";
+import { serializeAuthenticationCredential } from "./serialization.js";
 import { createAbortController, handleWebAuthnAbort } from "./webauthnAbort.js";
 
 const parsePostLoginRedirect = () => {
@@ -51,7 +52,7 @@ async function handleAuthentication() {
   }
   const credentialResponse = await webauthnClient.authentication.verify.$post({
     json: {
-      body: credential,
+      body: serializeAuthenticationCredential(credential),
     },
   });
 

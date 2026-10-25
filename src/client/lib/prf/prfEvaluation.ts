@@ -1,47 +1,9 @@
 import { prfClient } from "../rpc/prfClient";
+import { serializeAuthenticationCredential } from "../webauthn/serialization.js";
 import { createAbortController, handleWebAuthnAbort } from "../webauthn/webauthnAbort";
-
-const toBase64Url = (bytes: ArrayBuffer | Uint8Array | null | undefined): string | null => {
-  if (!bytes) return null;
-  const view = bytes instanceof ArrayBuffer ? new Uint8Array(bytes) : new Uint8Array(bytes);
-  let binary = "";
-  for (let i = 0; i < view.length; i++) {
-    binary += String.fromCharCode(view[i]);
-  }
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-};
 
 const base64ToBase64Url = (base64: string): string => {
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-};
-
-const serializeAssertionForServer = (credential: PublicKeyCredential) => {
-  const response = credential.response;
-  if (!(response instanceof AuthenticatorAssertionResponse)) {
-    throw new Error("不正な認証応答です");
-  }
-  const sanitizedExtensions = (() => {
-    const ext = credential.getClientExtensionResults?.();
-    if (!ext) return undefined;
-    // PRF の結果は送らない
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { prf, ...rest } = ext as Record<string, unknown>;
-    return Object.keys(rest).length > 0 ? rest : undefined;
-  })();
-
-  return {
-    id: credential.id,
-    rawId: toBase64Url(credential.rawId),
-    type: credential.type,
-    authenticatorAttachment: credential.authenticatorAttachment,
-    response: {
-      authenticatorData: toBase64Url(response.authenticatorData),
-      clientDataJSON: toBase64Url(response.clientDataJSON),
-      signature: toBase64Url(response.signature),
-      userHandle: toBase64Url(response.userHandle),
-    },
-    clientExtensionResults: sanitizedExtensions,
-  };
 };
 
 export const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: string) => {
@@ -72,7 +34,7 @@ export const requestPrfEvaluation = async (passkeyId: string, prfInputBase64: st
     throw new Error("認証情報の取得に失敗しました");
   }
 
-  const credentialJson = serializeAssertionForServer(credential);
+  const credentialJson = serializeAuthenticationCredential(credential);
 
   const verifyRes = await prfClient.assertion.verify.$post({
     json: { body: credentialJson },

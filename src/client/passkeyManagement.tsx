@@ -8,6 +8,7 @@ import { openModal } from "./lib/modal/base.js";
 import { openMessageModal } from "./lib/modal/message.js";
 import { webauthnClient } from "./lib/rpc/webauthnClient.js";
 import { handleRegistration } from "./lib/webauthn/registration.js";
+import { serializeAuthenticationCredential } from "./lib/webauthn/serialization.js";
 import { createAbortController, handleWebAuthnAbort } from "./lib/webauthn/webauthnAbort.js";
 
 type PasskeyHistoryPage = {
@@ -227,7 +228,7 @@ async function handleTestAuthentication(passkeyId: string) {
       return;
     }
     const verifyRes = await webauthnClient["test-authentication"].verify.$post({
-      json: { body: credential },
+      json: { body: serializeAuthenticationCredential(credential) },
     });
     if (!verifyRes.ok) {
       const err = (await verifyRes.json()).error;

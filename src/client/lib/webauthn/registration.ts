@@ -4,6 +4,7 @@ import { openMessageModal } from "../modal/message.js";
 import { authClient } from "../rpc/authClient.js";
 import { webauthnClient } from "../rpc/webauthnClient.js";
 import { handleReauthentication } from "./reauthentication.js";
+import { serializeRegistrationCredential } from "./serialization.js";
 import { createAbortController, handleWebAuthnAbort } from "./webauthnAbort.js";
 
 type HandleRegistrationOptions =
@@ -80,7 +81,7 @@ async function handleRegistration(params: HandleRegistrationOptions) {
   }
   const credentialResponse = await webauthnClient.registration.verify.$post({
     json: {
-      body: credential,
+      body: serializeRegistrationCredential(credential),
     },
   });
 

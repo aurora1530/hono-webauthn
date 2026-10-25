@@ -6,7 +6,6 @@ import AuthPage from "../../components/auth/AuthPage.js";
 import LoginForm from "../../components/auth/LoginForm.js";
 import PasskeyManagement from "../../components/auth/PasskeyManagemet.js";
 import PrfPlayground from "../../components/auth/PrfPlayground.js";
-import { findHistories } from "../../lib/auth/history.js";
 import { loginSessionController } from "../../lib/auth/loginSession.js";
 import { buildLoginRedirectUrl, extractRedirectPath } from "../../lib/auth/redirect.js";
 import { webauthnSessionController } from "../../lib/auth/webauthnSession.js";
@@ -162,6 +161,10 @@ export const authAppRoutes = authApp
           userID: loginState.userData.userID,
         },
         include: {
+          passkeyHistories: {
+            orderBy: [{ usedAt: "desc" }, { id: "desc" }],
+            take: 1,
+          },
           _count: {
             select: {
               prfCiphertexts: true,
@@ -170,12 +173,11 @@ export const authAppRoutes = authApp
         },
       });
 
-      const histories = await findHistories(passkeys.map((pk) => pk.id));
       const passkeyData = passkeys.map((pk) => {
-        const { _count, ...passkeyRecord } = pk;
+        const { _count, passkeyHistories, ...passkeyRecord } = pk;
         return {
           passkey: passkeyRecord,
-          lastUsed: histories[pk.id]?.[0],
+          lastUsed: passkeyHistories[0],
           prfCiphertextCount: _count.prfCiphertexts,
         };
       });

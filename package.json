@@ -13,6 +13,7 @@
     "test:redirect": "node --import tsx --experimental-test-module-mocks --test tests/redirect.test.mjs",
     "test:rate-limit": "node --import tsx --experimental-test-module-mocks --test tests/rate-limit.test.mjs",
     "test:login-session": "node --import tsx --experimental-test-module-mocks --test tests/login-session.test.mjs",
+    "test:resource-limits": "tsx --tsconfig tsconfig.server.json --experimental-test-module-mocks --test tests/resource-limits.test.mjs",
     "build": "npm-run-all build:db build:server build:client",
     "build:server": "tsc -p tsconfig.server.json",
     "build:db": "prisma generate",

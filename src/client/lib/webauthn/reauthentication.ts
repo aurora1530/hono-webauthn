@@ -1,5 +1,6 @@
 import { showStatusToast } from "../../components/common/StatusToast.js";
 import { webauthnClient } from "../rpc/webauthnClient.js";
+import { serializeAuthenticationCredential } from "./serialization.js";
 import { createAbortController, handleWebAuthnAbort } from "./webauthnAbort.js";
 
 async function handleReauthentication(): Promise<boolean> {
@@ -35,7 +36,7 @@ async function handleReauthentication(): Promise<boolean> {
     }
     const credentialResponse = await webauthnClient.reauthentication.verify.$post({
       json: {
-        body: credential,
+        body: serializeAuthenticationCredential(credential),
       },
     });
     if (!credentialResponse.ok) {
