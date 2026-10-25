@@ -24,11 +24,11 @@
     "CLOUDFLARE_WORKERS": "true",
     "COOKIE_SECURE": "true",
     "RP_ID": "passkey-demo-app.aurora1530.dev",
-    "ORIGIN": "https://cf-preview.passkey-demo-app.aurora1530.dev"
+    "ORIGIN": "https://passkey-demo-app.aurora1530.dev"
   },
   "routes": [
     {
-      "pattern": "cf-preview.passkey-demo-app.aurora1530.dev",
+      "pattern": "passkey-demo-app.aurora1530.dev",
       "custom_domain": true
     }
   ],
