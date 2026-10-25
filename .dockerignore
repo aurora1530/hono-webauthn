@@ -19,7 +19,7 @@ pnpm-debug.log*
 /tmp
 /temp
 
-# Environment files (handled via Render env vars)
+# Environment files
 .env
 .env.*
 !.env.example
@@ -31,7 +31,6 @@ pnpm-debug.log*
 
 # Local-only docker/compose files
 Dockerfile*
-!Dockerfile.app.prod
 docker-compose*.yml
 docker-compose*.yaml
 compose.yaml

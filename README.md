@@ -78,7 +78,7 @@ Then open `http://localhost:3000` in your browser.
 
 依存関係は `npm ci` で lockfile どおりにインストールし、更新時は `npm audit` と `npm audit --omit=dev` の両方を確認してください。認証・署名 Cookie・CSRF・静的配信の依存互換性テストは `npm run test:dependency-compatibility` で実行できます。
 
-Prisma は Rust エンジンを含まない Client と `@prisma/adapter-pg` を使います。Workers ではリクエストごとに接続を作成し、Node.js ではプロセス内で共有します。`Dockerfile.app.prod` は切り戻し用に残しています。マイグレーションは従来どおり GitHub Actions で実施し、Workers へのデプロイは手動で行います。
+Prisma は Rust エンジンを含まない Client と `@prisma/adapter-pg` を使います。Workers ではリクエストごとに接続を作成し、Node.js ではプロセス内で共有します。マイグレーションは GitHub Actions で実施し、Workers へのデプロイは手動で行います。
 
 `package.json` の `overrides` は Prisma CLI の `deepmerge-ts` と Wrangler/Miniflare の `undici` を監査で報告された脆弱性の修正版へ固定しています。依存更新時は overrides の必要性と互換性も確認してください。
 
