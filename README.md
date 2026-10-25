@@ -6,6 +6,8 @@ The demo app is deployed at: https://passkey-demo-app.aurora1530.dev
 
 We use Upstash for Redis and Supabase for Postgres.
 
+Cloudflare Workers（Free）では既存の DB・Redis を使い、Hyperdrive と Upstash REST API で接続します。
+
 ## Setup
 
 You have to have Docker and Docker Compose installed for Postgres/Redis, and Node (>=22.14) on your host for the app.
@@ -14,12 +16,15 @@ Create a `.env` file on your host with:
 
 ```txt
 SIGNED_COOKIE_SECRET=your_secret_key_here
+RP_ID=localhost
+ORIGIN=http://localhost:3000
 POSTGRES_USER=postgres_user_here
 POSTGRES_PASSWORD=postgres_password_here
 POSTGRES_DB=postgres_db_name_here
 POSTGRES_PORT=5432
 REDIS_PORT=6379
 DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public"
+DIRECT_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public"
 REDIS_URL="redis://127.0.0.1:${REDIS_PORT}"
 RATE_LIMIT_WINDOW_SEC=60
 RATE_LIMIT_MAX_REQUESTS=120
@@ -38,7 +43,7 @@ Docker Engine 28.0.0 未満には、localhost に公開したポートへ同一 
 
 接続元が指定範囲に含まれる場合に限り、`X-Forwarded-For` を右からたどって最初の非信頼 IP を使用します。プロキシは実際の接続元をこのヘッダーへ追記または上書きする必要があります。`X-Real-IP`、`Forwarded`、`User-Agent` は識別に使いません。全 IP や、無関係なサービスも含む範囲を信頼する設定は避けてください。
 
-Render へのデプロイ時も、実際の経路とプロキシ範囲を確認して設定してください。このリポジトリでは Render の範囲を固定していません。未設定ならプロキシ IP ごとの制限となるため、複数の利用者が同じ上限を共有する可能性があります。[Render のクライアント IP に関する説明](https://render.com/articles/how-render-handles-ddos-attacks)
+Cloudflare Workers では `CLOUDFLARE_WORKERS=true` により Cloudflare が設定する `CF-Connecting-IP` を使用します。Node.js 実行時にはこのフラグを設定せず、上記の信頼済みプロキシ設定を使ってください。
 
 ログイン状態の確認では Redis のセッションに加え、認証に使ったパスキーの存在と所有者を毎回 DB で照合します。パスキー削除後はそのパスキーで作った全セッションを、アカウント削除後はそのユーザーの全セッションを、次の認証確認から拒否します。ログイン情報はプロセス内にキャッシュしません。
 
@@ -73,7 +78,9 @@ Then open `http://localhost:3000` in your browser.
 
 依存関係は `npm ci` で lockfile どおりにインストールし、更新時は `npm audit` と `npm audit --omit=dev` の両方を確認してください。認証・署名 Cookie・CSRF・静的配信の依存互換性テストは `npm run test:dependency-compatibility` で実行できます。
 
-`Dockerfile.app.prod` はビルド用と実行用の依存を分離します。実行用ステージだけで開発依存・スクリプトを manifest から除き、任意 peer 依存もインストールしません。Prisma CLI や TypeScript 等の開発ツールを含めず、ビルド時に生成した Prisma Client とクエリーエンジンを引き継ぎます。マイグレーションは従来どおり CI で実施します。
+Prisma は Rust エンジンを含まない Client と `@prisma/adapter-pg` を使います。Workers ではリクエストごとに接続を作成し、Node.js ではプロセス内で共有します。`Dockerfile.app.prod` は切り戻し用に残しています。マイグレーションは従来どおり GitHub Actions で実施し、Workers へのデプロイは手動で行います。
+
+`package.json` の `overrides` は Prisma CLI の `deepmerge-ts` と Wrangler/Miniflare の `undici` を監査で報告された脆弱性の修正版へ固定しています。依存更新時は overrides の必要性と互換性も確認してください。
 
 ## LICENSE
 

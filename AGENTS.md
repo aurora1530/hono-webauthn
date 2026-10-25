@@ -2,7 +2,7 @@
 
 ## プロジェクト概要（Overview）
 
-Hono と WebAuthn を組み合わせたフルスタック認証デモ。Render でのデプロイとローカル検証を想定し、実装例・学習用サンプルとして利用する。
+Hono と WebAuthn を組み合わせたフルスタック認証デモ。Cloudflare Workers でのデプロイとローカルの Node.js での検証を想定し、DB は Supabase、Redis は Upstash を継続利用する。
 
 ## コーディング規約（Coding Style Guidelines）
 

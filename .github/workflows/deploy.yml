@@ -1,4 +1,4 @@
-name: migrate-and-deploy
+name: migrate-database
 
 on:
   push:
